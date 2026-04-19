@@ -7,8 +7,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="AdysTech.CredentialManager" />
+    <PackageReference Include="AdysTech.CredentialManager" Condition="$([MSBuild]::IsOSPlatform('Windows'))" />
     <PackageReference Include="StrongOf" />
+    <PackageReference Include="System.Drawing.Common" Condition="!$([MSBuild]::IsOSPlatform('Windows'))" />
   </ItemGroup>
 
   <ItemGroup>

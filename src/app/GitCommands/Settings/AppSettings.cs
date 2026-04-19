@@ -258,6 +258,10 @@ public static partial class AppSettings
 
     #region Registry helpers
 
+#if WINDOWS
+    private static Microsoft.Win32.RegistryKey VersionIndependentRegKey
+        => Microsoft.Win32.Registry.CurrentUser.CreateSubKey("Software\\GitExtensions\\GitExtensions");
+
     private static bool ReadBoolRegKey(string key, bool defaultValue)
     {
         object? obj = VersionIndependentRegKey.GetValue(key);
@@ -289,6 +293,20 @@ public static partial class AppSettings
     {
         VersionIndependentRegKey.SetValue(key, value);
     }
+#else
+    private static bool ReadBoolRegKey(string key, bool defaultValue) => defaultValue;
+
+    private static void WriteBoolRegKey(string key, bool value)
+    {
+    }
+
+    [return: NotNullIfNotNull(nameof(defaultValue))]
+    private static string? ReadStringRegValue(string key, string? defaultValue) => defaultValue;
+
+    private static void WriteStringRegValue(string key, string value)
+    {
+    }
+#endif
 
     #endregion
 

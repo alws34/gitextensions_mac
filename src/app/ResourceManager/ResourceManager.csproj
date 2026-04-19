@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <NoWarn Condition="!$([MSBuild]::IsOSPlatform('Windows'))">$(NoWarn);CS1574</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -11,6 +12,8 @@
   <ItemGroup>
     <PackageReference Include="JetBrains.Annotations" />
     <PackageReference Include="SmartFormat" />
+    <PackageReference Include="System.Drawing.Common" Condition="!$([MSBuild]::IsOSPlatform('Windows'))" />
+    <PackageReference Include="System.Resources.Extensions" Condition="!$([MSBuild]::IsOSPlatform('Windows'))" />
   </ItemGroup>
 
   <ItemGroup>

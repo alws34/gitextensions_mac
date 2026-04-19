@@ -10,9 +10,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="AdysTech.CredentialManager" />
+    <PackageReference Include="AdysTech.CredentialManager" Condition="$([MSBuild]::IsOSPlatform('Windows'))" />
     <PackageReference Include="Ben.Demystifier" />
     <PackageReference Include="JetBrains.Annotations" />
+    <PackageReference Include="System.Drawing.Common" Condition="!$([MSBuild]::IsOSPlatform('Windows'))" />
   </ItemGroup>
 
   <ItemGroup>

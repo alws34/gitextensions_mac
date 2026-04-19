@@ -5,7 +5,6 @@
   <Folder Name="/externals/">
     <File Path="externals/Directory.Build.props" />
     <File Path="externals/Directory.Build.targets" />
-    <Project Path="externals/Git.hub/Git.hub/Git.hub.csproj" />
   </Folder>
   <Folder Name="/Solution Items/">
     <File Path=".editorconfig" />
@@ -47,7 +46,7 @@
   </Folder>
   <Folder Name="/src/" />
   <Folder Name="/src/app/">
-    <Project Path="src/app/BugReporter/BugReporter.csproj" />
+    <!-- BugReporter excluded: WinExe OutputType, Windows-only -->
     <Project Path="src/app/GitCommands/GitCommands.csproj" />
     <Project Path="src/app/GitExtensions.Extensibility/GitExtensions.Extensibility.csproj" />
     <Project Path="src/app/GitExtUtils/GitExtUtils.csproj" />
@@ -59,11 +58,11 @@
     <Project Path="src/plugins/AutoCompileSubmodules/GitExtensions.Plugins.AutoCompileSubmodules.csproj" />
     <Project Path="src/plugins/BackgroundFetch/GitExtensions.Plugins.BackgroundFetch.csproj" />
     <Project Path="src/plugins/CreateLocalBranches/GitExtensions.Plugins.CreateLocalBranches.csproj" />
-    <Project Path="src/plugins/DeleteUnusedBranches/GitExtensions.Plugins.DeleteUnusedBranches.csproj" />
-    <Project Path="src/plugins/FindLargeFiles/GitExtensions.Plugins.FindLargeFiles.csproj" />
-    <Project Path="src/plugins/GitHub3/GitExtensions.Plugins.GitHub3.csproj" />
+    <!-- DeleteUnusedBranches excluded: depends on GitUI (WinForms) — re-add in Plan D -->
+    <!-- FindLargeFiles excluded: depends on GitUI (WinForms) — re-add in Plan D -->
+    <!-- GitHub3 excluded: depends on Git.hub which targets net10.0-windows -->
     <Project Path="src/plugins/GitUIPluginInterfaces/GitUIPluginInterfaces.csproj" />
-    <Project Path="src/plugins/Gource/GitExtensions.Plugins.Gource.csproj" />
+    <!-- Gource excluded: depends on GitUI (WinForms) — re-add in Plan D -->
     <Project Path="src/plugins/ProxySwitcher/GitExtensions.Plugins.ProxySwitcher.csproj" />
     <Project Path="src/plugins/ReleaseNotesGenerator/GitExtensions.Plugins.ReleaseNotesGenerator.csproj" />
   </Folder>
@@ -78,8 +77,8 @@
   </Folder>
   <Folder Name="/src/plugins/Statistics/">
     <File Path="src/plugins/Statistics/Directory.Build.props" />
-    <Project Path="src/plugins/Statistics/GitImpact/GitExtensions.Plugins.GitImpact.csproj" />
-    <Project Path="src/plugins/Statistics/GitStatistics/GitExtensions.Plugins.GitStatistics.csproj" />
+    <!-- GitImpact excluded: depends on GitUI (WinForms) — re-add in Plan D -->
+    <!-- GitStatistics excluded: depends on GitUI (WinForms) — re-add in Plan D -->
   </Folder>
   <Folder Name="/tests/">
     <File Path="tests/Directory.Build.props" />
@@ -88,7 +87,7 @@
   <Folder Name="/tests/app/" />
   <Folder Name="/tests/app/UnitTests/">
     <File Path="tests/app/UnitTests/Directory.Build.props" />
-    <Project Path="tests/app/UnitTests/BugReporter.Tests/BugReporter.Tests.csproj" />
+    <!-- BugReporter.Tests excluded: depends on BugReporter (Windows-only) -->
     <Project Path="tests/app/UnitTests/GitCommands.Tests/GitCommands.Tests.csproj" />
     <Project Path="tests/app/UnitTests/GitExtensions.Extensibility.Tests/GitExtensions.Extensibility.Tests.csproj" />
     <Project Path="tests/app/UnitTests/GitExtUtils.Tests/GitExtUtils.Tests.csproj" />
@@ -97,8 +96,8 @@
   <Folder Name="/tests/plugins/" />
   <Folder Name="/tests/plugins/UnitTests/">
     <File Path="tests/plugins/UnitTests/Directory.Build.props" />
-    <Project Path="tests/plugins/UnitTests/DeleteUnusedBranches.Tests/DeleteUnusedBranches.Tests.csproj" />
-    <Project Path="tests/plugins/UnitTests/FindLargeFiles.Tests/FindLargeFiles.Tests.csproj" />
+    <!-- DeleteUnusedBranches.Tests excluded: depends on GitUI — re-add in Plan D -->
+    <!-- FindLargeFiles.Tests excluded: depends on GitUI — re-add in Plan D -->
     <Project Path="tests/plugins/UnitTests/GitUIPluginInterfaces.Tests/GitUIPluginInterfaces.Tests.csproj" />
     <Project Path="tests/plugins/UnitTests/ReleaseNotesGenerator.Tests/ReleaseNotesGenerator.Tests.csproj" />
   </Folder>

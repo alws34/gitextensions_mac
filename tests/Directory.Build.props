@@ -11,4 +11,8 @@
   <ItemGroup>
     <Using Include="AwesomeAssertions" />
   </ItemGroup>
+
+  <ItemGroup Condition="!$([MSBuild]::IsOSPlatform('Windows'))">
+    <PackageReference Include="System.Drawing.Common" />
+  </ItemGroup>
 </Project>

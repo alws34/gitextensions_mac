@@ -31,4 +31,9 @@
     <ProjectReference Include="$(RepoRoot)\src\app\GitExtensions.Extensibility\GitExtensions.Extensibility.csproj" />
   </ItemGroup>
 
+  <ItemGroup Condition="!$([MSBuild]::IsOSPlatform('Windows'))">
+    <PackageReference Include="System.Drawing.Common" />
+  </ItemGroup>
+
+
 </Project>

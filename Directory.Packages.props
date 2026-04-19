@@ -2,6 +2,10 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <!-- Solution dependencies -->
+    <PackageVersion Include="System.Configuration.ConfigurationManager" Version="9.0.0" />
+    <PackageVersion Include="System.IO.Packaging" Version="9.0.0" />
+    <PackageVersion Include="System.Resources.Extensions" Version="9.0.0" />
+    <PackageVersion Include="System.Drawing.Common" Version="9.0.0" />
     <PackageVersion Include="Ben.Demystifier" Version="0.4.1" />
     <PackageVersion Include="ExCSS" Version="4.1.3" />
     <PackageVersion Include="GitInfo" Version="2.2.0" />
@@ -34,6 +38,11 @@
     <PackageVersion Include="MsBox.Avalonia" Version="3.1.0" />
     <PackageVersion Include="Microsoft.Extensions.Configuration" Version="10.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="10.0.0" />
+
+    <!-- Windows-only packages (version declared for CPM; PackageReference guarded by OS condition in csproj) -->
+    <PackageVersion Include="AdysTech.CredentialManager" Version="2.3.0" />
+    <PackageVersion Include="Microsoft-WindowsAPICodePack-Core" Version="1.1.4" />
+    <PackageVersion Include="Microsoft-WindowsAPICodePack-Shell" Version="1.1.4" />
 
     <!-- Setup infra -->
 

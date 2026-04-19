@@ -1,7 +1,9 @@
 ﻿using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.Net;
+#if WINDOWS
 using AdysTech.CredentialManager;
+#endif
 
 namespace GitExtensions.Extensibility.Settings;
 
@@ -34,6 +36,7 @@ internal class CredentialsManager : ICredentialsManager
 
         Credentials.Clear();
 
+#if WINDOWS
         foreach (KeyValuePair<string, NetworkCredential?> networkCredentials in credentials)
         {
             if (networkCredentials.Value is null)
@@ -45,6 +48,7 @@ internal class CredentialsManager : ICredentialsManager
                 networkCredentials.Value.UserName,
                 networkCredentials.Value.Password);
         }
+#endif
     }
 
     protected internal NetworkCredential GetCredentialOrDefault(SettingLevel settingLevel, string name, NetworkCredential defaultValue)
@@ -55,10 +59,17 @@ internal class CredentialsManager : ICredentialsManager
             return defaultValue;
         }
 
+#if WINDOWS
         if (Credentials.TryGetValue(targetName, out NetworkCredential? result) || AdysTechCredentialManagerWrapper.TryGetCredentials(targetName, out result))
         {
             return result ?? defaultValue;
         }
+#else
+        if (Credentials.TryGetValue(targetName, out NetworkCredential? result))
+        {
+            return result ?? defaultValue;
+        }
+#endif
 
         return defaultValue;
     }
@@ -82,6 +93,7 @@ internal class CredentialsManager : ICredentialsManager
         return string.IsNullOrWhiteSpace(suffix) ? null : $"{name}_{suffix}";
     }
 
+#if WINDOWS
     private static class AdysTechCredentialManagerWrapper
     {
         private const string TargetPrefix = "GitExtensions_";
@@ -132,4 +144,5 @@ internal class CredentialsManager : ICredentialsManager
             return SaveCredentials(target, userName, password);
         }
     }
+#endif
 }
