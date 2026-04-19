@@ -9,7 +9,7 @@
          To be kept in sync with the .NET SDK version in global.json
     -->
     <RuntimeFrameworkVersion>10.0.0</RuntimeFrameworkVersion>
-    <SolutionTargetFramework>net10.0-windows</SolutionTargetFramework>
+    <SolutionTargetFramework>net10.0</SolutionTargetFramework>
     <Configuration Condition="'$(Configuration)' == ''">Debug</Configuration>
     <Platform Condition="'$(Platform)' == ''">AnyCPU</Platform>
     <PlatformName Condition="'$(PlatformName)' == ''">$(Platform)</PlatformName>
