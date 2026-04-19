@@ -1,5 +1,7 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
+
 namespace GitCommands.Git.Extensions;
 
 public static class ProcessExtensions
@@ -8,20 +10,28 @@ public static class ProcessExtensions
     {
         if (OperatingSystem.IsWindows())
         {
-            // Send Ctrl+C
-            NativeMethods.AttachConsole(process.Id);
-            NativeMethods.SetConsoleCtrlHandler(IntPtr.Zero, add: true);
-            NativeMethods.GenerateConsoleCtrlEvent(0, 0);
-
-            if (!process.HasExited)
-            {
-                process.WaitForExit(500);
-            }
+            WindowsProcessHelpers.SendCtrlC(process);
         }
 
         if (!process.HasExited)
         {
             process.Kill();
+        }
+    }
+}
+
+[SupportedOSPlatform("windows")]
+internal static class WindowsProcessHelpers
+{
+    public static void SendCtrlC(Process process)
+    {
+        NativeMethods.AttachConsole(process.Id);
+        NativeMethods.SetConsoleCtrlHandler(IntPtr.Zero, add: true);
+        NativeMethods.GenerateConsoleCtrlEvent(0, 0);
+
+        if (!process.HasExited)
+        {
+            process.WaitForExit(500);
         }
     }
 
