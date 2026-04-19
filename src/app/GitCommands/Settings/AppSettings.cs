@@ -13,20 +13,20 @@ using GitExtensions.Extensibility.Settings;
 using GitExtUtils.GitUI.Theming;
 using GitUIPluginInterfaces;
 using Microsoft;
-using Microsoft.Win32;
-
 namespace GitCommands;
 
 public static partial class AppSettings
 {
     // semi-constants
     public static Version AppVersion => Assembly.GetCallingAssembly().GetName().Version!;
-    public static string ProductVersion => Application.ProductVersion;
+    public static string ProductVersion =>
+        Assembly.GetEntryAssembly()?.GetName().Version?.ToString() ?? "0.0.0.0";
     public static readonly string ApplicationName = "Git Extensions";
     public static readonly string ApplicationId = ApplicationName.Replace(" ", "");
     public static readonly string SettingsFileName = ApplicationId + ".settings";
     public static readonly string UserPluginsDirectoryName = "UserPlugins";
-    private static string _applicationExecutablePath = Application.ExecutablePath;
+    private static string _applicationExecutablePath =
+        Environment.ProcessPath ?? AppContext.BaseDirectory;
     private static string? _documentationBaseUrl;
 
     public static Lazy<string?> ApplicationDataPath { get; private set; }
@@ -66,8 +66,7 @@ public static partial class AppSettings
             }
 
             // Make ApplicationDataPath version independent
-            return Application.UserAppDataPath.Replace(Application.ProductVersion, string.Empty)
-                                              .Replace(ApplicationName, ApplicationId); // 'GitExtensions' has been changed to 'Git Extensions' in v3.0
+            return Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), ApplicationId);
         });
 
         LocalApplicationDataPath = new Lazy<string?>(() =>
@@ -504,7 +503,7 @@ public static partial class AppSettings
     {
         string? style = ConEmuStyle.Value;
         return style is null || style == ConEmuStyleDefault
-            ? Application.IsDarkModeEnabled ? ConEmuStyleDark : ConEmuStyleLight
+            ? ConEmuStyleLight
             : style;
     }
 
@@ -1933,22 +1932,6 @@ public static partial class AppSettings
         return Path.GetDirectoryName(GetGitExtensionsFullPath());
     }
 
-    private static RegistryKey? _versionIndependentRegKey;
-
-    private static RegistryKey VersionIndependentRegKey
-    {
-        get
-        {
-            if (_versionIndependentRegKey is null)
-            {
-                _versionIndependentRegKey = Registry.CurrentUser.CreateSubKey("Software\\GitExtensions", RegistryKeyPermissionCheck.ReadWriteSubTree);
-                Validates.NotNull(_versionIndependentRegKey);
-            }
-
-            return _versionIndependentRegKey;
-        }
-    }
-
     public static bool RepoObjectsTreeShowBranches
     {
         get => GetBool("RepoObjectsTree.ShowBranches", true);
@@ -2135,7 +2118,13 @@ public static partial class AppSettings
 
     private static IEnumerable<(string name, string? value)> GetSettingsFromRegistry()
     {
-        RegistryKey? oldSettings = VersionIndependentRegKey.OpenSubKey("GitExtensions");
+        if (!OperatingSystem.IsWindows())
+        {
+            yield break;
+        }
+
+        Microsoft.Win32.RegistryKey? regKey = Microsoft.Win32.Registry.CurrentUser.CreateSubKey("Software\\GitExtensions");
+        Microsoft.Win32.RegistryKey? oldSettings = regKey?.OpenSubKey("GitExtensions");
 
         if (oldSettings is null)
         {
