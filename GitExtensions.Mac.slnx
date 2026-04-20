@@ -85,7 +85,9 @@
     <File Path="tests/Directory.Build.props" />
     <Project Path="tests/CommonTestUtils/CommonTestUtils.csproj" />
   </Folder>
-  <Folder Name="/tests/app/" />
+  <Folder Name="/tests/app/">
+    <Project Path="tests/app/GitUI.Avalonia.Tests/GitUI.Avalonia.Tests.csproj" />
+  </Folder>
   <Folder Name="/tests/app/UnitTests/">
     <File Path="tests/app/UnitTests/Directory.Build.props" />
     <!-- BugReporter.Tests excluded: depends on BugReporter (Windows-only) -->

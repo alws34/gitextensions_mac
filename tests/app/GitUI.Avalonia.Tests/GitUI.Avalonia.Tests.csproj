@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+
+  <!-- Suppress known vulnerability in Tmds.DBus.Protocol 0.20.0 (transitive via Avalonia.Desktop on Linux). -->
+  <ItemGroup>
+    <NuGetAuditSuppress Include="https://github.com/advisories/GHSA-xrw6-gwf8-vvr9" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../../../src/app/GitUI.Avalonia/GitUI.Avalonia.csproj" />
+  </ItemGroup>
+</Project>
