@@ -1,0 +1,34 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>GitUI.Avalonia</RootNamespace>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <!-- Suppress known vulnerability in Tmds.DBus.Protocol 0.20.0 (transitive via Avalonia.Desktop on Linux).
+       This package is not used on macOS; suppressed pending an Avalonia update. -->
+  <ItemGroup>
+    <NuGetAuditSuppress Include="https://github.com/advisories/GHSA-xrw6-gwf8-vvr9" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia" />
+    <PackageReference Include="Avalonia.Desktop" />
+    <PackageReference Include="Avalonia.Fonts.Inter" />
+    <PackageReference Include="Avalonia.Themes.Fluent" />
+    <PackageReference Include="Avalonia.ReactiveUI" />
+    <PackageReference Include="Avalonia.AvaloniaEdit" />
+    <PackageReference Include="MessageBox.Avalonia" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../GitCommands/GitCommands.csproj" />
+    <ProjectReference Include="../GitExtensions.Extensibility/GitExtensions.Extensibility.csproj" />
+    <ProjectReference Include="../GitExtUtils/GitExtUtils.csproj" />
+    <ProjectReference Include="../ResourceManager/ResourceManager.csproj" />
+    <ProjectReference Include="../../plugins/GitUIPluginInterfaces/GitUIPluginInterfaces.csproj" />
+  </ItemGroup>
+</Project>

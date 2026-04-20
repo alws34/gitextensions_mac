@@ -47,6 +47,7 @@
   <Folder Name="/src/" />
   <Folder Name="/src/app/">
     <!-- BugReporter excluded: WinExe OutputType, Windows-only -->
+    <Project Path="src/app/GitUI.Avalonia/GitUI.Avalonia.csproj" />
     <Project Path="src/app/GitCommands/GitCommands.csproj" />
     <Project Path="src/app/GitExtensions.Extensibility/GitExtensions.Extensibility.csproj" />
     <Project Path="src/app/GitExtUtils/GitExtUtils.csproj" />

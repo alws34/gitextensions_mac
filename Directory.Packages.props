@@ -30,12 +30,15 @@
     <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="4.13.0" />
 
     <!-- Avalonia UI stack -->
+    <!-- Tmds.DBus.Protocol: override to fix high-severity vulnerability in 0.20.0 (GHSA-xrw6-gwf8-vvr9) -->
+    <PackageVersion Include="Tmds.DBus.Protocol" Version="0.92.0" />
     <PackageVersion Include="Avalonia" Version="11.2.3" />
     <PackageVersion Include="Avalonia.Desktop" Version="11.2.3" />
+    <PackageVersion Include="Avalonia.Fonts.Inter" Version="11.2.3" />
     <PackageVersion Include="Avalonia.Themes.Fluent" Version="11.2.3" />
     <PackageVersion Include="Avalonia.ReactiveUI" Version="11.2.3" />
-    <PackageVersion Include="AvaloniaEdit" Version="11.1.0" />
-    <PackageVersion Include="MsBox.Avalonia" Version="3.1.0" />
+    <PackageVersion Include="Avalonia.AvaloniaEdit" Version="11.2.0" />
+    <PackageVersion Include="MessageBox.Avalonia" Version="3.1.6" />
     <PackageVersion Include="Microsoft.Extensions.Configuration" Version="10.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="10.0.0" />
 
