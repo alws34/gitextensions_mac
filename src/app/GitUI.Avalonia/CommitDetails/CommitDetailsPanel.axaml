@@ -1,0 +1,11 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:details="using:GitUI.Avalonia.CommitDetails"
+             x:Class="GitUI.Avalonia.CommitDetails.CommitDetailsPanel">
+    <Grid RowDefinitions="Auto,*,5,200">
+        <details:CommitSummaryControl x:Name="Summary" Grid.Row="0" />
+        <details:CommitDiffControl x:Name="DiffView" Grid.Row="1" />
+        <GridSplitter Grid.Row="2" ResizeDirection="Rows" />
+        <details:FileStatusList x:Name="FileList" Grid.Row="3" />
+    </Grid>
+</UserControl>

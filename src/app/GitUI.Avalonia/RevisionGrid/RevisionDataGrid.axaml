@@ -1,0 +1,30 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="GitUI.Avalonia.RevisionGrid.RevisionDataGrid">
+    <ListBox x:Name="CommitList"
+             SelectionMode="Single"
+             SelectionChanged="CommitList_SelectionChanged">
+        <ListBox.ItemTemplate>
+            <DataTemplate>
+                <Grid ColumnDefinitions="120,*,150,100">
+                    <Canvas Grid.Column="0" Width="120" Height="24" />
+                    <TextBlock Grid.Column="1"
+                               Text="{Binding Subject}"
+                               VerticalAlignment="Center"
+                               Margin="4,0"
+                               TextTrimming="CharacterEllipsis" />
+                    <TextBlock Grid.Column="2"
+                               Text="{Binding Author}"
+                               VerticalAlignment="Center"
+                               Margin="4,0"
+                               FontSize="11" />
+                    <TextBlock Grid.Column="3"
+                               Text="{Binding AuthorDate, StringFormat='{}{0:yyyy-MM-dd}'}"
+                               VerticalAlignment="Center"
+                               Margin="4,0"
+                               FontSize="11" />
+                </Grid>
+            </DataTemplate>
+        </ListBox.ItemTemplate>
+    </ListBox>
+</UserControl>

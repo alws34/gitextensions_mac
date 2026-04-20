@@ -1,0 +1,12 @@
+<local:GitModuleControl xmlns="https://github.com/avaloniaui"
+                         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                         xmlns:local="using:GitUI.Avalonia.Base"
+                         xmlns:ae="clr-namespace:AvaloniaEdit;assembly=AvaloniaEdit"
+                         x:Class="GitUI.Avalonia.CommitDetails.CommitDiffControl">
+    <ae:TextEditor x:Name="DiffEditor"
+                   IsReadOnly="True"
+                   FontFamily="Cascadia Code,Menlo,Consolas,monospace"
+                   FontSize="12"
+                   ShowLineNumbers="True"
+                   WordWrap="False" />
+</local:GitModuleControl>

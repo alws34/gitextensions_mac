@@ -51,6 +51,10 @@ public partial class MainWindow : GitExtensionsWindow
         Title = $"{Path.GetFileName(path.TrimEnd('/', '\\'))} — Git Extensions";
         StatusLabel.Text = path;
         AddToRecentRepositories(path);
+
+        RevisionGrid.Module = _module;
+        RevisionGrid.SelectedRevisionChanged += OnRevisionSelected;
+        DetailsPanel.SetModule(_module);
     }
 
     private void AddToRecentRepositories(string path)
@@ -134,5 +138,6 @@ public partial class MainWindow : GitExtensionsWindow
     private void OnRevisionSelected(GitRevision? revision)
     {
         StatusLabel.Text = revision?.ObjectId.ToShortString() ?? string.Empty;
+        _ = DetailsPanel.ShowRevisionAsync(revision);
     }
 }

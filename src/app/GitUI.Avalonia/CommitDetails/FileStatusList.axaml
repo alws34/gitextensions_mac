@@ -1,0 +1,18 @@
+<local:GitModuleControl xmlns="https://github.com/avaloniaui"
+                         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                         xmlns:local="using:GitUI.Avalonia.Base"
+                         x:Class="GitUI.Avalonia.CommitDetails.FileStatusList">
+    <ListBox x:Name="FileList" SelectionChanged="FileList_SelectionChanged">
+        <ListBox.ItemTemplate>
+            <DataTemplate>
+                <StackPanel Orientation="Horizontal" Spacing="4">
+                    <TextBlock Text="{Binding StatusIcon}" Width="16"
+                               FontFamily="Cascadia Code,Menlo,Consolas,monospace" />
+                    <TextBlock Text="{Binding Name}"
+                               FontFamily="Cascadia Code,Menlo,Consolas,monospace"
+                               FontSize="12" />
+                </StackPanel>
+            </DataTemplate>
+        </ListBox.ItemTemplate>
+    </ListBox>
+</local:GitModuleControl>

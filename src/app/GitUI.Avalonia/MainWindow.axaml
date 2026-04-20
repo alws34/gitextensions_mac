@@ -4,6 +4,8 @@
     xmlns:local="using:GitUI.Avalonia.Base"
     xmlns:dashboard="using:GitUI.Avalonia.Dashboard"
     xmlns:controls="using:GitUI.Avalonia.Controls"
+    xmlns:grid="using:GitUI.Avalonia.RevisionGrid"
+    xmlns:details="using:GitUI.Avalonia.CommitDetails"
     x:Class="GitUI.Avalonia.MainWindow"
     Title="Git Extensions"
     Width="1280" Height="800"
@@ -28,17 +30,9 @@
                     <ColumnDefinition Width="5" />
                     <ColumnDefinition Width="400" MinWidth="200" />
                 </Grid.ColumnDefinitions>
-                <Border Grid.Column="0" x:Name="GraphPlaceholder"
-                        Background="{DynamicResource SystemChromeMediumLowColor}">
-                    <TextBlock Text="Commit graph loading..."
-                               HorizontalAlignment="Center" VerticalAlignment="Center" />
-                </Border>
+                <grid:RevisionGridControl Grid.Column="0" x:Name="RevisionGrid" />
                 <GridSplitter Grid.Column="1" ResizeDirection="Columns" />
-                <Border Grid.Column="2" x:Name="DetailsPlaceholder"
-                        Background="{DynamicResource SystemChromeMediumLowColor}">
-                    <TextBlock Text="Select a commit"
-                               HorizontalAlignment="Center" VerticalAlignment="Center" />
-                </Border>
+                <details:CommitDetailsPanel Grid.Column="2" x:Name="DetailsPanel" />
             </Grid>
         </Grid>
     </DockPanel>
