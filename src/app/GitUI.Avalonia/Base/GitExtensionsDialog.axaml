@@ -1,6 +1,3 @@
 <Window xmlns="https://github.com/avaloniaui"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        x:Class="GitUI.Avalonia.Base.GitExtensionsDialog"
-        SizeToContent="WidthAndHeight"
-        CanResize="False">
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 </Window>

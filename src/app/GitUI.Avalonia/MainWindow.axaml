@@ -1,0 +1,46 @@
+<local:GitExtensionsWindow
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:GitUI.Avalonia.Base"
+    xmlns:dashboard="using:GitUI.Avalonia.Dashboard"
+    xmlns:controls="using:GitUI.Avalonia.Controls"
+    x:Class="GitUI.Avalonia.MainWindow"
+    Title="Git Extensions"
+    Width="1280" Height="800"
+    MinWidth="800" MinHeight="500">
+
+    <DockPanel>
+        <Menu DockPanel.Dock="Top" x:Name="MainMenu" />
+        <Border DockPanel.Dock="Top" Height="32" Background="{DynamicResource SystemChromeMediumColor}">
+            <StackPanel x:Name="MainToolBar" Orientation="Horizontal" Spacing="2" Margin="4,2" />
+        </Border>
+        <controls:FilterToolBar DockPanel.Dock="Top" x:Name="FilterBar"
+                                IsVisible="{Binding HasRepository}" />
+        <Border DockPanel.Dock="Bottom" Height="24" Background="{DynamicResource SystemChromeLowColor}">
+            <TextBlock x:Name="StatusLabel" VerticalAlignment="Center" Margin="8,0" FontSize="12" />
+        </Border>
+        <Grid>
+            <dashboard:DashboardView x:Name="Dashboard"
+                                     IsVisible="{Binding !HasRepository}" />
+            <Grid x:Name="RepoView" IsVisible="{Binding HasRepository}">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" MinWidth="300" />
+                    <ColumnDefinition Width="5" />
+                    <ColumnDefinition Width="400" MinWidth="200" />
+                </Grid.ColumnDefinitions>
+                <Border Grid.Column="0" x:Name="GraphPlaceholder"
+                        Background="{DynamicResource SystemChromeMediumLowColor}">
+                    <TextBlock Text="Commit graph loading..."
+                               HorizontalAlignment="Center" VerticalAlignment="Center" />
+                </Border>
+                <GridSplitter Grid.Column="1" ResizeDirection="Columns" />
+                <Border Grid.Column="2" x:Name="DetailsPlaceholder"
+                        Background="{DynamicResource SystemChromeMediumLowColor}">
+                    <TextBlock Text="Select a commit"
+                               HorizontalAlignment="Center" VerticalAlignment="Center" />
+                </Border>
+            </Grid>
+        </Grid>
+    </DockPanel>
+
+</local:GitExtensionsWindow>

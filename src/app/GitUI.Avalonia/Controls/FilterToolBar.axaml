@@ -1,0 +1,19 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="GitUI.Avalonia.Controls.FilterToolBar">
+    <DockPanel Height="30">
+        <TextBox DockPanel.Dock="Left" Width="200"
+                 x:Name="BranchFilter"
+                 Watermark="Filter branches..."
+                 Margin="4,2" />
+        <TextBox DockPanel.Dock="Left" Width="200"
+                 x:Name="MessageFilter"
+                 Watermark="Filter commits..."
+                 Margin="4,2" />
+        <Button DockPanel.Dock="Left" Content="×"
+                Width="24" Margin="0,2,8,2"
+                ToolTip.Tip="Clear filters"
+                Click="ClearFilter_Click" />
+        <Border />
+    </DockPanel>
+</UserControl>

@@ -1,0 +1,33 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="GitUI.Avalonia.Dashboard.DashboardView">
+    <Grid ColumnDefinitions="300,*" RowDefinitions="Auto,*">
+        <TextBlock Grid.Column="0" Grid.Row="0"
+                   Text="Recent Repositories" FontWeight="Bold" FontSize="14"
+                   Margin="16,16,16,8" />
+        <ListBox Grid.Column="0" Grid.Row="1"
+                 x:Name="RecentList"
+                 SelectionChanged="RecentList_SelectionChanged"
+                 Margin="8,0">
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <StackPanel Margin="4">
+                        <TextBlock Text="{Binding Name}" FontWeight="SemiBold" />
+                        <TextBlock Text="{Binding Path}" FontSize="11"
+                                   Foreground="{DynamicResource SystemBaseMediumColor}"
+                                   TextTrimming="LeadingEllipsis" />
+                    </StackPanel>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+        <StackPanel Grid.Column="1" Grid.Row="0" Grid.RowSpan="2"
+                    HorizontalAlignment="Center" VerticalAlignment="Center"
+                    Spacing="12">
+            <TextBlock Text="Git Extensions" FontSize="28" FontWeight="Light"
+                       HorizontalAlignment="Center" />
+            <Button Content="Open Repository..." Width="200" Click="OpenButton_Click" />
+            <Button Content="Clone Repository..." Width="200" />
+            <Button Content="Init New Repository..." Width="200" />
+        </StackPanel>
+    </Grid>
+</UserControl>

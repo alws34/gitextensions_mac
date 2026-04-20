@@ -11,6 +11,8 @@ public partial class GitExtensionsDialog : Window
 {
     protected GitExtensionsDialog()
     {
+        SizeToContent = SizeToContent.Height;
+        CanResize = false;
         KeyDown += OnKeyDown;
     }
 
