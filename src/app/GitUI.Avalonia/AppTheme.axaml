@@ -1,0 +1,36 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:local="using:GitUI.Avalonia.Converters">
+
+    <!-- Graph lane colors (match Windows version) -->
+    <Color x:Key="GraphLane1">#FF0000CD</Color>
+    <Color x:Key="GraphLane2">#FFFF8C00</Color>
+    <Color x:Key="GraphLane3">#FF008000</Color>
+    <Color x:Key="GraphLane4">#FF800080</Color>
+    <Color x:Key="GraphLane5">#FFFF0000</Color>
+    <Color x:Key="GraphLane6">#FF008080</Color>
+    <Color x:Key="GraphLane7">#FFFF00FF</Color>
+
+    <!-- Diff colors -->
+    <SolidColorBrush x:Key="DiffAddedBackground">#22003300</SolidColorBrush>
+    <SolidColorBrush x:Key="DiffAddedForeground">#FF00AA00</SolidColorBrush>
+    <SolidColorBrush x:Key="DiffRemovedBackground">#22330000</SolidColorBrush>
+    <SolidColorBrush x:Key="DiffRemovedForeground">#FFAA0000</SolidColorBrush>
+    <SolidColorBrush x:Key="DiffSectionBackground">#22282800</SolidColorBrush>
+    <SolidColorBrush x:Key="DiffSectionForeground">#FFAAAA00</SolidColorBrush>
+
+    <!-- Ref label colors -->
+    <SolidColorBrush x:Key="RefLabelLocalBranch">#FF1E90FF</SolidColorBrush>
+    <SolidColorBrush x:Key="RefLabelRemoteBranch">#FF32CD32</SolidColorBrush>
+    <SolidColorBrush x:Key="RefLabelTag">#FFFFB900</SolidColorBrush>
+    <SolidColorBrush x:Key="RefLabelHead">#FFFF4500</SolidColorBrush>
+
+    <!-- Monospace font for diff/editor views -->
+    <FontFamily x:Key="MonospaceFont">Menlo, Monaco, Courier New, monospace</FontFamily>
+
+    <!-- Converters registered here so all AXAML can use StaticResource -->
+    <local:BoolToVisibilityConverter x:Key="BoolToVisibility" />
+    <local:NullToVisibilityConverter x:Key="NullToVisibility" />
+    <local:InverseBoolConverter x:Key="InverseBool" />
+
+</ResourceDictionary>
