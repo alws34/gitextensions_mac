@@ -1,0 +1,19 @@
+<local:GitExtensionsDialog xmlns="https://github.com/avaloniaui"
+                            xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                            xmlns:local="using:GitUI.Avalonia.Base"
+                            x:Class="GitUI.Avalonia.Dialogs.SparseWorkingCopyDialog"
+                            Title="Sparse Working Copy" Width="500" Height="400">
+  <DockPanel Margin="8">
+    <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,8,0,0" Spacing="8">
+      <Button Content="Apply" Click="Apply_Click"/>
+      <Button Content="Close" Click="Close_Click"/>
+    </StackPanel>
+    <CheckBox x:Name="EnableCheck" DockPanel.Dock="Top" Content="Enable sparse checkout" Margin="0,0,0,8" IsCheckedChanged="EnableCheck_Changed"/>
+    <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,8" Spacing="8">
+      <TextBox x:Name="PatternBox" Width="300" Watermark="Add pattern (e.g. /src/)"/>
+      <Button Content="Add" Click="AddPattern_Click"/>
+      <Button Content="Remove" Click="RemovePattern_Click"/>
+    </StackPanel>
+    <ListBox x:Name="PatternsList"/>
+  </DockPanel>
+</local:GitExtensionsDialog>

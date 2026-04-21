@@ -1,0 +1,14 @@
+<local:GitExtensionsDialog xmlns="https://github.com/avaloniaui"
+                            xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                            xmlns:local="using:GitUI.Avalonia.Base"
+                            xmlns:ae="clr-namespace:AvaloniaEdit;assembly=AvaloniaEdit"
+                            x:Class="GitUI.Avalonia.Dialogs.MailMapDialog"
+                            Title=".mailmap" Width="700" Height="500">
+  <DockPanel>
+    <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right" Margin="8" Spacing="8">
+      <Button Content="Cancel" Click="Cancel_Click"/>
+      <Button Content="Save" IsDefault="True" Click="Save_Click"/>
+    </StackPanel>
+    <ae:TextEditor x:Name="MailMapEditor" FontFamily="{DynamicResource MonospaceFont}" FontSize="13"/>
+  </DockPanel>
+</local:GitExtensionsDialog>

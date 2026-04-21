@@ -1,0 +1,22 @@
+<local:GitExtensionsDialog xmlns="https://github.com/avaloniaui"
+                            xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                            xmlns:local="using:GitUI.Avalonia.Base"
+                            x:Class="GitUI.Avalonia.Dialogs.ResetChangesDialog"
+                            Title="Reset Changes" Width="420" Height="280">
+  <StackPanel Margin="16" Spacing="12">
+    <TextBlock x:Name="StagedCountLabel"/>
+    <TextBlock x:Name="UnstagedCountLabel"/>
+    <TextBlock Text="Reset mode:"/>
+    <ComboBox x:Name="ModeCombo">
+      <ComboBoxItem Content="Soft (keep all changes staged)"/>
+      <ComboBoxItem Content="Mixed (unstage changes, keep working tree)"/>
+      <ComboBoxItem Content="Hard (DISCARD all changes)"/>
+    </ComboBox>
+    <TextBlock x:Name="WarningLabel" Foreground="Red" IsVisible="False"
+               Text="WARNING: Hard reset will permanently discard all uncommitted changes!"/>
+    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+      <Button Content="Reset" Click="Reset_Click"/>
+      <Button Content="Cancel" Click="Cancel_Click"/>
+    </StackPanel>
+  </StackPanel>
+</local:GitExtensionsDialog>

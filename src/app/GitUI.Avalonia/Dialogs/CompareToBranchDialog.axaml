@@ -1,0 +1,14 @@
+<local:GitExtensionsDialog xmlns="https://github.com/avaloniaui"
+                            xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                            xmlns:local="using:GitUI.Avalonia.Base"
+                            xmlns:ae="clr-namespace:AvaloniaEdit;assembly=AvaloniaEdit"
+                            x:Class="GitUI.Avalonia.Dialogs.CompareToBranchDialog"
+                            Title="Compare to Branch" Width="900" Height="600">
+  <DockPanel>
+    <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="8" Spacing="8">
+      <TextBlock Text="Compare to:" VerticalAlignment="Center"/>
+      <ComboBox x:Name="BranchCombo" Width="200" SelectionChanged="BranchCombo_SelectionChanged"/>
+    </StackPanel>
+    <ae:TextEditor x:Name="DiffEditor" IsReadOnly="True" FontFamily="{DynamicResource MonospaceFont}" FontSize="13"/>
+  </DockPanel>
+</local:GitExtensionsDialog>
