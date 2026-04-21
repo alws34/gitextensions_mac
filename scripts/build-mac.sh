@@ -6,19 +6,21 @@ ARCH=${2:-"arm64"}
 
 echo "Building GitExtensions Mac $VERSION for $ARCH..."
 
-dotnet publish GitExtensions.Mac.slnx \
+# Build the main app project (solution-level -o is not supported)
+dotnet build src/app/GitUI.Avalonia/GitUI.Avalonia.csproj \
   -r "osx-$ARCH" \
   --self-contained true \
   -c Release \
-  -p:Version=$VERSION \
-  -o "artifacts/publish/osx-$ARCH"
+  -p:Version=$VERSION
+
+BUILD_OUTPUT="artifacts/Release/bin/GitUI.Avalonia/net10.0/osx-$ARCH"
 
 APP_DIR="artifacts/GitExtensions.app"
 rm -rf "$APP_DIR"
 mkdir -p "$APP_DIR/Contents/MacOS"
 mkdir -p "$APP_DIR/Contents/Resources"
 
-cp -r "artifacts/publish/osx-$ARCH/." "$APP_DIR/Contents/MacOS/"
+cp -r "$BUILD_OUTPUT/." "$APP_DIR/Contents/MacOS/"
 cp "src/app/GitUI.Avalonia/Info.plist" "$APP_DIR/Contents/Info.plist"
 
 EXEC="$APP_DIR/Contents/MacOS/GitUI.Avalonia"

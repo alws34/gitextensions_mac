@@ -2,7 +2,7 @@
 
 Living document. Update your task's row when status changes.
 
-Last updated: 2026-04-19
+Last updated: 2026-04-21
 
 ---
 
@@ -35,24 +35,24 @@ Task 0 (Fork & Build)
 
 | # | Task | Status | Agent | Started | Completed | Notes |
 |---|------|--------|-------|---------|-----------|-------|
-| 0 | Fork & Build System | pending | — | — | — | Creates `gitextensions-mac` fork, changes target framework, new solution file |
-| 1 | Avalonia Infrastructure | pending | — | — | — | **Blocks all other tasks** |
-| 2 | Core Shell | pending | — | — | — | Depends on Task 1 |
-| 3 | Commit Graph | pending | — | — | — | Depends on Task 2. Hardest task. |
-| 4 | Commit Details Panel | pending | — | — | — | Depends on Task 3 |
-| 5 | Diff & File View | pending | — | — | — | Depends on Task 1 |
-| 6 | Commit & Staging | pending | — | — | — | Depends on Task 1 |
-| 7 | Branch Operations | pending | — | — | — | Depends on Task 1 |
-| 8 | Remote Operations | pending | — | — | — | Depends on Task 1 |
-| 9 | Tags, Stash & Reflog | pending | — | — | — | Depends on Task 1 |
-| 10 | Settings | pending | — | — | — | Depends on Task 1. Also needs AppSettingsMac. |
-| 11 | Submodules & Worktrees | pending | — | — | — | Depends on Task 1 |
-| 12 | Conflict Resolution & Patches | pending | — | — | — | Depends on Task 1 |
-| 13 | Repo Maintenance Dialogs | pending | — | — | — | Depends on Task 1 |
-| 14 | Helper & Process Dialogs | pending | — | — | — | Depends on Task 1 |
-| 15 | Small Git Dialogs | pending | — | — | — | Depends on Task 1 |
-| 16 | Shared Controls | pending | — | — | — | Depends on Task 1 |
-| 17 | Plugins | pending | — | — | — | Depends on Tasks 2–16 |
+| 0 | Fork & Build System | complete | Claude | 2026-04-19 | 2026-04-19 | GitExtensions.Mac.slnx, .NET 10, Avalonia 11 |
+| 1 | Avalonia Infrastructure | complete | Claude | 2026-04-19 | 2026-04-19 | Plan A — commit 361598b8a |
+| 2 | Core Shell | complete | Claude | 2026-04-19 | 2026-04-19 | Plan B — MainWindow, Dashboard, RevisionGrid |
+| 3 | Commit Graph | complete | Claude | 2026-04-19 | 2026-04-19 | Plan B — commit 7ae5894cd |
+| 4 | Commit Details Panel | complete | Claude | 2026-04-19 | 2026-04-19 | Plan B — CommitSummaryControl, FileStatusList, DiffControl |
+| 5 | Diff & File View | complete | Claude | 2026-04-21 | 2026-04-21 | Plan D1 — DiffDialog, FileHistoryDialog, BlameDialog, LogDialog |
+| 6 | Commit & Staging | complete | Claude | 2026-04-20 | 2026-04-20 | Plan C — CommitDialog with staging |
+| 7 | Branch Operations | complete | Claude | 2026-04-20 | 2026-04-20 | Plan C — 7 branch dialogs |
+| 8 | Remote Operations | complete | Claude | 2026-04-20 | 2026-04-20 | Plan C — Clone, Pull, Push, RemotesDialog |
+| 9 | Tags, Stash & Reflog | complete | Claude | 2026-04-20 | 2026-04-20 | Plan C — CreateTag, DeleteTag, Stash, CherryPick, Reflog |
+| 10 | Settings | complete | Claude | 2026-04-20 | 2026-04-20 | Plan C — SettingsWindow with 4 pages |
+| 11 | Submodules & Worktrees | complete | Claude | 2026-04-20 | 2026-04-20 | Plan C — SubmodulesDialog, ManageWorktreeDialog |
+| 12 | Conflict Resolution & Patches | complete | Claude | 2026-04-20 | 2026-04-20 | Plan C — ResolveConflictsDialog, ApplyPatch, FormatPatch |
+| 13 | Repo Maintenance Dialogs | complete | Claude | 2026-04-20 | 2026-04-20 | Plan C — Init, Cleanup, GitIgnore, GitAttributes, Archive, Verify, Bisect |
+| 14 | Helper & Process Dialogs | complete | Claude | 2026-04-21 | 2026-04-21 | Plan D2 — StatusDialog, ChooseCommit, SelectMultipleBranches |
+| 15 | Small Git Dialogs | complete | Claude | 2026-04-21 | 2026-04-21 | Plan D3 — AddFiles, GoToCommit, About, Changelog, Updates |
+| 16 | Shared Controls | complete | Claude | 2026-04-21 | 2026-04-21 | Plan D2 — StatusOutputLog control |
+| 17 | Plugins | complete | Claude | 2026-04-21 | 2026-04-21 | All 11 plugins — Avalonia settings/forms, 0 build errors |
 
 ---
 
