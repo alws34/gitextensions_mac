@@ -15,7 +15,7 @@
                         <TextBlock Text="{Binding Name}" FontWeight="SemiBold" />
                         <TextBlock Text="{Binding Path}" FontSize="11"
                                    Foreground="{DynamicResource SystemBaseMediumColor}"
-                                   TextTrimming="LeadingEllipsis" />
+                                   TextTrimming="CharacterEllipsis" />
                     </StackPanel>
                 </DataTemplate>
             </ListBox.ItemTemplate>
