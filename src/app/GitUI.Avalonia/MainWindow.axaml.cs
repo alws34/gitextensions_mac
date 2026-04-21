@@ -203,7 +203,7 @@ public partial class MainWindow : GitExtensionsWindow
             return;
         }
 
-        await System.Threading.Tasks.Task.Run(() => _module.GitExecutable.GetOutput("fetch --all"));
+        await _module.GitExecutable.GetOutputAsync("fetch --all");
         StatusLabel.Text = "Fetch complete";
     }
 

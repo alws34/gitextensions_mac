@@ -31,12 +31,23 @@ public partial class RevisionGridControl : GitModuleControl
             return;
         }
 
-        string output = await Module.GitExecutable.GetOutputAsync(
-            $"log --format={LogFormat}%n --max-count={MaxRevisions}");
+        try
+        {
+            string output = await Module.GitExecutable.GetOutputAsync(
+                $"log --format={LogFormat}%n --max-count={MaxRevisions}");
 
-        var revisions = ParseGitLog(output);
+            var revisions = ParseGitLog(output);
 
-        await Dispatcher.UIThread.InvokeAsync(() => DataGrid.LoadRevisions(revisions));
+            await Dispatcher.UIThread.InvokeAsync(() => DataGrid.LoadRevisions(revisions));
+        }
+        catch (Exception ex)
+        {
+            await Dispatcher.UIThread.InvokeAsync(() =>
+                DataGrid.LoadRevisions([]));
+
+            System.Diagnostics.Debug.WriteLine($"LoadRevisionsAsync failed: {ex}");
+            await Console.Error.WriteLineAsync($"LoadRevisionsAsync failed: {ex}");
+        }
     }
 
     private static IReadOnlyList<GitRevision> ParseGitLog(string output)
