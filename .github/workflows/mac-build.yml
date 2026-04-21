@@ -1,0 +1,57 @@
+name: Mac Build
+
+on:
+  push:
+    branches: [master, main, mac_adaptation]
+  pull_request:
+    branches: [master, main]
+
+jobs:
+  build:
+    runs-on: macos-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restore
+        run: dotnet restore GitExtensions.Mac.slnx
+
+      - name: Build
+        run: dotnet build GitExtensions.Mac.slnx --no-restore -c Release
+
+      - name: Test
+        run: dotnet test GitExtensions.Mac.slnx --no-build -c Release
+
+  publish:
+    runs-on: macos-latest
+    needs: build
+    if: github.ref == 'refs/heads/master' && github.event_name == 'push'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Publish arm64
+        run: |
+          dotnet publish GitExtensions.Mac.slnx \
+            -r osx-arm64 --self-contained true -c Release \
+            -o artifacts/publish/osx-arm64
+
+      - name: Publish x64
+        run: |
+          dotnet publish GitExtensions.Mac.slnx \
+            -r osx-x64 --self-contained true -c Release \
+            -o artifacts/publish/osx-x64
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: GitExtensions-mac
+          path: artifacts/publish/
