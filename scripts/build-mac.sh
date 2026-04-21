@@ -4,10 +4,16 @@ set -e
 VERSION=${1:-"4.0.0"}
 ARCH=${2:-"arm64"}
 
+# Locate dotnet — prefer the user's ~/.dotnet install, fall back to PATH
+DOTNET="${DOTNET_ROOT:-$HOME/.dotnet}/dotnet"
+if ! command -v "$DOTNET" &>/dev/null; then
+  DOTNET="dotnet"
+fi
+
 echo "Building GitExtensions Mac $VERSION for $ARCH..."
 
 # Build the main app project (solution-level -o is not supported)
-dotnet build src/app/GitUI.Avalonia/GitUI.Avalonia.csproj \
+"$DOTNET" build src/app/GitUI.Avalonia/GitUI.Avalonia.csproj \
   -r "osx-$ARCH" \
   --self-contained true \
   -c Release \
