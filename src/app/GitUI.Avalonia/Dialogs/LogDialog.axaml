@@ -1,0 +1,16 @@
+<local:GitExtensionsDialog xmlns="https://github.com/avaloniaui"
+                            xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                            xmlns:local="using:GitUI.Avalonia.Base"
+                            xmlns:ae="clr-namespace:AvaloniaEdit;assembly=AvaloniaEdit"
+                            x:Class="GitUI.Avalonia.Dialogs.LogDialog"
+                            Title="Git Log" Width="900" Height="700">
+  <DockPanel>
+    <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="8">
+      <CheckBox x:Name="OnelineCheck" Content="--oneline" IsChecked="True" Margin="0,0,8,0"/>
+      <CheckBox x:Name="GraphCheck" Content="--graph" IsChecked="True" Margin="0,0,8,0"/>
+      <CheckBox x:Name="AllCheck" Content="--all" IsChecked="True" Margin="0,0,8,0"/>
+      <Button Content="Refresh" Click="Refresh_Click"/>
+    </StackPanel>
+    <ae:TextEditor x:Name="LogEditor" IsReadOnly="True"/>
+  </DockPanel>
+</local:GitExtensionsDialog>

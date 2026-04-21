@@ -1,0 +1,17 @@
+<local:GitExtensionsDialog xmlns="https://github.com/avaloniaui"
+                            xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                            xmlns:local="using:GitUI.Avalonia.Base"
+                            xmlns:ae="clr-namespace:AvaloniaEdit;assembly=AvaloniaEdit"
+                            x:Class="GitUI.Avalonia.Dialogs.DiffDialog"
+                            Title="View Diff" Width="900" Height="600">
+  <DockPanel>
+    <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="8">
+      <TextBlock Text="Ref A:" VerticalAlignment="Center" Margin="0,0,4,0"/>
+      <TextBox x:Name="RefABox" Width="180" Margin="0,0,8,0"/>
+      <TextBlock Text="Ref B:" VerticalAlignment="Center" Margin="0,0,4,0"/>
+      <TextBox x:Name="RefBBox" Width="180" Margin="0,0,8,0"/>
+      <Button Content="Diff" Click="Diff_Click"/>
+    </StackPanel>
+    <ae:TextEditor x:Name="DiffEditor" IsReadOnly="True"/>
+  </DockPanel>
+</local:GitExtensionsDialog>

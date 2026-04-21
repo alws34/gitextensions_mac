@@ -1,0 +1,14 @@
+<local:GitExtensionsDialog xmlns="https://github.com/avaloniaui"
+                            xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                            xmlns:local="using:GitUI.Avalonia.Base"
+                            xmlns:ae="clr-namespace:AvaloniaEdit;assembly=AvaloniaEdit"
+                            x:Class="GitUI.Avalonia.Dialogs.EditorDialog"
+                            Title="Editor" Width="800" Height="600">
+  <DockPanel>
+    <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right" Margin="8">
+      <Button Content="Save" Click="Save_Click" Margin="0,0,8,0"/>
+      <Button Content="Cancel" Click="Cancel_Click"/>
+    </StackPanel>
+    <ae:TextEditor x:Name="TextEdit"/>
+  </DockPanel>
+</local:GitExtensionsDialog>
