@@ -1,0 +1,9 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="GitExtensions.Plugins.AutoCompileSubmodules.AutoCompileSubmodulesAvaloniaSettings">
+  <StackPanel Margin="8" Spacing="8">
+    <CheckBox x:Name="EnabledCheck" Content="Enable auto-compile submodules"/>
+    <TextBlock Text="Path to MSBuild / dotnet:" FontWeight="SemiBold"/>
+    <TextBox x:Name="MsBuildPathBox" Watermark="/usr/local/share/dotnet/dotnet"/>
+  </StackPanel>
+</UserControl>

@@ -1,0 +1,15 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="GitExtensions.Plugins.BackgroundFetch.BackgroundFetchAvaloniaSettings">
+  <StackPanel Margin="8" Spacing="8">
+    <TextBlock Text="Git command arguments:" FontWeight="SemiBold"/>
+    <TextBox x:Name="GitCommandBox" Watermark="fetch --all"/>
+    <StackPanel Orientation="Horizontal" Spacing="8">
+      <TextBlock Text="Fetch every (seconds, 0 = disabled):" VerticalAlignment="Center"/>
+      <NumericUpDown x:Name="IntervalUpDown" Minimum="0" Maximum="3600" Value="0" Width="100"/>
+    </StackPanel>
+    <CheckBox x:Name="AutoRefreshCheck" Content="Refresh view after fetch"/>
+    <CheckBox x:Name="FetchSubmodulesCheck" Content="Fetch all submodules"/>
+    <CheckBox x:Name="FetchOnOpenCheck" Content="Fetch immediately on repository opening"/>
+  </StackPanel>
+</UserControl>

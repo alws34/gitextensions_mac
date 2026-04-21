@@ -1,0 +1,21 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="GitExtensions.Plugins.ProxySwitcher.ProxySwitcherAvaloniaSettings">
+  <StackPanel Margin="8" Spacing="8">
+    <TextBlock Text="HTTP proxy:" FontWeight="SemiBold"/>
+    <TextBox x:Name="HttpProxyBox" Watermark="proxy.example.com"/>
+    <StackPanel Orientation="Horizontal" Spacing="8">
+      <TextBlock Text="Port:" VerticalAlignment="Center"/>
+      <TextBox x:Name="PortBox" Text="8080" Width="100"/>
+    </StackPanel>
+    <TextBlock Text="Credentials (optional):" FontWeight="SemiBold"/>
+    <StackPanel Orientation="Horizontal" Spacing="8">
+      <TextBlock Text="Username:" VerticalAlignment="Center" Width="80"/>
+      <TextBox x:Name="UsernameBox" Width="200"/>
+    </StackPanel>
+    <StackPanel Orientation="Horizontal" Spacing="8">
+      <TextBlock Text="Password:" VerticalAlignment="Center" Width="80"/>
+      <TextBox x:Name="PasswordBox" PasswordChar="*" Width="200"/>
+    </StackPanel>
+  </StackPanel>
+</UserControl>

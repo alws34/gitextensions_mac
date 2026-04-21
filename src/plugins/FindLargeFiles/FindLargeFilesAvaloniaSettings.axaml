@@ -1,0 +1,10 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="GitExtensions.Plugins.FindLargeFiles.FindLargeFilesAvaloniaSettings">
+  <StackPanel Margin="8" Spacing="8">
+    <StackPanel Orientation="Horizontal" Spacing="8">
+      <TextBlock Text="Find files larger than (MB):" VerticalAlignment="Center"/>
+      <NumericUpDown x:Name="SizeUpDown" Minimum="0.1" Maximum="1000" Value="1" Increment="0.5" Width="120"/>
+    </StackPanel>
+  </StackPanel>
+</UserControl>

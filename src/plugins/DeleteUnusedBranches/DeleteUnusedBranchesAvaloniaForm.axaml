@@ -1,0 +1,19 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="GitExtensions.Plugins.DeleteUnusedBranches.DeleteUnusedBranchesAvaloniaForm"
+        Title="Delete Unused Branches" Width="700" Height="500">
+  <DockPanel Margin="8">
+    <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,8" Spacing="8">
+      <TextBlock Text="Merged into:" VerticalAlignment="Center"/>
+      <TextBox x:Name="BaseBranchBox" Text="origin/HEAD" Width="200"/>
+      <CheckBox x:Name="IncludeRemotesCheck" Content="Include remote branches" VerticalAlignment="Center"/>
+      <Button Content="Search" Click="Search_Click"/>
+    </StackPanel>
+    <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,8,0,0" Spacing="8">
+      <TextBlock x:Name="StatusLabel" VerticalAlignment="Center"/>
+      <Button Content="Delete Selected" Click="Delete_Click"/>
+      <Button Content="Close" Click="Close_Click"/>
+    </StackPanel>
+    <ListBox x:Name="BranchesList" SelectionMode="Multiple"/>
+  </DockPanel>
+</Window>
