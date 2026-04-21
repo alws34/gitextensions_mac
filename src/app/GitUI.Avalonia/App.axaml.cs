@@ -7,6 +7,7 @@ using GitCommands.Git;
 using GitExtensions.Extensibility.Git;
 using GitExtUtils;
 using GitUI.Avalonia.Infrastructure;
+using Microsoft.VisualStudio.Threading;
 
 namespace GitUI.Avalonia;
 
@@ -34,10 +35,21 @@ public partial class App : Application
 
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
-            desktop.MainWindow = new MainWindow();
+            var mainWindow = new MainWindow();
+            desktop.MainWindow = mainWindow;
             desktop.Exit += (_, _) => Settings.Save();
+
+            // Open repo from command-line arg (useful for debugging and CLI launch)
+            var startupPath = desktop.Args?.FirstOrDefault(a => System.IO.Directory.Exists(a));
+            if (startupPath is not null)
+            {
+                mainWindow.Opened += (_, _) => mainWindow.OpenRepository(startupPath);
+            }
         }
 
         base.OnFrameworkInitializationCompleted();
+
+        // Must be initialized after base call so Avalonia's SynchronizationContext is installed
+        GitUI.ThreadHelper.JoinableTaskContext = new JoinableTaskContext();
     }
 }

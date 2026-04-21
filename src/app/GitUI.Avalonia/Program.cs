@@ -10,6 +10,21 @@ if (OperatingSystem.IsMacOS())
     Environment.SetEnvironmentVariable("PATH", combined);
 }
 
+AppDomain.CurrentDomain.UnhandledException += (_, e) =>
+{
+    string msg = $"[FATAL] UnhandledException: {e.ExceptionObject}";
+    Console.Error.WriteLine(msg);
+    File.AppendAllText("/tmp/ge_crash.log", msg + Environment.NewLine);
+};
+
+TaskScheduler.UnobservedTaskException += (_, e) =>
+{
+    string msg = $"[WARN] UnobservedTaskException: {e.Exception}";
+    Console.Error.WriteLine(msg);
+    File.AppendAllText("/tmp/ge_crash.log", msg + Environment.NewLine);
+    e.SetObserved();
+};
+
 AppBuilder.Configure<App>()
     .UsePlatformDetect()
     .WithInterFont()

@@ -16,14 +16,19 @@ public partial class CommitDiffControl : GitModuleControl
             return;
         }
 
-        string diff = await System.Threading.Tasks.Task.Run(() =>
+        try
         {
             string gitArgs = filePath is null
                 ? $"diff-tree --no-commit-id -p {revision.Guid}"
                 : $"diff-tree --no-commit-id -p {revision.Guid} -- \"{filePath}\"";
-            return Module.GitExecutable.GetOutput(gitArgs);
-        });
 
-        await Dispatcher.UIThread.InvokeAsync(() => DiffEditor.Text = diff);
+            string diff = await Module.GitExecutable.GetOutputAsync(gitArgs);
+
+            await Dispatcher.UIThread.InvokeAsync(() => DiffEditor.Text = diff);
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"ShowDiffAsync failed: {ex.Message}");
+        }
     }
 }
