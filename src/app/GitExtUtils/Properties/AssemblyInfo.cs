@@ -9,3 +9,4 @@ using System.Runtime.CompilerServices;
 [assembly: InternalsVisibleTo("BugReporter")]
 [assembly: InternalsVisibleTo("CommonTestUtils")]
 [assembly: InternalsVisibleTo("TranslationApp")]
+[assembly: InternalsVisibleTo("GitUI.Avalonia")]

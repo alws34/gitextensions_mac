@@ -7,6 +7,7 @@ using GitCommands.Git;
 using GitExtensions.Extensibility.Git;
 using GitExtUtils;
 using GitUI.Avalonia.Infrastructure;
+using Microsoft.VisualStudio.Threading;
 
 namespace GitUI.Avalonia;
 
@@ -20,6 +21,8 @@ public partial class App : Application
 
     public override void OnFrameworkInitializationCompleted()
     {
+        GitUI.ThreadHelper.JoinableTaskContext = new JoinableTaskContext();
+
         Settings = new JsonSettingsBackend();
 
         if (OperatingSystem.IsMacOS())
