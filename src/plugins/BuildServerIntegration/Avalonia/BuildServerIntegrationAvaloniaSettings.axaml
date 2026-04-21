@@ -1,0 +1,9 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="GitExtensions.BuildServerIntegration.Avalonia.BuildServerIntegrationAvaloniaSettings">
+  <StackPanel Margin="8" Spacing="8">
+    <TextBlock Text="Build server integration settings are configured per-server type." TextWrapping="Wrap"/>
+    <TextBlock Text="Select a build server type from the repository settings to configure." TextWrapping="Wrap" Foreground="Gray"/>
+    <TextBlock Text="Supported servers: AppVeyor, Azure DevOps, GitHub Actions, GitLab CI, Jenkins, TeamCity" TextWrapping="Wrap" FontSize="11"/>
+  </StackPanel>
+</UserControl>

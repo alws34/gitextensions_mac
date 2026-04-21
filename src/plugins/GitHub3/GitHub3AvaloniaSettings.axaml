@@ -1,0 +1,12 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="GitExtensions.Plugins.GitHub3.GitHub3AvaloniaSettings">
+  <StackPanel Margin="8" Spacing="8">
+    <TextBlock Text="GitHub hostname:" FontWeight="SemiBold"/>
+    <TextBox x:Name="HostBox" Text="github.com"/>
+    <TextBlock Text="Personal Access Token (PAT):" FontWeight="SemiBold"/>
+    <TextBox x:Name="TokenBox" PasswordChar="*" Watermark="ghp_..."/>
+    <TextBlock TextWrapping="Wrap" FontSize="11"
+               Text="Generate a token at https://github.com/settings/tokens/new with repo scope."/>
+  </StackPanel>
+</UserControl>

@@ -1,0 +1,13 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="GitExtensions.Plugins.GitStatistics.GitStatisticsAvaloniaSettings">
+  <StackPanel Margin="8" Spacing="8">
+    <TextBlock Text="Code file extensions (semicolon-separated):" FontWeight="SemiBold"/>
+    <TextBox x:Name="CodeFilesBox" TextWrapping="Wrap" Height="80"
+             AcceptsReturn="False"
+             Watermark="*.cs;*.ts;*.py;..."/>
+    <TextBlock Text="Directories to ignore (EndsWith, semicolon-separated):" FontWeight="SemiBold"/>
+    <TextBox x:Name="IgnoreDirsBox" Watermark="\Debug;\Release;\obj;\bin"/>
+    <CheckBox x:Name="IgnoreSubmodulesCheck" Content="Ignore submodules" IsChecked="True"/>
+  </StackPanel>
+</UserControl>

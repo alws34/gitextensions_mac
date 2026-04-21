@@ -1,0 +1,10 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="GitExtensions.Plugins.Gource.GourceAvaloniaSettings">
+  <StackPanel Margin="8" Spacing="8">
+    <TextBlock Text="Gource executable path:" FontWeight="SemiBold"/>
+    <TextBox x:Name="PathBox" Watermark="/usr/local/bin/gource"/>
+    <TextBlock Text="Extra arguments:" FontWeight="SemiBold"/>
+    <TextBox x:Name="ArgsBox" Watermark="--seconds-per-day 0.1"/>
+  </StackPanel>
+</UserControl>

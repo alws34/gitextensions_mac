@@ -1,0 +1,17 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:ae="clr-namespace:AvaloniaEdit;assembly=AvaloniaEdit"
+        x:Class="GitExtensions.Plugins.ReleaseNotesGenerator.ReleaseNotesGeneratorAvaloniaForm"
+        Title="Release Notes Generator" Width="700" Height="500">
+  <DockPanel Margin="8">
+    <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,8" Spacing="8">
+      <TextBlock Text="From tag/ref:" VerticalAlignment="Center"/>
+      <TextBox x:Name="FromBox" Width="150"/>
+      <TextBlock Text="To:" VerticalAlignment="Center"/>
+      <TextBox x:Name="ToBox" Width="150" Text="HEAD"/>
+      <Button Content="Generate" Click="Generate_Click"/>
+      <Button Content="Copy" Click="Copy_Click"/>
+    </StackPanel>
+    <ae:TextEditor x:Name="NotesEditor" IsReadOnly="True"/>
+  </DockPanel>
+</Window>
