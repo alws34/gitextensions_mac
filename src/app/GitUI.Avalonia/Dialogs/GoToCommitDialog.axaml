@@ -1,0 +1,14 @@
+<local:GitExtensionsDialog xmlns="https://github.com/avaloniaui"
+                            xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                            xmlns:local="using:GitUI.Avalonia.Base"
+                            x:Class="GitUI.Avalonia.Dialogs.GoToCommitDialog"
+                            Title="Go to Commit" Width="400">
+  <StackPanel Margin="16" Spacing="8">
+    <TextBlock Text="Enter commit SHA or ref:"/>
+    <TextBox x:Name="CommitBox"/>
+    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+      <Button Content="Go" Click="Go_Click"/>
+      <Button Content="Cancel" Click="Cancel_Click"/>
+    </StackPanel>
+  </StackPanel>
+</local:GitExtensionsDialog>

@@ -1,0 +1,11 @@
+<local:GitExtensionsDialog xmlns="https://github.com/avaloniaui"
+                            xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                            xmlns:local="using:GitUI.Avalonia.Base"
+                            xmlns:ae="clr-namespace:AvaloniaEdit;assembly=AvaloniaEdit"
+                            x:Class="GitUI.Avalonia.Dialogs.ChangeLogDialog"
+                            Title="Changelog" Width="800" Height="600">
+  <DockPanel>
+    <Button DockPanel.Dock="Bottom" Content="Close" Click="Close_Click" HorizontalAlignment="Right" Margin="8"/>
+    <ae:TextEditor x:Name="ChangeLogEditor" IsReadOnly="True"/>
+  </DockPanel>
+</local:GitExtensionsDialog>

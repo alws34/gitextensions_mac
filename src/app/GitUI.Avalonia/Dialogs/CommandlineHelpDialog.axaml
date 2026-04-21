@@ -1,0 +1,15 @@
+<local:GitExtensionsDialog xmlns="https://github.com/avaloniaui"
+                            xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                            xmlns:local="using:GitUI.Avalonia.Base"
+                            xmlns:ae="clr-namespace:AvaloniaEdit;assembly=AvaloniaEdit"
+                            x:Class="GitUI.Avalonia.Dialogs.CommandlineHelpDialog"
+                            Title="Git Help" Width="700" Height="500">
+  <DockPanel Margin="8">
+    <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,8">
+      <TextBlock Text="Command:" VerticalAlignment="Center" Margin="0,0,8,0"/>
+      <TextBox x:Name="CommandBox" Width="200" Margin="0,0,8,0"/>
+      <Button Content="Help" Click="Help_Click"/>
+    </StackPanel>
+    <ae:TextEditor x:Name="HelpEditor" IsReadOnly="True"/>
+  </DockPanel>
+</local:GitExtensionsDialog>

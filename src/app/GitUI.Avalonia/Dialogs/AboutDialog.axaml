@@ -1,0 +1,14 @@
+<local:GitExtensionsDialog xmlns="https://github.com/avaloniaui"
+                            xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                            xmlns:local="using:GitUI.Avalonia.Base"
+                            x:Class="GitUI.Avalonia.Dialogs.AboutDialog"
+                            Title="About Git Extensions" Width="420">
+  <StackPanel Margin="32" Spacing="12" HorizontalAlignment="Center">
+    <TextBlock Text="Git Extensions" FontSize="24" FontWeight="Bold" HorizontalAlignment="Center"/>
+    <TextBlock x:Name="VersionLabel" HorizontalAlignment="Center"/>
+    <TextBlock Text="A powerful open-source Git GUI" HorizontalAlignment="Center"/>
+    <TextBlock Text="https://gitextensions.github.io" HorizontalAlignment="Center"/>
+    <TextBlock Text="Copyright © 2024 Git Extensions Contributors" HorizontalAlignment="Center" FontSize="11"/>
+    <Button Content="Close" Click="Close_Click" HorizontalAlignment="Center" Margin="0,12,0,0"/>
+  </StackPanel>
+</local:GitExtensionsDialog>

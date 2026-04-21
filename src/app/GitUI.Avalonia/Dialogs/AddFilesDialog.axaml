@@ -1,0 +1,15 @@
+<local:GitExtensionsDialog xmlns="https://github.com/avaloniaui"
+                            xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                            xmlns:local="using:GitUI.Avalonia.Base"
+                            x:Class="GitUI.Avalonia.Dialogs.AddFilesDialog"
+                            Title="Add Files" Width="400">
+  <StackPanel Margin="16" Spacing="8">
+    <TextBlock Text="File pattern:"/>
+    <TextBox x:Name="PatternBox" Text="*"/>
+    <CheckBox x:Name="ForceCheck" Content="Force (add ignored files)"/>
+    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+      <Button Content="Add" Click="Add_Click"/>
+      <Button Content="Cancel" Click="Cancel_Click"/>
+    </StackPanel>
+  </StackPanel>
+</local:GitExtensionsDialog>
