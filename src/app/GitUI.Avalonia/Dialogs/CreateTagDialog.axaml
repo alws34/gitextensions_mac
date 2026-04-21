@@ -1,0 +1,21 @@
+<local:GitExtensionsDialog xmlns="https://github.com/avaloniaui"
+                            xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                            xmlns:local="using:GitUI.Avalonia.Base"
+                            x:Class="GitUI.Avalonia.Dialogs.CreateTagDialog"
+                            Title="Create Tag" Width="400">
+    <StackPanel Margin="16" Spacing="8">
+        <TextBlock Text="Tag name:" />
+        <TextBox x:Name="TagNameTextBox" />
+        <TextBlock Text="Commit (leave empty for HEAD):" />
+        <TextBox x:Name="CommitTextBox" />
+        <RadioButton x:Name="AnnotatedRadio" Content="Annotated tag" IsChecked="True" GroupName="TagType" />
+        <RadioButton x:Name="LightweightRadio" Content="Lightweight tag" GroupName="TagType" />
+        <TextBlock Text="Message (for annotated tag):" />
+        <TextBox x:Name="MessageTextBox" Height="70" AcceptsReturn="True" />
+        <TextBlock x:Name="StatusLabel" TextWrapping="Wrap" />
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8" Margin="0,8,0,0">
+            <Button Content="Cancel" Click="Cancel_Click" />
+            <Button Content="Create Tag" IsDefault="True" Click="OK_Click" />
+        </StackPanel>
+    </StackPanel>
+</local:GitExtensionsDialog>

@@ -1,0 +1,15 @@
+<local:GitExtensionsDialog xmlns="https://github.com/avaloniaui"
+                            xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                            xmlns:local="using:GitUI.Avalonia.Base"
+                            x:Class="GitUI.Avalonia.Dialogs.RebaseDialog"
+                            Title="Rebase" Width="400">
+    <StackPanel Margin="16" Spacing="8">
+        <TextBlock Text="Rebase onto branch:" />
+        <ComboBox x:Name="BranchComboBox" HorizontalAlignment="Stretch" />
+        <CheckBox x:Name="InteractiveCheckBox" Content="Interactive (-i)" />
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8" Margin="0,8,0,0">
+            <Button Content="Cancel" Click="Cancel_Click" />
+            <Button Content="Rebase" IsDefault="True" Click="OK_Click" />
+        </StackPanel>
+    </StackPanel>
+</local:GitExtensionsDialog>

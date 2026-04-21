@@ -1,0 +1,25 @@
+<local:GitExtensionsDialog xmlns="https://github.com/avaloniaui"
+                            xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                            xmlns:local="using:GitUI.Avalonia.Base"
+                            x:Class="GitUI.Avalonia.Dialogs.ApplyPatchDialog"
+                            Title="Apply Patch" Width="500">
+    <StackPanel Margin="16" Spacing="8">
+        <TextBlock Text="Patch file:" />
+        <Grid ColumnDefinitions="*,4,Auto">
+            <TextBox Grid.Column="0" x:Name="PatchFileTextBox" />
+            <Button Grid.Column="2" Content="Browse..." Click="Browse_Click" />
+        </Grid>
+        <TextBlock Text="Whitespace handling:" />
+        <ComboBox x:Name="WhitespaceCombo" HorizontalAlignment="Stretch" SelectedIndex="0">
+            <ComboBoxItem Content="No whitespace fix" />
+            <ComboBoxItem Content="Warn on whitespace errors (--whitespace=warn)" />
+            <ComboBoxItem Content="Fix whitespace errors (--whitespace=fix)" />
+            <ComboBoxItem Content="Strip whitespace errors (--whitespace=strip)" />
+        </ComboBox>
+        <TextBlock x:Name="StatusLabel" TextWrapping="Wrap" />
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8" Margin="0,8,0,0">
+            <Button Content="Cancel" Click="Cancel_Click" />
+            <Button Content="Apply" IsDefault="True" Click="Apply_Click" />
+        </StackPanel>
+    </StackPanel>
+</local:GitExtensionsDialog>

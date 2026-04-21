@@ -1,0 +1,17 @@
+<local:GitExtensionsDialog xmlns="https://github.com/avaloniaui"
+                            xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                            xmlns:local="using:GitUI.Avalonia.Base"
+                            x:Class="GitUI.Avalonia.Dialogs.CreateBranchDialog"
+                            Title="Create Branch" Width="450">
+    <StackPanel Margin="16" Spacing="8">
+        <TextBlock Text="Branch name:" />
+        <TextBox x:Name="BranchNameTextBox" />
+        <TextBlock Text="Base branch:" />
+        <ComboBox x:Name="BaseBranchComboBox" HorizontalAlignment="Stretch" />
+        <CheckBox x:Name="CheckoutAfterCreateCheckBox" Content="Checkout after create" IsChecked="True" />
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8" Margin="0,8,0,0">
+            <Button Content="Cancel" Click="Cancel_Click" />
+            <Button Content="Create" IsDefault="True" Click="OK_Click" />
+        </StackPanel>
+    </StackPanel>
+</local:GitExtensionsDialog>

@@ -5,8 +5,11 @@ using Avalonia.Controls.ApplicationLifetimes;
 using GitCommands;
 using GitUI.Avalonia.Base;
 using GitUI.Avalonia.Dashboard;
+using GitUI.Avalonia.Dialogs;
+using GitUI.Avalonia.Settings;
 using GitUIPluginInterfaces;
 using ReactiveUI;
+using AvaloniaWindow = Avalonia.Controls.Window;
 
 namespace GitUI.Avalonia;
 
@@ -83,10 +86,10 @@ public partial class MainWindow : GitExtensionsWindow
     {
         var menu = new MenuItem { Header = "_File" };
         menu.Items.Add(new MenuItem { Header = "_Open Repository...", Command = ReactiveCommand.CreateFromTask(OpenRepositoryDialogAsync) });
-        menu.Items.Add(new MenuItem { Header = "_Clone Repository..." });
-        menu.Items.Add(new MenuItem { Header = "_Init New Repository..." });
+        menu.Items.Add(new MenuItem { Header = "_Clone Repository...", Command = ReactiveCommand.CreateFromTask(() => ShowDialogAsync(() => new CloneDialog(_module!))) });
+        menu.Items.Add(new MenuItem { Header = "_Init New Repository...", Command = ReactiveCommand.CreateFromTask(() => ShowDialogAsync(() => new InitDialog())) });
         menu.Items.Add(new Separator());
-        menu.Items.Add(new MenuItem { Header = "_Settings..." });
+        menu.Items.Add(new MenuItem { Header = "_Settings...", Command = ReactiveCommand.Create(OpenSettings) });
         menu.Items.Add(new Separator());
         menu.Items.Add(new MenuItem
         {
@@ -99,22 +102,49 @@ public partial class MainWindow : GitExtensionsWindow
     private MenuItem BuildRepositoryMenu()
     {
         var menu = new MenuItem { Header = "_Repository" };
-        menu.Items.Add(new MenuItem { Header = "_Fetch" });
-        menu.Items.Add(new MenuItem { Header = "_Pull" });
-        menu.Items.Add(new MenuItem { Header = "P_ush" });
+        menu.Items.Add(new MenuItem { Header = "_Fetch", Command = ReactiveCommand.CreateFromTask(FetchAsync) });
+        menu.Items.Add(new MenuItem { Header = "_Pull...", Command = ReactiveCommand.CreateFromTask(() => ShowModuleDialogAsync(m => new PullDialog(m))) });
+        menu.Items.Add(new MenuItem { Header = "P_ush...", Command = ReactiveCommand.CreateFromTask(() => ShowModuleDialogAsync(m => new PushDialog(m))) });
         menu.Items.Add(new Separator());
-        menu.Items.Add(new MenuItem { Header = "Manage _Remotes..." });
+        menu.Items.Add(new MenuItem { Header = "Manage _Remotes...", Command = ReactiveCommand.CreateFromTask(() => ShowModuleDialogAsync(m => new RemotesDialog(m))) });
+        menu.Items.Add(new Separator());
+        menu.Items.Add(new MenuItem { Header = "_Resolve Conflicts...", Command = ReactiveCommand.CreateFromTask(() => ShowModuleDialogAsync(m => new ResolveConflictsDialog(m))) });
+        menu.Items.Add(new MenuItem { Header = "_Clean Repository...", Command = ReactiveCommand.CreateFromTask(() => ShowModuleDialogAsync(m => new CleanupRepositoryDialog(m))) });
+        menu.Items.Add(new MenuItem { Header = "_Archive...", Command = ReactiveCommand.CreateFromTask(() => ShowModuleDialogAsync(m => new ArchiveDialog(m))) });
+        menu.Items.Add(new MenuItem { Header = "Verify (fsck)...", Command = ReactiveCommand.CreateFromTask(() => ShowModuleDialogAsync(m => new VerifyDialog(m))) });
+        menu.Items.Add(new Separator());
+        menu.Items.Add(new MenuItem { Header = "_Submodules...", Command = ReactiveCommand.CreateFromTask(() => ShowModuleDialogAsync(m => new SubmodulesDialog(m))) });
+        menu.Items.Add(new MenuItem { Header = "_Worktrees...", Command = ReactiveCommand.CreateFromTask(() => ShowModuleDialogAsync(m => new ManageWorktreeDialog(m))) });
         return menu;
     }
 
     private MenuItem BuildCommandsMenu()
     {
         var menu = new MenuItem { Header = "_Commands" };
-        menu.Items.Add(new MenuItem { Header = "_Commit..." });
-        menu.Items.Add(new MenuItem { Header = "Create _Branch..." });
-        menu.Items.Add(new MenuItem { Header = "Checkout _Branch..." });
+        menu.Items.Add(new MenuItem { Header = "_Commit...", Command = ReactiveCommand.CreateFromTask(() => ShowModuleDialogAsync(m => new CommitDialog(m))) });
         menu.Items.Add(new Separator());
-        menu.Items.Add(new MenuItem { Header = "_Stash..." });
+        menu.Items.Add(new MenuItem { Header = "Create _Branch...", Command = ReactiveCommand.CreateFromTask(() => ShowModuleDialogAsync(m => new CreateBranchDialog(m))) });
+        menu.Items.Add(new MenuItem { Header = "Checkout _Branch...", Command = ReactiveCommand.CreateFromTask(() => ShowModuleDialogAsync(m => new CheckoutBranchDialog(m))) });
+        menu.Items.Add(new MenuItem { Header = "_Delete Branch...", Command = ReactiveCommand.CreateFromTask(() => ShowModuleDialogAsync(m => new DeleteBranchDialog(m))) });
+        menu.Items.Add(new MenuItem { Header = "Re_name Branch...", Command = ReactiveCommand.CreateFromTask(() => ShowModuleDialogAsync(m => new RenameBranchDialog(m))) });
+        menu.Items.Add(new MenuItem { Header = "_Merge Branch...", Command = ReactiveCommand.CreateFromTask(() => ShowModuleDialogAsync(m => new MergeBranchDialog(m))) });
+        menu.Items.Add(new MenuItem { Header = "Re_base...", Command = ReactiveCommand.CreateFromTask(() => ShowModuleDialogAsync(m => new RebaseDialog(m))) });
+        menu.Items.Add(new Separator());
+        menu.Items.Add(new MenuItem { Header = "Create _Tag...", Command = ReactiveCommand.CreateFromTask(() => ShowModuleDialogAsync(m => new CreateTagDialog(m))) });
+        menu.Items.Add(new MenuItem { Header = "Delete Ta_g...", Command = ReactiveCommand.CreateFromTask(() => ShowModuleDialogAsync(m => new DeleteTagDialog(m))) });
+        menu.Items.Add(new Separator());
+        menu.Items.Add(new MenuItem { Header = "_Stash...", Command = ReactiveCommand.CreateFromTask(() => ShowModuleDialogAsync(m => new StashDialog(m))) });
+        menu.Items.Add(new MenuItem { Header = "Cherry _Pick...", Command = ReactiveCommand.CreateFromTask(() => ShowModuleDialogAsync(m => new CherryPickDialog(m))) });
+        menu.Items.Add(new Separator());
+        menu.Items.Add(new MenuItem { Header = "Apply _Patch...", Command = ReactiveCommand.CreateFromTask(() => ShowModuleDialogAsync(m => new ApplyPatchDialog(m))) });
+        menu.Items.Add(new MenuItem { Header = "Format Patc_h...", Command = ReactiveCommand.CreateFromTask(() => ShowModuleDialogAsync(m => new FormatPatchDialog(m))) });
+        menu.Items.Add(new MenuItem { Header = "View Patch...", Command = ReactiveCommand.CreateFromTask(() => new ViewPatchDialog().ShowDialog<object?>(this)) });
+        menu.Items.Add(new Separator());
+        menu.Items.Add(new MenuItem { Header = "_Bisect...", Command = ReactiveCommand.CreateFromTask(() => ShowModuleDialogAsync(m => new BisectDialog(m))) });
+        menu.Items.Add(new MenuItem { Header = "Re_flog...", Command = ReactiveCommand.CreateFromTask(() => ShowModuleDialogAsync(m => new ReflogDialog(m))) });
+        menu.Items.Add(new MenuItem { Header = ".git_ignore...", Command = ReactiveCommand.CreateFromTask(() => ShowModuleDialogAsync(m => new GitIgnoreDialog(m))) });
+        menu.Items.Add(new MenuItem { Header = ".git_attributes...", Command = ReactiveCommand.CreateFromTask(() => ShowModuleDialogAsync(m => new GitAttributesDialog(m))) });
+        menu.Items.Add(new MenuItem { Header = "Delete Remote _Branch...", Command = ReactiveCommand.CreateFromTask(() => ShowModuleDialogAsync(m => new DeleteRemoteBranchDialog(m))) });
         return menu;
     }
 
@@ -123,6 +153,40 @@ public partial class MainWindow : GitExtensionsWindow
         var menu = new MenuItem { Header = "_Help" };
         menu.Items.Add(new MenuItem { Header = "_About Git Extensions" });
         return menu;
+    }
+
+    private async System.Threading.Tasks.Task ShowModuleDialogAsync<T>(Func<GitModule, T> factory)
+        where T : AvaloniaWindow
+    {
+        if (_module is null)
+        {
+            return;
+        }
+
+        await factory(_module).ShowDialog<object?>(this);
+    }
+
+    private async System.Threading.Tasks.Task ShowDialogAsync<T>(Func<T> factory)
+        where T : AvaloniaWindow
+    {
+        await factory().ShowDialog<object?>(this);
+    }
+
+    private void OpenSettings()
+    {
+        var settings = new SettingsWindow();
+        settings.Show();
+    }
+
+    private async System.Threading.Tasks.Task FetchAsync()
+    {
+        if (_module is null)
+        {
+            return;
+        }
+
+        await System.Threading.Tasks.Task.Run(() => _module.GitExecutable.GetOutput("fetch --all"));
+        StatusLabel.Text = "Fetch complete";
     }
 
     private async System.Threading.Tasks.Task OpenRepositoryDialogAsync()

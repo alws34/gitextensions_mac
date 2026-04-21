@@ -1,0 +1,16 @@
+<local:GitExtensionsDialog xmlns="https://github.com/avaloniaui"
+                            xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                            xmlns:local="using:GitUI.Avalonia.Base"
+                            x:Class="GitUI.Avalonia.Dialogs.ResolveConflictsDialog"
+                            Title="Resolve Conflicts" Width="660" Height="430">
+    <Grid RowDefinitions="*,Auto" Margin="16">
+        <ListBox Grid.Row="0" x:Name="ConflictsGrid" />
+        <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="8" Margin="0,8,0,0">
+            <Button Content="Open Merge Tool" Click="MergeTool_Click" />
+            <Button Content="Use Ours" Click="UseOurs_Click" />
+            <Button Content="Use Theirs" Click="UseTheirs_Click" />
+            <Button Content="Mark Resolved" Click="MarkResolved_Click" />
+            <Button Content="Close" Click="Cancel_Click" />
+        </StackPanel>
+    </Grid>
+</local:GitExtensionsDialog>

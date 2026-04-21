@@ -1,0 +1,14 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="GitUI.Avalonia.Settings.Pages.GitPage">
+    <StackPanel Margin="16" Spacing="8">
+        <TextBlock Text="Git" FontSize="16" FontWeight="Bold" Margin="0,0,0,8" />
+        <TextBlock Text="Git executable path:" />
+        <Grid ColumnDefinitions="*,4,Auto">
+            <TextBox Grid.Column="0" x:Name="GitPathTextBox" />
+            <Button Grid.Column="2" Content="Browse..." Click="Browse_Click" />
+        </Grid>
+        <Button Content="Test" Click="Test_Click" HorizontalAlignment="Left" />
+        <TextBlock x:Name="TestResultLabel" TextWrapping="Wrap" />
+    </StackPanel>
+</UserControl>

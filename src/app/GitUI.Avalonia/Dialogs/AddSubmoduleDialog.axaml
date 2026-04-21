@@ -1,0 +1,19 @@
+<local:GitExtensionsDialog xmlns="https://github.com/avaloniaui"
+                            xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                            xmlns:local="using:GitUI.Avalonia.Base"
+                            x:Class="GitUI.Avalonia.Dialogs.AddSubmoduleDialog"
+                            Title="Add Submodule" Width="450">
+    <StackPanel Margin="16" Spacing="8">
+        <TextBlock Text="Repository URL:" />
+        <TextBox x:Name="UrlTextBox" />
+        <TextBlock Text="Local path:" />
+        <TextBox x:Name="PathTextBox" />
+        <TextBlock Text="Branch (optional):" />
+        <TextBox x:Name="BranchTextBox" />
+        <TextBlock x:Name="StatusLabel" TextWrapping="Wrap" />
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8" Margin="0,8,0,0">
+            <Button Content="Cancel" Click="Cancel_Click" />
+            <Button Content="Add" IsDefault="True" Click="OK_Click" />
+        </StackPanel>
+    </StackPanel>
+</local:GitExtensionsDialog>

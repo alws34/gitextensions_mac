@@ -1,0 +1,18 @@
+<local:GitExtensionsDialog xmlns="https://github.com/avaloniaui"
+                            xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                            xmlns:local="using:GitUI.Avalonia.Base"
+                            x:Class="GitUI.Avalonia.Dialogs.CleanupRepositoryDialog"
+                            Title="Clean Repository" Width="420">
+    <StackPanel Margin="16" Spacing="8">
+        <TextBlock Text="Select what to remove:" FontWeight="SemiBold" />
+        <CheckBox x:Name="UntrackedFilesCheckBox" Content="Untracked files" IsChecked="True" />
+        <CheckBox x:Name="UntrackedDirsCheckBox" Content="Untracked directories" IsChecked="True" />
+        <CheckBox x:Name="IgnoredFilesCheckBox" Content="Ignored files (-x)" />
+        <CheckBox x:Name="DryRunCheckBox" Content="Dry run only (preview, no deletion)" IsChecked="True" />
+        <TextBlock x:Name="ResultLabel" TextWrapping="Wrap" FontFamily="{DynamicResource MonospaceFont}" FontSize="11" />
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8" Margin="0,8,0,0">
+            <Button Content="Cancel" Click="Cancel_Click" />
+            <Button Content="Clean" IsDefault="True" Click="OK_Click" />
+        </StackPanel>
+    </StackPanel>
+</local:GitExtensionsDialog>

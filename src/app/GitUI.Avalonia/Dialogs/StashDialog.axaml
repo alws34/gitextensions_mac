@@ -1,0 +1,20 @@
+<local:GitExtensionsDialog xmlns="https://github.com/avaloniaui"
+                            xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                            xmlns:local="using:GitUI.Avalonia.Base"
+                            xmlns:ae="clr-namespace:AvaloniaEdit;assembly=AvaloniaEdit"
+                            x:Class="GitUI.Avalonia.Dialogs.StashDialog"
+                            Title="Stash" Width="700" Height="450">
+    <Grid ColumnDefinitions="240,8,*" Margin="16">
+        <DockPanel Grid.Column="0">
+            <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Spacing="4" Margin="0,8,0,0">
+                <Button Content="Stash" Click="Stash_Click" />
+                <Button Content="Apply" Click="Apply_Click" />
+                <Button Content="Pop" Click="Pop_Click" />
+                <Button Content="Drop" Click="Drop_Click" />
+            </StackPanel>
+            <ListBox x:Name="StashList" SelectionChanged="StashSelected" />
+        </DockPanel>
+        <ae:TextEditor Grid.Column="2" x:Name="DiffView" IsReadOnly="True"
+                       FontFamily="{DynamicResource MonospaceFont}" FontSize="12" />
+    </Grid>
+</local:GitExtensionsDialog>

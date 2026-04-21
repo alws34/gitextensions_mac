@@ -1,0 +1,17 @@
+<local:GitExtensionsDialog xmlns="https://github.com/avaloniaui"
+                            xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                            xmlns:local="using:GitUI.Avalonia.Base"
+                            xmlns:ae="clr-namespace:AvaloniaEdit;assembly=AvaloniaEdit"
+                            x:Class="GitUI.Avalonia.Dialogs.ViewPatchDialog"
+                            Title="View Patch" Width="800" Height="600">
+    <Grid RowDefinitions="Auto,*,Auto" Margin="8">
+        <Grid Grid.Row="0" ColumnDefinitions="*,4,Auto" Margin="0,0,0,4">
+            <TextBox Grid.Column="0" x:Name="PatchFileTextBox" IsReadOnly="True" />
+            <Button Grid.Column="2" Content="Open..." Click="Open_Click" />
+        </Grid>
+        <ae:TextEditor Grid.Row="1" x:Name="PatchViewer" IsReadOnly="True"
+                       FontFamily="{DynamicResource MonospaceFont}" FontSize="12" />
+        <Button Grid.Row="2" Content="Close" Click="Cancel_Click"
+                HorizontalAlignment="Right" Margin="0,8,0,0" />
+    </Grid>
+</local:GitExtensionsDialog>

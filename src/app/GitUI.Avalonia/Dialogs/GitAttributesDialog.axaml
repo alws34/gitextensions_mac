@@ -1,0 +1,16 @@
+<local:GitExtensionsDialog xmlns="https://github.com/avaloniaui"
+                            xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                            xmlns:local="using:GitUI.Avalonia.Base"
+                            xmlns:ae="clr-namespace:AvaloniaEdit;assembly=AvaloniaEdit"
+                            x:Class="GitUI.Avalonia.Dialogs.GitAttributesDialog"
+                            Title=".gitattributes Editor" Width="600" Height="500">
+    <Grid RowDefinitions="*,Auto" Margin="8">
+        <ae:TextEditor Grid.Row="0" x:Name="Editor"
+                       FontFamily="{DynamicResource MonospaceFont}" FontSize="13" />
+        <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right"
+                    Spacing="8" Margin="0,8,0,0">
+            <Button Content="Cancel" Click="Cancel_Click" />
+            <Button Content="Save" IsDefault="True" Click="Save_Click" />
+        </StackPanel>
+    </Grid>
+</local:GitExtensionsDialog>

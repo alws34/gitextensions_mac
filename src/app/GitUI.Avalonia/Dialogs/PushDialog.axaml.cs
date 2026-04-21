@@ -1,0 +1,55 @@
+using Avalonia.Controls;
+using Avalonia.Interactivity;
+using Avalonia.Threading;
+using GitCommands;
+using GitUI.Avalonia.Base;
+
+namespace GitUI.Avalonia.Dialogs;
+
+public partial class PushDialog : GitExtensionsDialog
+{
+    private readonly GitModule _module;
+
+    public PushDialog(GitModule module)
+    {
+        _module = module;
+        InitializeComponent();
+        _ = LoadDataAsync();
+    }
+
+    private async Task LoadDataAsync()
+    {
+        var remotes = await _module.GetRemotesAsync();
+        string currentBranch = await Task.Run(() => _module.GitExecutable.GetOutput("branch --show-current").Trim());
+        await Dispatcher.UIThread.InvokeAsync(() =>
+        {
+            RemoteComboBox.ItemsSource = remotes.Select(r => r.Name).ToList();
+            if (RemoteComboBox.Items.Count > 0)
+            {
+                RemoteComboBox.SelectedIndex = 0;
+            }
+
+            BranchTextBox.Text = currentBranch;
+        });
+    }
+
+    private void OK_Click(object? sender, RoutedEventArgs e)
+    {
+        _ = PushAsync();
+    }
+
+    private async Task PushAsync()
+    {
+        string remote = RemoteComboBox.SelectedItem?.ToString() ?? string.Empty;
+        string branch = BranchTextBox.Text?.Trim() ?? string.Empty;
+        string forceFlag = ForceCheckBox.IsChecked == true ? "--force-with-lease " : string.Empty;
+
+        string args = $"push {forceFlag}{remote} {branch}".Trim();
+
+        await Dispatcher.UIThread.InvokeAsync(() => StatusLabel.Text = "Pushing...");
+        string result = await Task.Run(() => _module.GitExecutable.GetOutput(args));
+        await Dispatcher.UIThread.InvokeAsync(() => StatusLabel.Text = result.Trim());
+    }
+
+    private void Cancel_Click(object? sender, RoutedEventArgs e) => Close(false);
+}

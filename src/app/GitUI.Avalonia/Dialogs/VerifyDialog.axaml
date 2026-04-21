@@ -1,0 +1,15 @@
+<local:GitExtensionsDialog xmlns="https://github.com/avaloniaui"
+                            xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                            xmlns:local="using:GitUI.Avalonia.Base"
+                            x:Class="GitUI.Avalonia.Dialogs.VerifyDialog"
+                            Title="Verify Repository" Width="600" Height="400">
+    <Grid RowDefinitions="Auto,*,Auto" Margin="8">
+        <Button Grid.Row="0" Content="Run git fsck" Click="Run_Click" Margin="0,0,0,8" />
+        <ScrollViewer Grid.Row="1">
+            <TextBlock x:Name="OutputLabel" TextWrapping="Wrap"
+                       FontFamily="{DynamicResource MonospaceFont}" FontSize="12" />
+        </ScrollViewer>
+        <Button Grid.Row="2" Content="Close" Click="Cancel_Click"
+                HorizontalAlignment="Right" Margin="0,8,0,0" />
+    </Grid>
+</local:GitExtensionsDialog>

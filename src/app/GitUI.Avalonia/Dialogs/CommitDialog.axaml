@@ -1,0 +1,51 @@
+<local:GitExtensionsDialog xmlns="https://github.com/avaloniaui"
+                            xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                            xmlns:local="using:GitUI.Avalonia.Base"
+                            xmlns:ae="clr-namespace:AvaloniaEdit;assembly=AvaloniaEdit"
+                            x:Class="GitUI.Avalonia.Dialogs.CommitDialog"
+                            Title="Commit" Width="1000" Height="700"
+                            SizeToContent="Manual" CanResize="True">
+    <Grid RowDefinitions="*,200">
+        <!-- Top: Unstaged | Staged | Diff -->
+        <Grid Grid.Row="0" ColumnDefinitions="250,5,250,5,*">
+            <DockPanel Grid.Column="0">
+                <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="4" Margin="4">
+                    <TextBlock Text="Unstaged" FontWeight="SemiBold" VerticalAlignment="Center" />
+                    <Button Content="Stage All" Click="StageAll_Click" Padding="4,2" />
+                </StackPanel>
+                <ListBox x:Name="UnstagedList" SelectionChanged="UnstagedFile_Selected" />
+            </DockPanel>
+            <GridSplitter Grid.Column="1" ResizeDirection="Columns" />
+            <DockPanel Grid.Column="2">
+                <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="4" Margin="4">
+                    <TextBlock Text="Staged" FontWeight="SemiBold" VerticalAlignment="Center" />
+                    <Button Content="Unstage All" Click="UnstageAll_Click" Padding="4,2" />
+                </StackPanel>
+                <ListBox x:Name="StagedList" SelectionChanged="StagedFile_Selected" />
+            </DockPanel>
+            <GridSplitter Grid.Column="3" ResizeDirection="Columns" />
+            <ae:TextEditor Grid.Column="4" x:Name="DiffPreview"
+                           IsReadOnly="True"
+                           FontFamily="Cascadia Code,Menlo,Consolas,monospace"
+                           FontSize="12"
+                           ShowLineNumbers="True"
+                           WordWrap="False" />
+        </Grid>
+        <!-- Bottom: Amend checkbox, commit message, buttons -->
+        <Grid Grid.Row="1" RowDefinitions="Auto,*,Auto" Margin="8">
+            <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="8" Margin="0,4,0,4">
+                <CheckBox x:Name="AmendCheckBox" Content="Amend last commit" />
+            </StackPanel>
+            <ae:TextEditor Grid.Row="1" x:Name="CommitMessageEditor"
+                           FontFamily="Cascadia Code,Menlo,Consolas,monospace"
+                           FontSize="13"
+                           Margin="0,4"
+                           WordWrap="True" />
+            <StackPanel Grid.Row="2" Orientation="Horizontal"
+                        HorizontalAlignment="Right" Spacing="8" Margin="0,8,0,4">
+                <Button Content="Cancel" Click="Cancel_Click" />
+                <Button Content="Commit" IsDefault="True" Click="Commit_Click" />
+            </StackPanel>
+        </Grid>
+    </Grid>
+</local:GitExtensionsDialog>

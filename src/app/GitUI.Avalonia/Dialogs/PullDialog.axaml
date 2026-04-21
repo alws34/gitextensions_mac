@@ -1,0 +1,21 @@
+<local:GitExtensionsDialog xmlns="https://github.com/avaloniaui"
+                            xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                            xmlns:local="using:GitUI.Avalonia.Base"
+                            x:Class="GitUI.Avalonia.Dialogs.PullDialog"
+                            Title="Pull" Width="420">
+    <StackPanel Margin="16" Spacing="8">
+        <TextBlock Text="Remote:" />
+        <ComboBox x:Name="RemoteComboBox" HorizontalAlignment="Stretch" />
+        <TextBlock Text="Branch (leave empty for default):" />
+        <TextBox x:Name="BranchTextBox" />
+        <TextBlock Text="Strategy:" />
+        <RadioButton x:Name="MergeRadio" Content="Merge" IsChecked="True" GroupName="PullStrategy" />
+        <RadioButton x:Name="RebaseRadio" Content="Rebase" GroupName="PullStrategy" />
+        <RadioButton x:Name="FetchOnlyRadio" Content="Fetch only" GroupName="PullStrategy" />
+        <TextBlock x:Name="StatusLabel" TextWrapping="Wrap" />
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8" Margin="0,8,0,0">
+            <Button Content="Cancel" Click="Cancel_Click" />
+            <Button Content="Pull" IsDefault="True" Click="OK_Click" />
+        </StackPanel>
+    </StackPanel>
+</local:GitExtensionsDialog>

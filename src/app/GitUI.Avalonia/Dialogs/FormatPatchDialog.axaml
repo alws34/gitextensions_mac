@@ -1,0 +1,22 @@
+<local:GitExtensionsDialog xmlns="https://github.com/avaloniaui"
+                            xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                            xmlns:local="using:GitUI.Avalonia.Base"
+                            x:Class="GitUI.Avalonia.Dialogs.FormatPatchDialog"
+                            Title="Format Patch" Width="500">
+    <StackPanel Margin="16" Spacing="8">
+        <TextBlock Text="From commit:" />
+        <TextBox x:Name="FromTextBox" />
+        <TextBlock Text="To commit (leave empty for HEAD):" />
+        <TextBox x:Name="ToTextBox" />
+        <TextBlock Text="Output directory:" />
+        <Grid ColumnDefinitions="*,4,Auto">
+            <TextBox Grid.Column="0" x:Name="OutputDirTextBox" />
+            <Button Grid.Column="2" Content="Browse..." Click="BrowseDir_Click" />
+        </Grid>
+        <TextBlock x:Name="StatusLabel" TextWrapping="Wrap" />
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8" Margin="0,8,0,0">
+            <Button Content="Cancel" Click="Cancel_Click" />
+            <Button Content="Format" IsDefault="True" Click="Format_Click" />
+        </StackPanel>
+    </StackPanel>
+</local:GitExtensionsDialog>

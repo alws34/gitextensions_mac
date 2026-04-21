@@ -1,0 +1,9 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="GitUI.Avalonia.Settings.Pages.AdvancedPage">
+    <StackPanel Margin="16" Spacing="8">
+        <TextBlock Text="Advanced" FontSize="16" FontWeight="Bold" Margin="0,0,0,8" />
+        <CheckBox x:Name="VerboseCheckBox" Content="Verbose git output in log" />
+        <CheckBox x:Name="ShowBuildServerCheckBox" Content="Show build server integration" />
+    </StackPanel>
+</UserControl>

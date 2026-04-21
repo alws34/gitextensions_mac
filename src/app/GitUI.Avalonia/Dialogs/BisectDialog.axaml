@@ -1,0 +1,20 @@
+<local:GitExtensionsDialog xmlns="https://github.com/avaloniaui"
+                            xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                            xmlns:local="using:GitUI.Avalonia.Base"
+                            x:Class="GitUI.Avalonia.Dialogs.BisectDialog"
+                            Title="Git Bisect" Width="500" Height="350">
+    <StackPanel Margin="16" Spacing="8">
+        <TextBlock Text="Git Bisect" FontSize="16" FontWeight="Bold" />
+        <TextBlock x:Name="StateLabel" Text="Not started" />
+        <TextBlock x:Name="OutputLabel" TextWrapping="Wrap"
+                   FontFamily="{DynamicResource MonospaceFont}" FontSize="11"
+                   MaxHeight="150" />
+        <StackPanel Orientation="Horizontal" Spacing="8">
+            <Button Content="Start" Click="Start_Click" />
+            <Button Content="Good" Click="Good_Click" />
+            <Button Content="Bad" Click="Bad_Click" />
+            <Button Content="Reset" Click="Reset_Click" />
+        </StackPanel>
+        <Button Content="Close" Click="Cancel_Click" HorizontalAlignment="Right" />
+    </StackPanel>
+</local:GitExtensionsDialog>

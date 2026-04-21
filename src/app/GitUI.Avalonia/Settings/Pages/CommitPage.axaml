@@ -1,0 +1,10 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="GitUI.Avalonia.Settings.Pages.CommitPage">
+    <StackPanel Margin="16" Spacing="8">
+        <TextBlock Text="Commit" FontSize="16" FontWeight="Bold" Margin="0,0,0,8" />
+        <TextBlock Text="Commit message template:" />
+        <TextBox x:Name="TemplateTextBox" Height="80" AcceptsReturn="True" />
+        <CheckBox x:Name="AutoStageCheckBox" Content="Auto-stage tracked modified files on commit" />
+    </StackPanel>
+</UserControl>
