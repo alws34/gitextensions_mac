@@ -114,7 +114,9 @@ public partial class MainWindow : GitExtensionsWindow
         menu.Items.Add(new MenuItem { Header = "Verify (fsck)...", Command = ReactiveCommand.CreateFromTask(() => ShowModuleDialogAsync(m => new VerifyDialog(m))) });
         menu.Items.Add(new Separator());
         menu.Items.Add(new MenuItem { Header = "_Submodules...", Command = ReactiveCommand.CreateFromTask(() => ShowModuleDialogAsync(m => new SubmodulesDialog(m))) });
+        menu.Items.Add(new MenuItem { Header = "Add _Submodule...", Command = ReactiveCommand.CreateFromTask(() => ShowModuleDialogAsync(m => new AddSubmoduleDialog(m))) });
         menu.Items.Add(new MenuItem { Header = "_Worktrees...", Command = ReactiveCommand.CreateFromTask(() => ShowModuleDialogAsync(m => new ManageWorktreeDialog(m))) });
+        menu.Items.Add(new MenuItem { Header = "Create _Worktree...", Command = ReactiveCommand.CreateFromTask(() => ShowModuleDialogAsync(m => new CreateWorktreeDialog(m))) });
         menu.Items.Add(new Separator());
         menu.Items.Add(new MenuItem { Header = "Compare to _Branch...", Command = ReactiveCommand.CreateFromTask(() => ShowModuleDialogAsync(m => new CompareToBranchDialog(m))) });
         menu.Items.Add(new MenuItem { Header = "_Reset Changes...", Command = ReactiveCommand.CreateFromTask(() => ShowModuleDialogAsync(m => new ResetChangesDialog(m))) });
@@ -127,6 +129,8 @@ public partial class MainWindow : GitExtensionsWindow
     {
         var menu = new MenuItem { Header = "_Commands" };
         menu.Items.Add(new MenuItem { Header = "_Commit...", Command = ReactiveCommand.CreateFromTask(() => ShowModuleDialogAsync(m => new CommitDialog(m))) });
+        menu.Items.Add(new MenuItem { Header = "_Add Files...", Command = ReactiveCommand.CreateFromTask(() => ShowModuleDialogAsync(m => new AddFilesDialog(m))) });
+        menu.Items.Add(new MenuItem { Header = "Add to .git_ignore...", Command = ReactiveCommand.CreateFromTask(() => ShowModuleDialogAsync(m => new AddToGitIgnoreDialog(m))) });
         menu.Items.Add(new Separator());
         menu.Items.Add(new MenuItem { Header = "Create _Branch...", Command = ReactiveCommand.CreateFromTask(() => ShowModuleDialogAsync(m => new CreateBranchDialog(m))) });
         menu.Items.Add(new MenuItem { Header = "Checkout _Branch...", Command = ReactiveCommand.CreateFromTask(() => ShowModuleDialogAsync(m => new CheckoutBranchDialog(m))) });
@@ -163,6 +167,7 @@ public partial class MainWindow : GitExtensionsWindow
         var menu = new MenuItem { Header = "_Help" };
         menu.Items.Add(new MenuItem { Header = "Check for _Updates...", Command = ReactiveCommand.CreateFromTask(() => ShowDialogAsync(() => new UpdatesDialog())) });
         menu.Items.Add(new MenuItem { Header = "_Changelog...", Command = ReactiveCommand.CreateFromTask(() => ShowDialogAsync(() => new ChangeLogDialog())) });
+        menu.Items.Add(new MenuItem { Header = "Command-_line Help...", Command = ReactiveCommand.CreateFromTask(() => ShowDialogAsync(() => new CommandlineHelpDialog())) });
         menu.Items.Add(new Separator());
         menu.Items.Add(new MenuItem { Header = "_About Git Extensions", Command = ReactiveCommand.CreateFromTask(() => ShowDialogAsync(() => new AboutDialog())) });
         return menu;
