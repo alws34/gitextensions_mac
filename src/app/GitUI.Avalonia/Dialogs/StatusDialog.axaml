@@ -1,0 +1,17 @@
+<local:GitExtensionsDialog xmlns="https://github.com/avaloniaui"
+                            xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                            xmlns:local="using:GitUI.Avalonia.Base"
+                            x:Class="GitUI.Avalonia.Dialogs.StatusDialog"
+                            Width="600" Height="400">
+    <DockPanel Margin="8">
+        <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,8,0,0">
+            <TextBlock x:Name="StatusLabel" VerticalAlignment="Center" Margin="0,0,16,0"/>
+            <Button x:Name="CloseButton" Content="Close" IsEnabled="False" Click="Close_Click"/>
+        </StackPanel>
+        <ProgressBar x:Name="ProgressBar" DockPanel.Dock="Top" IsIndeterminate="True" Height="6" Margin="0,0,0,8"/>
+        <ScrollViewer>
+            <TextBlock x:Name="OutputLog" TextWrapping="Wrap"
+                       FontFamily="{DynamicResource MonospaceFont}" FontSize="12"/>
+        </ScrollViewer>
+    </DockPanel>
+</local:GitExtensionsDialog>

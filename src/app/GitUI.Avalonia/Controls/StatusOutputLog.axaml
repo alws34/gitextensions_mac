@@ -1,0 +1,8 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="GitUI.Avalonia.Controls.StatusOutputLog">
+    <ScrollViewer x:Name="Scroller">
+        <TextBlock x:Name="OutputText" TextWrapping="Wrap"
+                   FontFamily="{DynamicResource MonospaceFont}" FontSize="12"/>
+    </ScrollViewer>
+</UserControl>
