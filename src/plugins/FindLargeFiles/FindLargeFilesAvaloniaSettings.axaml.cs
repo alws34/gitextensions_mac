@@ -2,7 +2,7 @@ using Avalonia.Controls;
 
 namespace GitExtensions.Plugins.FindLargeFiles;
 
-public partial class FindLargeFilesAvaloniaSettings : UserControl
+public partial class FindLargeFilesAvaloniaSettings : Avalonia.Controls.UserControl
 {
     public FindLargeFilesAvaloniaSettings()
     {

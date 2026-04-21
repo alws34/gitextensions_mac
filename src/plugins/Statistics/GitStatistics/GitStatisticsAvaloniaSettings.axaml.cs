@@ -2,7 +2,7 @@ using Avalonia.Controls;
 
 namespace GitExtensions.Plugins.GitStatistics;
 
-public partial class GitStatisticsAvaloniaSettings : UserControl
+public partial class GitStatisticsAvaloniaSettings : Avalonia.Controls.UserControl
 {
     public GitStatisticsAvaloniaSettings()
     {

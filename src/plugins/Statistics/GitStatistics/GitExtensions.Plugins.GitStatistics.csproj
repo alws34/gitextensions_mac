@@ -44,4 +44,8 @@
     <EmbeddedResource Update="Properties\Resources.resx" Generator="ResXFileCodeGenerator" LastGenOutput="Resources.Designer.cs" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Avalonia" />
+  </ItemGroup>
+
 </Project>

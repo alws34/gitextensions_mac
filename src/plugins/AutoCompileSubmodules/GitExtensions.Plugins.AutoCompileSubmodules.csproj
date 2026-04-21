@@ -29,4 +29,8 @@
     <Compile Update="Properties\Resources.Designer.cs" AutoGen="True" DependentUpon="Resources.resx" DesignTime="True" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Avalonia" />
+  </ItemGroup>
+
 </Project>
