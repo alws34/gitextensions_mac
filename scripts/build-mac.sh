@@ -10,6 +10,10 @@ if ! command -v "$DOTNET" &>/dev/null; then
   DOTNET="dotnet"
 fi
 
+# Always run from the repo root so relative paths resolve correctly
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$SCRIPT_DIR/.."
+
 echo "Building GitExtensions Mac $VERSION for $ARCH..."
 
 # Build the main app project (solution-level -o is not supported)
