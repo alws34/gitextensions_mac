@@ -1,0 +1,17 @@
+<local:GitExtensionsDialog xmlns="https://github.com/avaloniaui"
+                           xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                           xmlns:local="using:GitUI.Avalonia.Base"
+                           x:Class="GitUI.Avalonia.Dialogs.BrowseForPrivateKeyDialog"
+                           Title="Select SSH Private Key" Width="500">
+  <StackPanel Margin="16" Spacing="8">
+    <TextBlock Text="SSH private key:"/>
+    <Grid ColumnDefinitions="*,Auto">
+      <TextBox Grid.Column="0" x:Name="KeyPathBox" IsReadOnly="True"/>
+      <Button Grid.Column="1" Content="Browse..." Click="Browse_Click" Margin="8,0,0,0"/>
+    </Grid>
+    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8" Margin="0,8,0,0">
+      <Button Content="OK" Click="OK_Click"/>
+      <Button Content="Cancel" Click="Cancel_Click"/>
+    </StackPanel>
+  </StackPanel>
+</local:GitExtensionsDialog>

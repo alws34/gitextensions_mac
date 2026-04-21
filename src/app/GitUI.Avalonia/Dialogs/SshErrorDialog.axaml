@@ -1,0 +1,17 @@
+<local:GitExtensionsDialog xmlns="https://github.com/avaloniaui"
+                           xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                           xmlns:local="using:GitUI.Avalonia.Base"
+                           x:Class="GitUI.Avalonia.Dialogs.SshErrorDialog"
+                           Title="SSH Error" Width="500">
+  <StackPanel Margin="16" Spacing="12">
+    <TextBlock Text="SSH Authentication Error" FontSize="16" FontWeight="Bold"/>
+    <TextBlock x:Name="ErrorMessageLabel" TextWrapping="Wrap"/>
+    <TextBlock Text="To use SSH key authentication:" FontWeight="SemiBold"/>
+    <TextBlock TextWrapping="Wrap"
+               Text="1. Add your SSH key with: ssh-add ~/.ssh/id_rsa&#10;2. Ensure ssh-agent is running: eval $(ssh-agent -s)&#10;3. Add your public key to the remote server."/>
+    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+      <Button Content="Start ssh-agent" Click="StartAgent_Click"/>
+      <Button Content="Close" Click="Close_Click"/>
+    </StackPanel>
+  </StackPanel>
+</local:GitExtensionsDialog>
