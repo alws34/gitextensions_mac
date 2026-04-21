@@ -9,13 +9,13 @@ public partial class RevisionDataGrid : UserControl
 
     public RevisionDataGrid() => InitializeComponent();
 
-    public void LoadRevisions(IReadOnlyList<GitRevision> revisions)
+    public void LoadRevisions(IReadOnlyList<RevisionRow> rows)
     {
-        CommitList.ItemsSource = revisions;
+        CommitList.ItemsSource = rows;
     }
 
     private void CommitList_SelectionChanged(object? sender, SelectionChangedEventArgs e)
     {
-        SelectedRevisionChanged?.Invoke(CommitList.SelectedItem as GitRevision);
+        SelectedRevisionChanged?.Invoke((CommitList.SelectedItem as RevisionRow)?.Revision);
     }
 }

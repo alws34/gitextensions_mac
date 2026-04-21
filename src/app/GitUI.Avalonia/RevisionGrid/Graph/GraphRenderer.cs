@@ -10,7 +10,7 @@ internal static class GraphRenderer
 
     public static void RenderGraphCell(
         DrawingContext ctx,
-        RevisionGraphRow row,
+        IRevisionGraphRow row,
         double cellWidth,
         double cellHeight,
         IReadOnlyList<Color> laneColors)

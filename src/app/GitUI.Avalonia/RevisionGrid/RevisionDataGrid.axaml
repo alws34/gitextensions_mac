@@ -1,13 +1,16 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:GitUI.Avalonia.RevisionGrid"
              x:Class="GitUI.Avalonia.RevisionGrid.RevisionDataGrid">
     <ListBox x:Name="CommitList"
              SelectionMode="Single"
              SelectionChanged="CommitList_SelectionChanged">
         <ListBox.ItemTemplate>
-            <DataTemplate>
+            <DataTemplate x:DataType="local:RevisionRow">
                 <Grid ColumnDefinitions="120,*,150,100">
-                    <Canvas Grid.Column="0" Width="120" Height="24" />
+                    <local:GraphCell Grid.Column="0"
+                                     Row="{Binding GraphRow}"
+                                     Width="120" Height="24" />
                     <TextBlock Grid.Column="1"
                                Text="{Binding Subject}"
                                VerticalAlignment="Center"
