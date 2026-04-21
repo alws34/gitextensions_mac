@@ -31,16 +31,16 @@ public partial class RevisionGridControl : GitModuleControl
             return;
         }
 
-        var revisions = await System.Threading.Tasks.Task.Run(() => ParseGitLog(Module));
+        string output = await Module.GitExecutable.GetOutputAsync(
+            $"log --format={LogFormat}%n --max-count={MaxRevisions}");
+
+        var revisions = ParseGitLog(output);
 
         await Dispatcher.UIThread.InvokeAsync(() => DataGrid.LoadRevisions(revisions));
     }
 
-    private static IReadOnlyList<GitRevision> ParseGitLog(GitCommands.GitModule module)
+    private static IReadOnlyList<GitRevision> ParseGitLog(string output)
     {
-        string output = module.GitExecutable.GetOutput(
-            $"log --format={LogFormat}%n --max-count={MaxRevisions}");
-
         var revisions = new List<GitRevision>();
         var lines = output.Split('\n');
 
