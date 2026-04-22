@@ -71,14 +71,21 @@ internal static class GraphRenderer
 
             double cx = LaneCenterX(centerIdx);
 
+            // Boundary x-positions shared with adjacent rows.
+            // Using the midpoint between this lane and the adjacent lane guarantees that both
+            // this row's endpoint and the neighbour's endpoint land on the same pixel — preventing
+            // the "segmented" appearance when a segment changes lanes between rows.
+            double topX = startIdx >= 0 ? BoundaryX(centerIdx, startIdx) : cx;
+            double botX = endIdx >= 0 ? BoundaryX(centerIdx, endIdx) : cx;
+
             if (startIdx >= 0)
             {
-                DrawCurve(ctx, pen, LaneCenterX(startIdx), 0, cx, midY);
+                DrawCurve(ctx, pen, topX, 0, cx, midY);
             }
 
             if (endIdx >= 0)
             {
-                DrawCurve(ctx, pen, cx, midY, LaneCenterX(endIdx), cellHeight);
+                DrawCurve(ctx, pen, cx, midY, botX, cellHeight);
             }
         }
 
@@ -115,6 +122,17 @@ internal static class GraphRenderer
         }
     }
 
+    /// <summary>
+    /// Returns the x-coordinate at the boundary between this row and an adjacent row.
+    /// It is the midpoint between the two lanes' centres.  Because both sides of the boundary
+    /// use the same formula with the same two lane indices (just swapped), the values are
+    /// always equal — guaranteeing visually connected lines across rows.
+    /// </summary>
+    internal static double BoundaryX(int thisCenterLane, int adjacentLane)
+        => (LaneCenterX(thisCenterLane) + LaneCenterX(adjacentLane)) / 2.0;
+
+    internal static double LaneCenterX(int laneIndex) => (laneIndex + 0.5) * LaneWidth;
+
     private static int GetLaneIndex(IRevisionGraphRow? row, RevisionGraphSegment segment)
     {
         if (row is null)
@@ -148,6 +166,4 @@ internal static class GraphRenderer
         sgc.EndFigure(false);
         ctx.DrawGeometry(null, pen, geometry);
     }
-
-    private static double LaneCenterX(int laneIndex) => (laneIndex + 0.5) * LaneWidth;
 }
