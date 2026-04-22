@@ -10,6 +10,8 @@
                 <Grid ColumnDefinitions="120,*,150,100">
                     <local:GraphCell Grid.Column="0"
                                      Row="{Binding GraphRow}"
+                                     PrevRow="{Binding PrevRow}"
+                                     NextRow="{Binding NextRow}"
                                      Width="120" Height="24" />
                     <TextBlock Grid.Column="1"
                                Text="{Binding Subject}"

@@ -7,15 +7,14 @@ namespace GitUI.Avalonia.RevisionGrid;
 
 public sealed class GraphCell : Control
 {
-    private static readonly IReadOnlyList<Color> LaneColors =
-    [
-        Colors.SteelBlue, Colors.OrangeRed, Colors.MediumSeaGreen, Colors.Orchid,
-        Colors.Gold, Colors.DodgerBlue, Colors.Tomato, Colors.MediumAquamarine,
-        Colors.SlateBlue, Colors.Coral, Colors.CadetBlue, Colors.PaleVioletRed,
-    ];
-
     public static readonly StyledProperty<IRevisionGraphRow?> RowProperty =
         AvaloniaProperty.Register<GraphCell, IRevisionGraphRow?>(nameof(Row));
+
+    public static readonly StyledProperty<IRevisionGraphRow?> PrevRowProperty =
+        AvaloniaProperty.Register<GraphCell, IRevisionGraphRow?>(nameof(PrevRow));
+
+    public static readonly StyledProperty<IRevisionGraphRow?> NextRowProperty =
+        AvaloniaProperty.Register<GraphCell, IRevisionGraphRow?>(nameof(NextRow));
 
     public IRevisionGraphRow? Row
     {
@@ -23,16 +22,25 @@ public sealed class GraphCell : Control
         set => SetValue(RowProperty, value);
     }
 
+    public IRevisionGraphRow? PrevRow
+    {
+        get => GetValue(PrevRowProperty);
+        set => SetValue(PrevRowProperty, value);
+    }
+
+    public IRevisionGraphRow? NextRow
+    {
+        get => GetValue(NextRowProperty);
+        set => SetValue(NextRowProperty, value);
+    }
+
     static GraphCell()
     {
-        AffectsRender<GraphCell>(RowProperty);
+        AffectsRender<GraphCell>(RowProperty, PrevRowProperty, NextRowProperty);
     }
 
     public override void Render(DrawingContext context)
     {
-        if (Row is not null)
-        {
-            GraphRenderer.RenderGraphCell(context, Row, Bounds.Width, Bounds.Height, LaneColors);
-        }
+        GraphRenderer.RenderGraphCell(context, Row, PrevRow, NextRow, Bounds.Width, Bounds.Height);
     }
 }

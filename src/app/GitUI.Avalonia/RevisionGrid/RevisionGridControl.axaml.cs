@@ -60,7 +60,11 @@ public partial class RevisionGridControl : GitModuleControl
                 RevisionGraphRevision? node = graph.GetNodeForRow(i);
                 if (node?.GitRevision is not null)
                 {
-                    rows.Add(new RevisionRow(node.GitRevision, graph.GetSegmentsForRow(i)));
+                    rows.Add(new RevisionRow(
+                        node.GitRevision,
+                        graph.GetSegmentsForRow(i),
+                        i > 0 ? graph.GetSegmentsForRow(i - 1) : null,
+                        i < count - 1 ? graph.GetSegmentsForRow(i + 1) : null));
                 }
             }
 
