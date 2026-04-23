@@ -26,6 +26,8 @@ public partial class RevisionGridControl : GitModuleControl
         _ = LoadRevisionsAsync();
     }
 
+    public Task RefreshAsync() => LoadRevisionsAsync();
+
     private async System.Threading.Tasks.Task LoadRevisionsAsync()
     {
         if (Module is null)

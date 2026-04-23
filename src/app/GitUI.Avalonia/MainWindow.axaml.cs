@@ -196,6 +196,11 @@ public partial class MainWindow : GitExtensionsWindow
         settings.Show();
     }
 
+    public void ShowError(string message)
+    {
+        StatusLabel.Text = $"Error: {message}";
+    }
+
     private async System.Threading.Tasks.Task FetchAsync()
     {
         if (_module is null)
@@ -203,8 +208,17 @@ public partial class MainWindow : GitExtensionsWindow
             return;
         }
 
-        await _module.GitExecutable.GetOutputAsync("fetch --all");
-        StatusLabel.Text = "Fetch complete";
+        StatusLabel.Text = "Fetching…";
+        try
+        {
+            string output = await _module.GitExecutable.GetOutputAsync("fetch --all");
+            StatusLabel.Text = string.IsNullOrWhiteSpace(output) ? "Fetch complete" : output.Trim();
+            await RevisionGrid.RefreshAsync();
+        }
+        catch (Exception ex)
+        {
+            ShowError(ex.Message);
+        }
     }
 
     private async System.Threading.Tasks.Task OpenRepositoryDialogAsync()
@@ -223,8 +237,3 @@ public partial class MainWindow : GitExtensionsWindow
         _ = DetailsPanel.ShowRevisionAsync(revision);
     }
 }
-    public void ShowError(string message)
-    {
-        StatusLabel.Text = $"Error: {message}";
-    }
-
