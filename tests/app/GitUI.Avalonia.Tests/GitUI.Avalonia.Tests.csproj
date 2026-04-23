@@ -1,11 +1,27 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <IsTestProject>true</IsTestProject>
+    <EnableNUnitRunner>true</EnableNUnitRunner>
+    <IsTestingPlatformApplication>true</IsTestingPlatformApplication>
+    <TestingPlatformDotnetTestSupport>true</TestingPlatformDotnetTestSupport>
+    <!-- Override x64-only repo default so tests run on arm64 Mac without an x64 dotnet host -->
+    <PlatformTarget Condition="$([MSBuild]::IsOSPlatform('OSX'))">ARM64</PlatformTarget>
+    <!-- Suppress CA1416 (platform compatibility): this test project intentionally omits
+         [assembly:SupportedOSPlatform("windows7.0")] so the NUnit engine does not skip
+         the assembly on macOS; tests call GitUI.Avalonia APIs that carry that annotation. -->
+    <NoWarn>$(NoWarn);CA1416</NoWarn>
   </PropertyGroup>
 
   <!-- Suppress known vulnerability in Tmds.DBus.Protocol 0.20.0 (transitive via Avalonia.Desktop on Linux). -->
   <ItemGroup>
     <NuGetAuditSuppress Include="https://github.com/advisories/GHSA-xrw6-gwf8-vvr9" />
+  </ItemGroup>
+
+  <!-- Remove the repo-wide CommonAssemblyInfo.cs which carries
+       [assembly: SupportedOSPlatform("windows7.0")]; that attribute causes the NUnit
+       engine to mark the entire test assembly as "Skipped" on non-Windows hosts. -->
+  <ItemGroup>
+    <Compile Remove="$(RepoRoot)\CommonAssemblyInfo.cs" />
   </ItemGroup>
 
   <ItemGroup>

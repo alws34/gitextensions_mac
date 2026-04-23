@@ -25,7 +25,10 @@
     <PackageReference Include="NUnit3TestAdapter" PrivateAssets="all" Publish="true" />
     <PackageReference Include="Verify.NUnit" PrivateAssets="all" Publish="true" />
 
-    <PackageReference Include="NUnit.ConsoleRunner" PrivateAssets="all" Publish="true" />
+    <!-- ConsoleRunner bundles its own nunit.engine which conflicts with NUnit3TestAdapter on non-Windows.
+         On Mac/Linux, nunit3-console.exe requires Mono (unavailable); dotnet test uses the adapter only. -->
+    <PackageReference Include="NUnit.ConsoleRunner" PrivateAssets="all" Publish="true"
+                      Condition="$([MSBuild]::IsOSPlatform('Windows'))" />
   </ItemGroup>
 
 </Project>

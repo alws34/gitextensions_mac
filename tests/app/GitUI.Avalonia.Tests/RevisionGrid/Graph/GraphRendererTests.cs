@@ -32,12 +32,12 @@ public class GraphRendererTests
     [Test]
     public void BoundaryX_RowNAndRowNPlusOne_ProduceSameValue()
     {
-        // Segment in lane 1 in Row N, moving to lane 3 in Row N+1.
-        // Row N   lower boundary  = BoundaryX(centerN=1, endIdx=3)
-        // Row N+1 upper boundary  = BoundaryX(centerN1=3, startIdx=1)
-        // Both must be equal.
-        double rowNBottom = GraphRenderer.BoundaryX(1, 3);
-        double rowN1Top = GraphRenderer.BoundaryX(3, 1);
-        Assert.That(rowNBottom, Is.EqualTo(rowN1Top));
+        // Segment moves from lane 1 (centre 24 px) to lane 3 (centre 56 px).
+        // Row N lower boundary  = BoundaryX(centerN=1, endIdx=3)
+        // Row N+1 upper boundary = BoundaryX(centerN1=3, startIdx=1)
+        // Both must equal the midpoint (24 + 56) / 2 = 40 px.
+        double expected = (GraphRenderer.LaneCenterX(1) + GraphRenderer.LaneCenterX(3)) / 2.0;
+        Assert.That(GraphRenderer.BoundaryX(1, 3), Is.EqualTo(expected));
+        Assert.That(GraphRenderer.BoundaryX(3, 1), Is.EqualTo(expected));
     }
 }
