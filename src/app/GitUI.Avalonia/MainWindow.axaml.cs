@@ -223,3 +223,8 @@ public partial class MainWindow : GitExtensionsWindow
         _ = DetailsPanel.ShowRevisionAsync(revision);
     }
 }
+    public void ShowError(string message)
+    {
+        StatusLabel.Text = $"Error: {message}";
+    }
+

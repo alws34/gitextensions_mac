@@ -45,7 +45,26 @@ public partial class App : Application
             {
                 mainWindow.Opened += (_, _) => mainWindow.OpenRepository(startupPath);
             }
+
+            TaskScheduler.UnobservedTaskException += (_, e) =>
+            {
+                e.SetObserved();
+                System.Diagnostics.Debug.WriteLine($"Unobserved task exception: {e.Exception}");
+                global::Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+                {
+                    if (desktop.MainWindow is MainWindow mw)
+                    {
+                        mw.ShowError(e.Exception.GetBaseException().Message);
+                    }
+                });
+            };
         }
+
+        AppDomain.CurrentDomain.UnhandledException += (_, e) =>
+        {
+            string msg = (e.ExceptionObject as Exception)?.Message ?? e.ExceptionObject?.ToString() ?? "Unknown error";
+            System.Diagnostics.Debug.WriteLine($"Unhandled domain exception: {msg}");
+        };
 
         base.OnFrameworkInitializationCompleted();
 
