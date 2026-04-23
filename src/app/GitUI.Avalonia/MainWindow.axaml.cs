@@ -86,7 +86,7 @@ public partial class MainWindow : GitExtensionsWindow
     {
         var menu = new MenuItem { Header = "_File" };
         menu.Items.Add(new MenuItem { Header = "_Open Repository...", Command = ReactiveCommand.CreateFromTask(OpenRepositoryDialogAsync) });
-        menu.Items.Add(new MenuItem { Header = "_Clone Repository...", Command = ReactiveCommand.CreateFromTask(() => ShowDialogAsync(() => new CloneDialog(_module!))) });
+        menu.Items.Add(new MenuItem { Header = "_Clone Repository...", Command = ReactiveCommand.CreateFromTask(() => ShowModuleDialogAsync(m => new CloneDialog(m))) });
         menu.Items.Add(new MenuItem { Header = "_Init New Repository...", Command = ReactiveCommand.CreateFromTask(() => ShowDialogAsync(() => new InitDialog())) });
         menu.Items.Add(new Separator());
         menu.Items.Add(new MenuItem { Header = "_Settings...", Command = ReactiveCommand.Create(OpenSettings) });
