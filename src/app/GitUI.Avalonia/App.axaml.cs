@@ -62,8 +62,10 @@ public partial class App : Application
 
         AppDomain.CurrentDomain.UnhandledException += (_, e) =>
         {
-            string msg = (e.ExceptionObject as Exception)?.Message ?? e.ExceptionObject?.ToString() ?? "Unknown error";
-            System.Diagnostics.Debug.WriteLine($"Unhandled domain exception: {msg}");
+            string msg = (e.ExceptionObject as Exception)?.ToString()
+                         ?? e.ExceptionObject?.ToString()
+                         ?? "Unknown error";
+            Console.Error.WriteLine($"[GitExtensions fatal] {msg}");
         };
 
         base.OnFrameworkInitializationCompleted();

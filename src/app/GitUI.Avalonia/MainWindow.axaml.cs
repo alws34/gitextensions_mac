@@ -196,6 +196,7 @@ public partial class MainWindow : GitExtensionsWindow
         settings.Show();
     }
 
+    /// <summary>Displays an error in the status bar. Must be called on the UI thread.</summary>
     public void ShowError(string message)
     {
         StatusLabel.Text = $"Error: {message}";
