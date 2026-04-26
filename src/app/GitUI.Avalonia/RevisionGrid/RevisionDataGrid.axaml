@@ -5,7 +5,7 @@
     <DockPanel>
         <!-- Column headers -->
         <Grid DockPanel.Dock="Top"
-              ColumnDefinitions="120,*,150,100"
+              ColumnDefinitions="120,*,150,100,80"
               Background="{DynamicResource SystemChromeMediumColor}">
             <TextBlock Grid.Column="0" Text="Graph"
                        FontSize="11" FontWeight="SemiBold"
@@ -19,6 +19,9 @@
             <TextBlock Grid.Column="3" Text="Date"
                        FontSize="11" FontWeight="SemiBold"
                        Margin="4,2" VerticalAlignment="Center" />
+            <TextBlock Grid.Column="4" Text="Hash"
+                       FontSize="11" FontWeight="SemiBold"
+                       Margin="4,2" VerticalAlignment="Center" />
         </Grid>
 
         <ListBox x:Name="CommitList"
@@ -27,7 +30,7 @@
                  ScrollViewer.HorizontalScrollBarVisibility="Disabled">
             <ListBox.ItemTemplate>
                 <DataTemplate x:DataType="local:RevisionRow">
-                    <Grid ColumnDefinitions="120,*,150,100" Height="26">
+                    <Grid ColumnDefinitions="120,*,150,100,80" Height="26">
                         <local:GraphCell Grid.Column="0"
                                          Row="{Binding GraphRow}"
                                          PrevRow="{Binding PrevRow}"
@@ -62,6 +65,13 @@
                                    VerticalAlignment="Center"
                                    Margin="4,0"
                                    FontSize="11" />
+                        <TextBlock Grid.Column="4"
+                                   Text="{Binding ShortHash}"
+                                   VerticalAlignment="Center"
+                                   Margin="4,0"
+                                   FontSize="11"
+                                   Foreground="Gray"
+                                   FontFamily="{StaticResource MonospaceFont}" />
                     </Grid>
                 </DataTemplate>
             </ListBox.ItemTemplate>

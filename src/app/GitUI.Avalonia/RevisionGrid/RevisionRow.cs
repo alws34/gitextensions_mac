@@ -26,6 +26,7 @@ public sealed class RevisionRow
     public string Subject => Revision.Subject ?? string.Empty;
     public string Author => Revision.Author ?? string.Empty;
     public DateTimeOffset AuthorDate => DateTimeOffset.FromUnixTimeSeconds(Revision.AuthorUnixTime);
+    public string ShortHash => Revision.ObjectId.ToShortString();
 
     public IReadOnlyList<IGitRef> Refs => Revision.Refs ?? [];
 
