@@ -2,7 +2,11 @@ using System.IO;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Layout;
+using Avalonia.Media;
+using Avalonia.Threading;
 using GitCommands;
+using GitExtensions.Extensibility;
 using GitUI.Avalonia.Base;
 using GitUI.Avalonia.Dashboard;
 using GitUI.Avalonia.Dialogs;
@@ -16,6 +20,8 @@ namespace GitUI.Avalonia;
 public partial class MainWindow : GitExtensionsWindow
 {
     private GitModule? _module;
+    private ComboBox? _branchSelector;
+    private bool _suppressBranchSelection;
 
     public static readonly StyledProperty<bool> HasRepositoryProperty =
         AvaloniaProperty.Register<MainWindow, bool>(nameof(HasRepository));
@@ -31,6 +37,7 @@ public partial class MainWindow : GitExtensionsWindow
         InitializeComponent();
         DataContext = this;
         BuildMenu();
+        BuildToolBar();
         LoadRecentRepositories();
     }
 
@@ -56,6 +63,7 @@ public partial class MainWindow : GitExtensionsWindow
         AddToRecentRepositories(path);
 
         RevisionGrid.Module = _module;
+        _ = RefreshBranchSelectorAsync();
         RevisionGrid.SelectedRevisionChanged += OnRevisionSelected;
         DetailsPanel.SetModule(_module);
     }
@@ -236,5 +244,131 @@ public partial class MainWindow : GitExtensionsWindow
     {
         StatusLabel.Text = revision?.ObjectId.ToShortString() ?? string.Empty;
         _ = DetailsPanel.ShowRevisionAsync(revision);
+    }
+
+    private void BuildToolBar()
+    {
+        MainToolBar.Children.Add(MakeToolButton("⊞", "Toggle left panel", ToggleLeftPanel));
+        MainToolBar.Children.Add(MakeToolSeparator());
+        MainToolBar.Children.Add(MakeToolButton("↻", "Refresh revisions", () => _ = RevisionGrid.RefreshAsync()));
+        MainToolBar.Children.Add(MakeToolSeparator());
+        MainToolBar.Children.Add(MakeToolButton("Commit…", "Commit staged changes",
+            () => _ = ShowModuleDialogAsync(m => new CommitDialog(m))));
+        MainToolBar.Children.Add(MakeToolButton("Fetch", "Fetch all remotes", () => _ = FetchAsync()));
+        MainToolBar.Children.Add(MakeToolButton("Pull…", "Pull / merge",
+            () => _ = ShowModuleDialogAsync(m => new PullDialog(m))));
+        MainToolBar.Children.Add(MakeToolButton("Push…", "Push to remote",
+            () => _ = ShowModuleDialogAsync(m => new PushDialog(m))));
+        MainToolBar.Children.Add(MakeToolButton("Stash…", "Stash local changes",
+            () => _ = ShowModuleDialogAsync(m => new StashDialog(m))));
+        MainToolBar.Children.Add(MakeToolSeparator());
+
+        _branchSelector = new ComboBox
+        {
+            Width = 180,
+            PlaceholderText = "Branch",
+            IsVisible = false,
+            Margin = new Thickness(2, 0),
+            VerticalAlignment = VerticalAlignment.Center,
+        };
+        _branchSelector.SelectionChanged += OnBranchSelectorChanged;
+        MainToolBar.Children.Add(_branchSelector);
+    }
+
+    private static Button MakeToolButton(string text, string tooltip, Action onClick)
+    {
+        var btn = new Button
+        {
+            Content = text,
+            Padding = new Thickness(8, 2),
+            Margin = new Thickness(1, 0),
+        };
+        ToolTip.SetTip(btn, tooltip);
+        btn.Click += (_, _) => onClick();
+        return btn;
+    }
+
+    private static Control MakeToolSeparator() =>
+        new Border
+        {
+            Width = 1,
+            Height = 20,
+            Background = Brushes.Gray,
+            Margin = new Thickness(4, 0),
+            VerticalAlignment = VerticalAlignment.Center,
+        };
+
+    private async System.Threading.Tasks.Task RefreshBranchSelectorAsync()
+    {
+        if (_module is null || _branchSelector is null)
+        {
+            return;
+        }
+
+        try
+        {
+            string currentBranch = await System.Threading.Tasks.Task.Run(() => _module.GetCurrentBranchName());
+            List<string> branches = await System.Threading.Tasks.Task.Run(
+                () => _module.GetRefs(RefsFilter.Heads).Select(r => r.LocalName).OrderBy(n => n).ToList());
+
+            await Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                _suppressBranchSelection = true;
+                try
+                {
+                    _branchSelector.ItemsSource = branches;
+                    _branchSelector.SelectedItem = string.IsNullOrEmpty(currentBranch) ? null : (object)currentBranch;
+                    _branchSelector.IsVisible = true;
+                }
+                finally
+                {
+                    _suppressBranchSelection = false;
+                }
+            });
+        }
+        catch (Exception ex)
+        {
+            await Dispatcher.UIThread.InvokeAsync(() => ShowError(ex.Message));
+        }
+    }
+
+    private void OnBranchSelectorChanged(object? sender, SelectionChangedEventArgs e)
+    {
+        if (_suppressBranchSelection)
+        {
+            return;
+        }
+
+        if (_branchSelector?.SelectedItem is string branch)
+        {
+            _ = CheckoutBranchAsync(branch);
+        }
+    }
+
+    private async System.Threading.Tasks.Task CheckoutBranchAsync(string branch)
+    {
+        if (_module is null)
+        {
+            return;
+        }
+
+        StatusLabel.Text = $"Checking out {branch}…";
+        try
+        {
+            await _module.GitExecutable.GetOutputAsync($"checkout {branch}");
+            StatusLabel.Text = $"On branch {branch}";
+            await RevisionGrid.RefreshAsync();
+            await RefreshBranchSelectorAsync();
+        }
+        catch (Exception ex)
+        {
+            ShowError(ex.Message);
+        }
+    }
+
+    private void ToggleLeftPanel()
+    {
+        // Left panel column added in Task 2; this is a no-op stub until then.
+        // After Task 2: RepoView.ColumnDefinitions[0].Width toggling happens here.
     }
 }
