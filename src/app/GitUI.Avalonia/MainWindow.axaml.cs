@@ -116,6 +116,9 @@ public partial class MainWindow : GitExtensionsWindow
         MainMenu.Items.Add(BuildFileMenu());
         MainMenu.Items.Add(BuildRepositoryMenu());
         MainMenu.Items.Add(BuildCommandsMenu());
+        MainMenu.Items.Add(BuildToolsMenu());
+        MainMenu.Items.Add(BuildViewMenu());
+        MainMenu.Items.Add(BuildNavigateMenu());
         MainMenu.Items.Add(BuildHelpMenu());
     }
 
@@ -196,6 +199,72 @@ public partial class MainWindow : GitExtensionsWindow
         menu.Items.Add(new MenuItem { Header = "Git _Log...", Command = ReactiveCommand.CreateFromTask(() => ShowModuleDialogAsync(m => new LogDialog(m))) });
         menu.Items.Add(new Separator());
         menu.Items.Add(new MenuItem { Header = "_Go to Commit...", Command = ReactiveCommand.CreateFromTask(() => ShowDialogAsync(() => new GoToCommitDialog())) });
+        return menu;
+    }
+
+    private MenuItem BuildToolsMenu()
+    {
+        var menu = new MenuItem { Header = "_Tools" };
+        menu.Items.Add(new MenuItem
+        {
+            Header = "Open _Terminal Here",
+            Command = ReactiveCommand.Create(() =>
+            {
+                if (_module is not null)
+                {
+                    System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                    {
+                        FileName = "open",
+                        Arguments = $"-a Terminal \"{_module.WorkingDir}\"",
+                        UseShellExecute = false,
+                    });
+                }
+            }),
+        });
+        menu.Items.Add(new MenuItem
+        {
+            Header = "Open in _Finder",
+            Command = ReactiveCommand.Create(() =>
+            {
+                if (_module is not null)
+                {
+                    System.Diagnostics.Process.Start("open", _module.WorkingDir);
+                }
+            }),
+        });
+        menu.Items.Add(new Separator());
+        menu.Items.Add(new MenuItem
+        {
+            Header = "_Settings…",
+            Command = ReactiveCommand.Create(OpenSettings),
+        });
+        return menu;
+    }
+
+    private MenuItem BuildViewMenu()
+    {
+        var menu = new MenuItem { Header = "_View" };
+        menu.Items.Add(new MenuItem
+        {
+            Header = "Toggle _Left Panel",
+            Command = ReactiveCommand.Create(ToggleLeftPanel),
+        });
+        menu.Items.Add(new MenuItem
+        {
+            Header = "_Refresh",
+            Command = ReactiveCommand.CreateFromTask(() => RevisionGrid.RefreshAsync()),
+        });
+        return menu;
+    }
+
+    private MenuItem BuildNavigateMenu()
+    {
+        var menu = new MenuItem { Header = "_Navigate" };
+        menu.Items.Add(new MenuItem
+        {
+            Header = "_Go to Commit…",
+            Command = ReactiveCommand.CreateFromTask(() => ShowDialogAsync(() => new GoToCommitDialog())),
+        });
         return menu;
     }
 
