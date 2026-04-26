@@ -2,34 +2,69 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:local="clr-namespace:GitUI.Avalonia.RevisionGrid"
              x:Class="GitUI.Avalonia.RevisionGrid.RevisionDataGrid">
-    <ListBox x:Name="CommitList"
-             SelectionMode="Single"
-             SelectionChanged="CommitList_SelectionChanged">
-        <ListBox.ItemTemplate>
-            <DataTemplate x:DataType="local:RevisionRow">
-                <Grid ColumnDefinitions="120,*,150,100">
-                    <local:GraphCell Grid.Column="0"
-                                     Row="{Binding GraphRow}"
-                                     PrevRow="{Binding PrevRow}"
-                                     NextRow="{Binding NextRow}"
-                                     Width="120" Height="24" />
-                    <TextBlock Grid.Column="1"
-                               Text="{Binding Subject}"
-                               VerticalAlignment="Center"
-                               Margin="4,0"
-                               TextTrimming="CharacterEllipsis" />
-                    <TextBlock Grid.Column="2"
-                               Text="{Binding Author}"
-                               VerticalAlignment="Center"
-                               Margin="4,0"
-                               FontSize="11" />
-                    <TextBlock Grid.Column="3"
-                               Text="{Binding AuthorDate, StringFormat='{}{0:yyyy-MM-dd}'}"
-                               VerticalAlignment="Center"
-                               Margin="4,0"
-                               FontSize="11" />
-                </Grid>
-            </DataTemplate>
-        </ListBox.ItemTemplate>
-    </ListBox>
+    <DockPanel>
+        <!-- Column headers -->
+        <Grid DockPanel.Dock="Top"
+              ColumnDefinitions="120,*,150,100"
+              Background="{DynamicResource SystemChromeMediumColor}">
+            <TextBlock Grid.Column="0" Text="Graph"
+                       FontSize="11" FontWeight="SemiBold"
+                       Margin="4,2" VerticalAlignment="Center" />
+            <TextBlock Grid.Column="1" Text="Subject"
+                       FontSize="11" FontWeight="SemiBold"
+                       Margin="4,2" VerticalAlignment="Center" />
+            <TextBlock Grid.Column="2" Text="Author"
+                       FontSize="11" FontWeight="SemiBold"
+                       Margin="4,2" VerticalAlignment="Center" />
+            <TextBlock Grid.Column="3" Text="Date"
+                       FontSize="11" FontWeight="SemiBold"
+                       Margin="4,2" VerticalAlignment="Center" />
+        </Grid>
+
+        <ListBox x:Name="CommitList"
+                 SelectionMode="Single"
+                 SelectionChanged="CommitList_SelectionChanged"
+                 ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+            <ListBox.ItemTemplate>
+                <DataTemplate x:DataType="local:RevisionRow">
+                    <Grid ColumnDefinitions="120,*,150,100" Height="26">
+                        <local:GraphCell Grid.Column="0"
+                                         Row="{Binding GraphRow}"
+                                         PrevRow="{Binding PrevRow}"
+                                         NextRow="{Binding NextRow}"
+                                         Width="120" Height="26" />
+
+                        <!-- Subject with optional ref-label prefix -->
+                        <StackPanel Grid.Column="1"
+                                    Orientation="Horizontal"
+                                    VerticalAlignment="Center"
+                                    Spacing="4"
+                                    Margin="4,0">
+                            <TextBlock Text="{Binding RefsText}"
+                                       Foreground="{StaticResource RefLabelLocalBranch}"
+                                       FontSize="10"
+                                       FontWeight="SemiBold"
+                                       VerticalAlignment="Center"
+                                       IsVisible="{Binding RefsText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+                            <TextBlock Text="{Binding Subject}"
+                                       VerticalAlignment="Center"
+                                       TextTrimming="CharacterEllipsis" />
+                        </StackPanel>
+
+                        <TextBlock Grid.Column="2"
+                                   Text="{Binding Author}"
+                                   VerticalAlignment="Center"
+                                   Margin="4,0"
+                                   FontSize="11"
+                                   TextTrimming="CharacterEllipsis" />
+                        <TextBlock Grid.Column="3"
+                                   Text="{Binding AuthorDate, StringFormat='{}{0:yyyy-MM-dd}'}"
+                                   VerticalAlignment="Center"
+                                   Margin="4,0"
+                                   FontSize="11" />
+                    </Grid>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+    </DockPanel>
 </UserControl>
