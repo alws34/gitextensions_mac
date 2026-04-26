@@ -22,6 +22,9 @@ public partial class MainWindow : GitExtensionsWindow
     private GitModule? _module;
     private ComboBox? _branchSelector;
     private bool _suppressBranchSelection;
+    private Action<string>? _leftPanelCheckoutHandler;
+    private Action<string>? _leftPanelStatusHandler;
+    private Action<string>? _leftPanelErrorHandler;
 
     public static readonly StyledProperty<bool> HasRepositoryProperty =
         AvaloniaProperty.Register<MainWindow, bool>(nameof(HasRepository));
@@ -66,6 +69,31 @@ public partial class MainWindow : GitExtensionsWindow
         _ = RefreshBranchSelectorAsync();
         RevisionGrid.SelectedRevisionChanged += OnRevisionSelected;
         DetailsPanel.SetModule(_module);
+        LeftPanel.SetModule(_module);
+
+        // Unsubscribe previous handlers (guards against opening a second repo)
+        if (_leftPanelCheckoutHandler is not null)
+        {
+            LeftPanel.CheckoutRequested -= _leftPanelCheckoutHandler;
+        }
+
+        if (_leftPanelStatusHandler is not null)
+        {
+            LeftPanel.StatusRequested -= _leftPanelStatusHandler;
+        }
+
+        if (_leftPanelErrorHandler is not null)
+        {
+            LeftPanel.ErrorOccurred -= _leftPanelErrorHandler;
+        }
+
+        _leftPanelCheckoutHandler = branch => _ = CheckoutBranchAsync(branch);
+        _leftPanelStatusHandler = msg => StatusLabel.Text = msg;
+        _leftPanelErrorHandler = msg => ShowError(msg);
+
+        LeftPanel.CheckoutRequested += _leftPanelCheckoutHandler;
+        LeftPanel.StatusRequested += _leftPanelStatusHandler;
+        LeftPanel.ErrorOccurred += _leftPanelErrorHandler;
     }
 
     private void AddToRecentRepositories(string path)
@@ -359,6 +387,7 @@ public partial class MainWindow : GitExtensionsWindow
             StatusLabel.Text = $"On branch {branch}";
             await RevisionGrid.RefreshAsync();
             await RefreshBranchSelectorAsync();
+            _ = LeftPanel.RefreshAsync();
         }
         catch (Exception ex)
         {
@@ -368,7 +397,9 @@ public partial class MainWindow : GitExtensionsWindow
 
     private void ToggleLeftPanel()
     {
-        // Left panel column added in Task 2; this is a no-op stub until then.
-        // After Task 2: RepoView.ColumnDefinitions[0].Width toggling happens here.
+        var col = RepoView.ColumnDefinitions[0];
+        col.Width = col.Width.Value > 0
+            ? new GridLength(0)
+            : new GridLength(220);
     }
 }

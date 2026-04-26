@@ -6,6 +6,7 @@
     xmlns:controls="using:GitUI.Avalonia.Controls"
     xmlns:grid="using:GitUI.Avalonia.RevisionGrid"
     xmlns:details="using:GitUI.Avalonia.CommitDetails"
+    xmlns:leftpanel="using:GitUI.Avalonia.LeftPanel"
     x:Class="GitUI.Avalonia.MainWindow"
     Title="Git Extensions"
     Width="1280" Height="800"
@@ -26,13 +27,18 @@
                                      IsVisible="{Binding !HasRepository}" />
             <Grid x:Name="RepoView" IsVisible="{Binding HasRepository}">
                 <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="220" MinWidth="0" />
+                    <ColumnDefinition Width="5" />
                     <ColumnDefinition Width="*" MinWidth="300" />
                     <ColumnDefinition Width="5" />
                     <ColumnDefinition Width="400" MinWidth="200" />
                 </Grid.ColumnDefinitions>
-                <grid:RevisionGridControl Grid.Column="0" x:Name="RevisionGrid" />
+                <leftpanel:RepoBrowserPanel Grid.Column="0" x:Name="LeftPanel"
+                                            Background="{DynamicResource SystemChromeMediumLowColor}" />
                 <GridSplitter Grid.Column="1" ResizeDirection="Columns" />
-                <details:CommitDetailsPanel Grid.Column="2" x:Name="DetailsPanel" />
+                <grid:RevisionGridControl Grid.Column="2" x:Name="RevisionGrid" />
+                <GridSplitter Grid.Column="3" ResizeDirection="Columns" />
+                <details:CommitDetailsPanel Grid.Column="4" x:Name="DetailsPanel" />
             </Grid>
         </Grid>
     </DockPanel>

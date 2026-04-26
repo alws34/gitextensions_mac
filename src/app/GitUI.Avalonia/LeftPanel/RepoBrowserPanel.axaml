@@ -1,0 +1,46 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="GitUI.Avalonia.LeftPanel.RepoBrowserPanel"
+             MinWidth="140">
+    <DockPanel>
+        <TextBox DockPanel.Dock="Top"
+                 x:Name="SearchBox"
+                 Watermark="Search branches…"
+                 Margin="4,4,4,2"
+                 TextChanged="SearchBox_TextChanged" />
+        <ScrollViewer>
+            <StackPanel>
+                <Expander Header="Branches" IsExpanded="True">
+                    <ListBox x:Name="LocalBranchesList"
+                             DoubleTapped="LocalBranch_DoubleTapped">
+                        <ListBox.ContextMenu>
+                            <ContextMenu Opening="LocalBranchMenu_Opening">
+                                <MenuItem Header="Checkout"           Click="LocalBranch_Checkout" />
+                                <MenuItem Header="Merge into current" Click="LocalBranch_Merge" />
+                                <Separator />
+                                <MenuItem Header="Delete Branch…"     Click="LocalBranch_Delete" />
+                                <Separator />
+                                <MenuItem Header="Push…"              Click="LocalBranch_Push" />
+                            </ContextMenu>
+                        </ListBox.ContextMenu>
+                    </ListBox>
+                </Expander>
+                <Expander Header="Remotes">
+                    <ListBox x:Name="RemotesList" />
+                </Expander>
+                <Expander Header="Tags">
+                    <ListBox x:Name="TagsList">
+                        <ListBox.ContextMenu>
+                            <ContextMenu Opening="TagMenu_Opening">
+                                <MenuItem Header="Delete Tag…" Click="Tag_Delete" />
+                            </ContextMenu>
+                        </ListBox.ContextMenu>
+                    </ListBox>
+                </Expander>
+                <Expander Header="Stashes">
+                    <ListBox x:Name="StashesList" />
+                </Expander>
+            </StackPanel>
+        </ScrollViewer>
+    </DockPanel>
+</UserControl>
