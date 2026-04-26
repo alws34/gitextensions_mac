@@ -32,5 +32,6 @@
     <local:BoolToVisibilityConverter x:Key="BoolToVisibility" />
     <local:NullToVisibilityConverter x:Key="NullToVisibility" />
     <local:InverseBoolConverter x:Key="InverseBool" />
+    <local:RefTypeBrushConverter x:Key="RefTypeBrush" />
 
 </ResourceDictionary>

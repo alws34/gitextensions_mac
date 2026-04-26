@@ -37,18 +37,32 @@
                                          NextRow="{Binding NextRow}"
                                          Width="120" Height="26" />
 
-                        <!-- Subject with optional ref-label prefix -->
+                        <!-- Subject with per-ref-type colored badges -->
                         <StackPanel Grid.Column="1"
                                     Orientation="Horizontal"
                                     VerticalAlignment="Center"
                                     Spacing="4"
                                     Margin="4,0">
-                            <TextBlock Text="{Binding RefsText}"
-                                       Foreground="{StaticResource RefLabelLocalBranch}"
-                                       FontSize="10"
-                                       FontWeight="SemiBold"
-                                       VerticalAlignment="Center"
-                                       IsVisible="{Binding RefsText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+                            <ItemsControl ItemsSource="{Binding Refs}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <StackPanel Orientation="Horizontal" Spacing="2" />
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Background="#22000000"
+                                                CornerRadius="2"
+                                                Padding="3,1">
+                                            <TextBlock Text="{Binding LocalName}"
+                                                       Foreground="{Binding ., Converter={StaticResource RefTypeBrush}}"
+                                                       FontSize="10"
+                                                       FontWeight="SemiBold"
+                                                       VerticalAlignment="Center" />
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
                             <TextBlock Text="{Binding Subject}"
                                        VerticalAlignment="Center"
                                        TextTrimming="CharacterEllipsis" />
