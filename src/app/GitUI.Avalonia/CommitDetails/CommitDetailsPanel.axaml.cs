@@ -8,6 +8,7 @@ public partial class CommitDetailsPanel : UserControl
 {
     private GitModule? _module;
     private GitRevision? _currentRevision;
+    private bool _diffLoaded;
 
     public CommitDetailsPanel() => InitializeComponent();
 
@@ -23,6 +24,7 @@ public partial class CommitDetailsPanel : UserControl
     public async System.Threading.Tasks.Task ShowRevisionAsync(GitRevision? revision)
     {
         _currentRevision = revision;
+        _diffLoaded = false;
         Summary.ShowRevision(revision);
 
         if (revision is null || _module is null)
@@ -43,12 +45,27 @@ public partial class CommitDetailsPanel : UserControl
             }
             catch
             {
-                return [];
+                return new List<FileStatusItem>();
             }
         });
 
         FileList.LoadFiles(files);
-        await DiffView.ShowDiffAsync(revision);
+
+        if (DetailsTabs.SelectedIndex == 0)
+        {
+            _diffLoaded = true;
+            await DiffView.ShowDiffAsync(revision);
+        }
+    }
+
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD100:Avoid async void methods", Justification = "Avalonia event handler")]
+    private async void DetailsTabs_SelectionChanged(object? sender, SelectionChangedEventArgs e)
+    {
+        if (DetailsTabs.SelectedIndex == 0 && !_diffLoaded && _currentRevision is not null)
+        {
+            _diffLoaded = true;
+            await DiffView.ShowDiffAsync(_currentRevision);
+        }
     }
 
     private void OnFileSelected(FileStatusItem? file)

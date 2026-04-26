@@ -2,10 +2,19 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:details="using:GitUI.Avalonia.CommitDetails"
              x:Class="GitUI.Avalonia.CommitDetails.CommitDetailsPanel">
-    <Grid RowDefinitions="Auto,*,5,200">
-        <details:CommitSummaryControl x:Name="Summary" Grid.Row="0" />
-        <details:CommitDiffControl x:Name="DiffView" Grid.Row="1" />
-        <GridSplitter Grid.Row="2" ResizeDirection="Rows" />
-        <details:FileStatusList x:Name="FileList" Grid.Row="3" />
-    </Grid>
+    <DockPanel>
+        <details:CommitSummaryControl x:Name="Summary"
+                                      DockPanel.Dock="Top"
+                                      MinHeight="80"
+                                      MaxHeight="160" />
+        <TabControl x:Name="DetailsTabs"
+                    SelectionChanged="DetailsTabs_SelectionChanged">
+            <TabItem Header="Diff">
+                <details:CommitDiffControl x:Name="DiffView" />
+            </TabItem>
+            <TabItem Header="Files">
+                <details:FileStatusList x:Name="FileList" />
+            </TabItem>
+        </TabControl>
+    </DockPanel>
 </UserControl>
