@@ -1,4 +1,5 @@
 using Avalonia;
+using Avalonia.ReactiveUI;
 using GitUI.Avalonia;
 
 if (OperatingSystem.IsMacOS())
@@ -27,6 +28,7 @@ TaskScheduler.UnobservedTaskException += (_, e) =>
 
 AppBuilder.Configure<App>()
     .UsePlatformDetect()
+    .UseReactiveUI()
     .WithInterFont()
     .LogToTrace()
     .StartWithClassicDesktopLifetime(args);
