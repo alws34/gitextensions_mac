@@ -122,12 +122,37 @@ public partial class MainWindow : GitExtensionsWindow
         MainMenu.Items.Add(BuildHelpMenu());
     }
 
+    private MenuItem BuildRecentReposMenu()
+    {
+        var sub = new MenuItem { Header = "Recent _Repositories" };
+        var recent = App.Settings.GetStringList("recentRepositories");
+
+        if (recent.Count == 0)
+        {
+            sub.Items.Add(new MenuItem { Header = "(none)", IsEnabled = false });
+            return sub;
+        }
+
+        foreach (string path in recent)
+        {
+            string capturedPath = path;
+            sub.Items.Add(new MenuItem
+            {
+                Header = capturedPath,
+                Command = ReactiveCommand.Create(() => OpenRepository(capturedPath)),
+            });
+        }
+
+        return sub;
+    }
+
     private MenuItem BuildFileMenu()
     {
         var menu = new MenuItem { Header = "_File" };
         menu.Items.Add(new MenuItem { Header = "_Open Repository...", Command = ReactiveCommand.CreateFromTask(OpenRepositoryDialogAsync) });
         menu.Items.Add(new MenuItem { Header = "_Clone Repository...", Command = ReactiveCommand.CreateFromTask(() => ShowModuleDialogAsync(m => new CloneDialog(m))) });
         menu.Items.Add(new MenuItem { Header = "_Init New Repository...", Command = ReactiveCommand.CreateFromTask(() => ShowDialogAsync(() => new InitDialog())) });
+        menu.Items.Add(BuildRecentReposMenu());
         menu.Items.Add(new Separator());
         menu.Items.Add(new MenuItem { Header = "_Settings...", Command = ReactiveCommand.Create(OpenSettings) });
         menu.Items.Add(new Separator());
@@ -212,12 +237,11 @@ public partial class MainWindow : GitExtensionsWindow
             {
                 if (_module is not null)
                 {
-                    System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
-                    {
-                        FileName = "open",
-                        Arguments = $"-a Terminal \"{_module.WorkingDir}\"",
-                        UseShellExecute = false,
-                    });
+                    var psi = new System.Diagnostics.ProcessStartInfo { FileName = "open", UseShellExecute = false };
+                    psi.ArgumentList.Add("-a");
+                    psi.ArgumentList.Add("Terminal");
+                    psi.ArgumentList.Add(_module.WorkingDir);
+                    System.Diagnostics.Process.Start(psi);
                 }
             }),
         });
