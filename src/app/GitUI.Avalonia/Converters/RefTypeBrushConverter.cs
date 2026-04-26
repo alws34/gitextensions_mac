@@ -11,7 +11,7 @@ public sealed class RefTypeBrushConverter : IValueConverter
 {
     public static readonly RefTypeBrushConverter Instance = new();
 
-    public static string GetResourceKey(bool isHead, bool isRemote, bool isTag) =>
+    public static string GetResourceKey(bool isRemote, bool isTag) =>
         isTag ? "RefLabelTag" :
         isRemote ? "RefLabelRemoteBranch" :
         "RefLabelLocalBranch";
@@ -20,7 +20,7 @@ public sealed class RefTypeBrushConverter : IValueConverter
     {
         if (value is IGitRef gitRef)
         {
-            string key = GetResourceKey(gitRef.IsHead, gitRef.IsRemote, gitRef.IsTag);
+            string key = GetResourceKey(gitRef.IsRemote, gitRef.IsTag);
             if (AvaloniaApp.Current is IResourceHost host &&
                 host.TryGetResource(key, null, out object? res) && res is IBrush brush)
             {

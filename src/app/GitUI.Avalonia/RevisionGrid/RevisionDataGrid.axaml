@@ -1,6 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:local="clr-namespace:GitUI.Avalonia.RevisionGrid"
+             xmlns:git="using:GitExtensions.Extensibility.Git"
              x:Class="GitUI.Avalonia.RevisionGrid.RevisionDataGrid">
     <DockPanel>
         <!-- Column headers -->
@@ -50,7 +51,7 @@
                                     </ItemsPanelTemplate>
                                 </ItemsControl.ItemsPanel>
                                 <ItemsControl.ItemTemplate>
-                                    <DataTemplate>
+                                    <DataTemplate x:DataType="git:IGitRef">
                                         <Border Background="#22000000"
                                                 CornerRadius="2"
                                                 Padding="3,1">

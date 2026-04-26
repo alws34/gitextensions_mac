@@ -23,7 +23,6 @@
     <SolidColorBrush x:Key="RefLabelLocalBranch">#FF1E90FF</SolidColorBrush>
     <SolidColorBrush x:Key="RefLabelRemoteBranch">#FF32CD32</SolidColorBrush>
     <SolidColorBrush x:Key="RefLabelTag">#FFFFB900</SolidColorBrush>
-    <SolidColorBrush x:Key="RefLabelHead">#FFFF4500</SolidColorBrush>
 
     <!-- Monospace font for diff/editor views -->
     <FontFamily x:Key="MonospaceFont">Menlo, Monaco, Courier New, monospace</FontFamily>
