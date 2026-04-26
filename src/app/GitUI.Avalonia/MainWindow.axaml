@@ -19,6 +19,25 @@
         </Border>
         <controls:FilterToolBar DockPanel.Dock="Top" x:Name="FilterBar"
                                 IsVisible="{Binding HasRepository}" />
+        <Border DockPanel.Dock="Top"
+                x:Name="ActionBar"
+                Background="#FFFFF3CD"
+                BorderBrush="#FFFFE082"
+                BorderThickness="0,0,0,1"
+                IsVisible="False"
+                Padding="8,4">
+            <DockPanel>
+                <Button DockPanel.Dock="Right"
+                        Content="✕"
+                        Padding="4,2"
+                        Click="ActionBar_Dismiss"
+                        Background="Transparent"
+                        BorderThickness="0" />
+                <TextBlock x:Name="ActionBarText"
+                           VerticalAlignment="Center"
+                           FontSize="12" />
+            </DockPanel>
+        </Border>
         <Border DockPanel.Dock="Bottom" Height="24" Background="{DynamicResource SystemChromeLowColor}">
             <TextBlock x:Name="StatusLabel" VerticalAlignment="Center" Margin="8,0" FontSize="12" />
         </Border>

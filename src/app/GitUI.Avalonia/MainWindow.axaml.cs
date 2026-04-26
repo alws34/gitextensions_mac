@@ -67,6 +67,7 @@ public partial class MainWindow : GitExtensionsWindow
 
         RevisionGrid.Module = _module;
         _ = RefreshBranchSelectorAsync();
+        _ = RefreshActionBarsAsync();
         RevisionGrid.SelectedRevisionChanged += OnRevisionSelected;
         DetailsPanel.SetModule(_module);
         LeftPanel.SetModule(_module);
@@ -251,11 +252,43 @@ public partial class MainWindow : GitExtensionsWindow
             string output = await _module.GitExecutable.GetOutputAsync("fetch --all");
             StatusLabel.Text = string.IsNullOrWhiteSpace(output) ? "Fetch complete" : output.Trim();
             await RevisionGrid.RefreshAsync();
+            await RefreshActionBarsAsync();
         }
         catch (Exception ex)
         {
             ShowError(ex.Message);
         }
+    }
+
+    private void ActionBar_Dismiss(object? sender, global::Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        ActionBar.IsVisible = false;
+    }
+
+    private async System.Threading.Tasks.Task RefreshActionBarsAsync()
+    {
+        if (_module is null)
+        {
+            return;
+        }
+
+        string gitDir = _module.WorkingDirGitDir;
+        bool merge = await System.Threading.Tasks.Task.Run(() => File.Exists(Path.Combine(gitDir, "MERGE_HEAD")));
+        bool cherry = await System.Threading.Tasks.Task.Run(() => File.Exists(Path.Combine(gitDir, "CHERRY_PICK_HEAD")));
+        bool revert = await System.Threading.Tasks.Task.Run(() => File.Exists(Path.Combine(gitDir, "REVERT_HEAD")));
+        bool bisect = await System.Threading.Tasks.Task.Run(() => File.Exists(Path.Combine(gitDir, "BISECT_START")));
+
+        string? msg = merge ? "Merge in progress — resolve conflicts, then commit." :
+                      cherry ? "Cherry-pick in progress — resolve conflicts, then commit." :
+                      revert ? "Revert in progress — resolve conflicts, then commit." :
+                      bisect ? "Bisect in progress — mark commits as good or bad." :
+                      null;
+
+        await Dispatcher.UIThread.InvokeAsync(() =>
+        {
+            ActionBarText.Text = msg;
+            ActionBar.IsVisible = msg is not null;
+        });
     }
 
     private async System.Threading.Tasks.Task OpenRepositoryDialogAsync()
