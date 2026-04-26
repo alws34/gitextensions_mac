@@ -395,11 +395,22 @@ public partial class MainWindow : GitExtensionsWindow
         }
     }
 
+    private double _savedLeftPanelWidth = 220;
+
     private void ToggleLeftPanel()
     {
         var col = RepoView.ColumnDefinitions[0];
-        col.Width = col.Width.Value > 0
-            ? new GridLength(0)
-            : new GridLength(220);
+        var splitter = RepoView.ColumnDefinitions[1];
+        if (col.Width.Value > 0)
+        {
+            _savedLeftPanelWidth = col.Width.Value;
+            col.Width = new GridLength(0);
+            splitter.Width = new GridLength(0);
+        }
+        else
+        {
+            col.Width = new GridLength(_savedLeftPanelWidth);
+            splitter.Width = new GridLength(5);
+        }
     }
 }
