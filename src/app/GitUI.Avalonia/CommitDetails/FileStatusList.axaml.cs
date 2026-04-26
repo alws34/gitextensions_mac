@@ -23,11 +23,12 @@ public partial class FileStatusList : GitModuleControl
 
     public void LoadFiles(IEnumerable<FileStatusItem> files)
     {
-        FileList.ItemsSource = files.ToList();
+        FileTree.ItemsSource = FileTreeNode.BuildTree(files);
     }
 
-    private void FileList_SelectionChanged(object? sender, SelectionChangedEventArgs e)
+    private void FileTree_SelectionChanged(object? sender, SelectionChangedEventArgs e)
     {
-        SelectedFileChanged?.Invoke(FileList.SelectedItem as FileStatusItem);
+        FileStatusItem? item = (FileTree.SelectedItem as FileTreeNode)?.FileItem;
+        SelectedFileChanged?.Invoke(item);
     }
 }
