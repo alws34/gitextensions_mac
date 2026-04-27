@@ -10,6 +10,14 @@ public sealed class FileTreeNode
 
     public string DisplayIcon => IsDirectory ? "▶" : (FileItem?.StatusIcon ?? "");
 
+    public string StatusColor => FileItem?.StatusIcon switch
+    {
+        "A" => "#FF22AA22",
+        "D" => "#FFCC2222",
+        "R" => "#FF8822CC",
+        _ => "#FFCC6600",   // M and default = orange
+    };
+
     private FileTreeNode(string name, bool isDirectory, string? filePath = null, FileStatusItem? item = null)
     {
         Name = name;

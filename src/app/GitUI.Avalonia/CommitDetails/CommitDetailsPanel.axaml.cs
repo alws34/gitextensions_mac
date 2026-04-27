@@ -19,6 +19,14 @@ public partial class CommitDetailsPanel : UserControl
         DiffView.Module = module;
         FileList.Module = module;
         FileList.SelectedFileChanged += OnFileSelected;
+        FileList.BlameRequested += path =>
+        {
+            new Dialogs.BlameDialog(module, path).Show();
+        };
+        FileList.HistoryRequested += path =>
+        {
+            new Dialogs.FileHistoryDialog(module, path).Show();
+        };
     }
 
     public async System.Threading.Tasks.Task ShowRevisionAsync(GitRevision? revision)

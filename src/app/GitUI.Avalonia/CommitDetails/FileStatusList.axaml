@@ -4,15 +4,27 @@
                          x:Class="GitUI.Avalonia.CommitDetails.FileStatusList">
     <TreeView x:Name="FileTree"
               SelectionChanged="FileTree_SelectionChanged">
+        <TreeView.ContextMenu>
+            <ContextMenu Opening="FileTree_ContextMenuOpening">
+                <MenuItem Header="Open Diff"     Click="CtxDiff_Click" />
+                <Separator />
+                <MenuItem Header="File History…" Click="CtxHistory_Click" />
+                <MenuItem Header="Blame…"        Click="CtxBlame_Click" />
+            </ContextMenu>
+        </TreeView.ContextMenu>
         <TreeView.ItemTemplate>
             <TreeDataTemplate ItemsSource="{Binding Children}">
                 <StackPanel Orientation="Horizontal" Spacing="4">
                     <TextBlock Text="{Binding DisplayIcon}"
                                Width="14"
-                               FontFamily="Cascadia Code,Menlo,Consolas,monospace" />
+                               Foreground="{Binding StatusColor}"
+                               FontFamily="{DynamicResource MonospaceFont}"
+                               FontWeight="Bold"
+                               VerticalAlignment="Center" />
                     <TextBlock Text="{Binding Name}"
-                               FontFamily="Cascadia Code,Menlo,Consolas,monospace"
-                               FontSize="12" />
+                               FontFamily="{DynamicResource MonospaceFont}"
+                               FontSize="12"
+                               VerticalAlignment="Center" />
                 </StackPanel>
             </TreeDataTemplate>
         </TreeView.ItemTemplate>
