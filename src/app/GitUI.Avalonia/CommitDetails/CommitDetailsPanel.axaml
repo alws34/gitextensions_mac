@@ -19,7 +19,15 @@
                 <details:FileStatusList x:Name="FileList" />
             </TabItem>
             <TabItem Header="Tree">
-                <details:FileStatusList x:Name="TreeView" />
+                <TreeView x:Name="CommitTreeView">
+                    <TreeView.ItemTemplate>
+                        <TreeDataTemplate ItemsSource="{Binding Children}">
+                            <TextBlock Text="{Binding Name}"
+                                       FontFamily="{DynamicResource MonospaceFont}"
+                                       FontSize="12" />
+                        </TreeDataTemplate>
+                    </TreeView.ItemTemplate>
+                </TreeView>
             </TabItem>
         </TabControl>
     </DockPanel>

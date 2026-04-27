@@ -1,4 +1,5 @@
 using Avalonia.Controls;
+using Avalonia.Threading;
 using GitCommands;
 using GitUIPluginInterfaces;
 
@@ -69,11 +70,39 @@ public partial class CommitDetailsPanel : UserControl
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD100:Avoid async void methods", Justification = "Avalonia event handler")]
     private async void DetailsTabs_SelectionChanged(object? sender, SelectionChangedEventArgs e)
     {
-        if (DetailsTabs.SelectedIndex == 0 && !_diffLoaded && _currentRevision is not null)
+        if (_currentRevision is null)
+        {
+            return;
+        }
+
+        if (DetailsTabs.SelectedIndex == 0 && !_diffLoaded)
         {
             _diffLoaded = true;
             await DiffView.ShowDiffAsync(_currentRevision);
         }
+        else if (DetailsTabs.SelectedIndex == 2)
+        {
+            await LoadCommitTreeAsync(_currentRevision);
+        }
+    }
+
+    private async System.Threading.Tasks.Task LoadCommitTreeAsync(GitRevision revision)
+    {
+        if (_module is null)
+        {
+            return;
+        }
+
+        string output = await _module.GitExecutable.GetOutputAsync(
+            $"ls-tree -r --name-only {revision.Guid}");
+
+        var paths = output.Split('\n', StringSplitOptions.RemoveEmptyEntries)
+                          .Select(p => p.Trim())
+                          .Where(p => p.Length > 0)
+                          .ToList();
+
+        var nodes = CommitTreeNode.BuildTree(paths);
+        await Dispatcher.UIThread.InvokeAsync(() => CommitTreeView.ItemsSource = nodes);
     }
 
     private void OnFileSelected(FileStatusItem? file)
