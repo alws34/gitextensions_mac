@@ -7,6 +7,14 @@
         <TextBlock Text="Rebase onto branch:" />
         <ComboBox x:Name="BranchComboBox" HorizontalAlignment="Stretch" />
         <CheckBox x:Name="InteractiveCheckBox" Content="Interactive (-i)" />
+        <CheckBox x:Name="AutostashCheckBox" Content="Auto stash before rebase" />
+        <Separator Margin="0,8" />
+        <TextBlock Text="If a rebase is already in progress:" FontStyle="Italic" FontSize="11" />
+        <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,4,0,0">
+            <Button Content="Continue" Click="Continue_Click" />
+            <Button Content="Skip"     Click="Skip_Click" />
+            <Button Content="Abort"    Click="Abort_Click" />
+        </StackPanel>
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8" Margin="0,8,0,0">
             <Button Content="Cancel" Click="Cancel_Click" />
             <Button Content="Rebase" IsDefault="True" Click="OK_Click" />

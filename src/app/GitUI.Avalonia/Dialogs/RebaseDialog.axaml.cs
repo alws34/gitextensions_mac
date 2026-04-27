@@ -44,8 +44,22 @@ public partial class RebaseDialog : GitExtensionsDialog
             return;
         }
 
-        string interactiveFlag = InteractiveCheckBox.IsChecked == true ? "-i " : string.Empty;
-        await Task.Run(() => _module.GitExecutable.GetOutput($"rebase {interactiveFlag}{onto}"));
+        string interactive = InteractiveCheckBox.IsChecked == true ? "-i " : string.Empty;
+        string autostash = AutostashCheckBox.IsChecked == true ? "--autostash " : string.Empty;
+        await Task.Run(() =>
+            _module.GitExecutable.GetOutput($"rebase {interactive}{autostash}{onto}".TrimEnd()));
+        Close(true);
+    }
+
+    private void Continue_Click(object? sender, RoutedEventArgs e) => _ = RunRebaseControlAsync("--continue");
+
+    private void Skip_Click(object? sender, RoutedEventArgs e) => _ = RunRebaseControlAsync("--skip");
+
+    private void Abort_Click(object? sender, RoutedEventArgs e) => _ = RunRebaseControlAsync("--abort");
+
+    private async Task RunRebaseControlAsync(string flag)
+    {
+        await Task.Run(() => _module.GitExecutable.GetOutput($"rebase {flag}"));
         Close(true);
     }
 
