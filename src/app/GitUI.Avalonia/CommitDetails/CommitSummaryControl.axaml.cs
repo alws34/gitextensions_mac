@@ -13,5 +13,15 @@ public partial class CommitSummaryControl : GitModuleControl
         CommitMessage.Text = revision?.Subject ?? string.Empty;
         AuthorName.Text = revision?.Author ?? string.Empty;
         AuthorDate.Text = revision?.AuthorDate.ToString("yyyy-MM-dd HH:mm") ?? string.Empty;
+
+        if (revision?.Refs is { Count: > 0 } refs)
+        {
+            RefLabels.ItemsSource = refs;
+            RefLabels.IsVisible = true;
+        }
+        else
+        {
+            RefLabels.IsVisible = false;
+        }
     }
 }

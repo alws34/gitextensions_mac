@@ -1,12 +1,38 @@
 <local:GitModuleControl xmlns="https://github.com/avaloniaui"
                          xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                          xmlns:local="using:GitUI.Avalonia.Base"
+                         xmlns:git="using:GitExtensions.Extensibility.Git"
+                         xmlns:converters="using:GitUI.Avalonia.Converters"
                          x:Class="GitUI.Avalonia.CommitDetails.CommitSummaryControl">
     <StackPanel Margin="8" Spacing="4">
-        <TextBlock x:Name="CommitHash"
-                   FontFamily="Cascadia Code,Menlo,Consolas,monospace"
-                   FontSize="11"
-                   Foreground="{DynamicResource SystemBaseMediumColor}" />
+        <!-- Hash + ref badges on the same row -->
+        <StackPanel Orientation="Horizontal" Spacing="8">
+            <TextBlock x:Name="CommitHash"
+                       FontFamily="{DynamicResource MonospaceFont}"
+                       FontSize="11"
+                       Foreground="{DynamicResource SystemBaseMediumColor}"
+                       VerticalAlignment="Center" />
+            <ItemsControl x:Name="RefLabels" IsVisible="False">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <WrapPanel Orientation="Horizontal" />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="git:IGitRef">
+                        <Border Background="{Binding ., Converter={StaticResource RefTypeBrush}}"
+                                CornerRadius="3"
+                                Padding="4,1"
+                                Margin="0,0,4,2">
+                            <TextBlock Text="{Binding LocalName}"
+                                       Foreground="White"
+                                       FontSize="10"
+                                       FontWeight="SemiBold" />
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </StackPanel>
         <TextBlock x:Name="CommitMessage" FontWeight="SemiBold" TextWrapping="Wrap" />
         <StackPanel Orientation="Horizontal" Spacing="8">
             <TextBlock x:Name="AuthorName" />
