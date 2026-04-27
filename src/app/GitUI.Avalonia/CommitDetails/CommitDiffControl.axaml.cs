@@ -7,7 +7,11 @@ namespace GitUI.Avalonia.CommitDetails;
 
 public partial class CommitDiffControl : GitModuleControl
 {
-    public CommitDiffControl() => InitializeComponent();
+    public CommitDiffControl()
+    {
+        InitializeComponent();
+        DiffEditor.TextArea.TextView.LineTransformers.Add(new DiffLineColorizer());
+    }
 
     public async System.Threading.Tasks.Task ShowDiffAsync(GitRevision revision, string? filePath = null)
     {
