@@ -19,6 +19,7 @@
                                 <MenuItem Header="Merge into current" Click="LocalBranch_Merge" />
                                 <Separator />
                                 <MenuItem Header="Delete Branch…"     Click="LocalBranch_Delete" />
+                                <MenuItem Header="Rename Branch…"     Click="LocalBranch_Rename" />
                                 <Separator />
                                 <MenuItem Header="Push…"              Click="LocalBranch_Push" />
                             </ContextMenu>
@@ -36,6 +37,21 @@
                             </ContextMenu>
                         </ListBox.ContextMenu>
                     </ListBox>
+                </Expander>
+                <Expander Header="Submodules">
+                    <ListBox x:Name="SubmodulesList"
+                             DoubleTapped="Submodule_DoubleTapped">
+                        <ListBox.ContextMenu>
+                            <ContextMenu>
+                                <MenuItem Header="Open Submodule" Click="Submodule_Open" />
+                                <MenuItem Header="Update"          Click="Submodule_Update" />
+                            </ContextMenu>
+                        </ListBox.ContextMenu>
+                    </ListBox>
+                </Expander>
+                <Expander Header="Worktrees">
+                    <ListBox x:Name="WorktreesList"
+                             DoubleTapped="Worktree_DoubleTapped" />
                 </Expander>
                 <Expander Header="Stashes">
                     <ListBox x:Name="StashesList"

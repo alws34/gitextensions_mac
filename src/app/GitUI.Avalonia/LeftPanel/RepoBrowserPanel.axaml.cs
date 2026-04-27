@@ -43,6 +43,32 @@ public partial class RepoBrowserPanel : UserControl
             var stashes = await System.Threading.Tasks.Task.Run(
                 () => _module.GetStashes().Select(s => s.Summary).ToList());
 
+            // Submodules
+            string submoduleOut = await System.Threading.Tasks.Task.Run(() =>
+                _module.GitExecutable.GetOutput("submodule status"));
+            var submoduleNames = submoduleOut
+                .Split('\n', StringSplitOptions.RemoveEmptyEntries)
+                .Select(line =>
+                {
+                    string[] parts = line.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                    return parts.Length >= 2 ? parts[1] : string.Empty;
+                })
+                .Where(s => s.Length > 0)
+                .ToList();
+
+            // Worktrees
+            string worktreeOut = await System.Threading.Tasks.Task.Run(() =>
+                _module.GitExecutable.GetOutput("worktree list --porcelain"));
+            var worktreePaths = worktreeOut
+                .Split('\n', StringSplitOptions.RemoveEmptyEntries)
+                .Where(l => l.StartsWith("worktree ", StringComparison.Ordinal))
+                .Select(l => l["worktree ".Length..].Trim())
+                .Where(p => !string.Equals(
+                    p.TrimEnd('/'),
+                    _module.WorkingDir.TrimEnd('/'),
+                    StringComparison.OrdinalIgnoreCase))
+                .ToList();
+
             await Dispatcher.UIThread.InvokeAsync(() =>
             {
                 _allLocalBranches = local;
@@ -51,6 +77,8 @@ public partial class RepoBrowserPanel : UserControl
                 RemotesList.ItemsSource = remotes;
                 TagsList.ItemsSource = tags;
                 StashesList.ItemsSource = stashes;
+                SubmodulesList.ItemsSource = submoduleNames;
+                WorktreesList.ItemsSource = worktreePaths;
             });
         }
         catch (Exception ex)
@@ -138,6 +166,92 @@ public partial class RepoBrowserPanel : UserControl
         if (TagsList.SelectedItem is string tag)
         {
             _ = RunGitAndRefreshAsync($"tag -d {tag}");
+        }
+    }
+
+    // ── Branch rename ────────────────────────────────────────────────────────
+
+    private void LocalBranch_Rename(object? sender, RoutedEventArgs e)
+    {
+        if (LocalBranchesList.SelectedItem is string branch && _module is not null)
+        {
+            _ = RenameBranchAsync(branch);
+        }
+    }
+
+    private async System.Threading.Tasks.Task RenameBranchAsync(string oldName)
+    {
+        var dialog = new Dialogs.RenameBranchDialog(_module!);
+        var mainWindow = (global::Avalonia.Application.Current?.ApplicationLifetime
+            as global::Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime)
+            ?.MainWindow;
+        if (mainWindow is null)
+        {
+            return;
+        }
+
+        await dialog.ShowDialog<object?>(mainWindow);
+        await RefreshAsync();
+    }
+
+    // ── Submodule handlers ──────────────────────────────────────────────────
+
+    private void Submodule_DoubleTapped(object? sender, TappedEventArgs e)
+    {
+        if (SubmodulesList.SelectedItem is string name)
+        {
+            OpenSubmodule(name);
+        }
+    }
+
+    private void Submodule_Open(object? sender, RoutedEventArgs e)
+    {
+        if (SubmodulesList.SelectedItem is string name)
+        {
+            OpenSubmodule(name);
+        }
+    }
+
+    private void OpenSubmodule(string name)
+    {
+        if (_module is null)
+        {
+            return;
+        }
+
+        string path = System.IO.Path.Combine(_module.WorkingDir, name);
+        CheckoutRequested?.Invoke(path);
+    }
+
+    private void Submodule_Update(object? sender, RoutedEventArgs e)
+    {
+        if (SubmodulesList.SelectedItem is string name)
+        {
+            _ = UpdateSubmoduleAsync(name);
+        }
+    }
+
+    private async System.Threading.Tasks.Task UpdateSubmoduleAsync(string name)
+    {
+        try
+        {
+            string result = await System.Threading.Tasks.Task.Run(() =>
+                _module!.GitExecutable.GetOutput($"submodule update --init -- \"{name}\""));
+            StatusRequested?.Invoke(result.Trim());
+        }
+        catch (Exception ex)
+        {
+            ErrorOccurred?.Invoke(ex.Message);
+        }
+    }
+
+    // ── Worktree handlers ───────────────────────────────────────────────────
+
+    private void Worktree_DoubleTapped(object? sender, TappedEventArgs e)
+    {
+        if (WorktreesList.SelectedItem is string path)
+        {
+            CheckoutRequested?.Invoke(path);
         }
     }
 
