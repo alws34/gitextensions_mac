@@ -12,9 +12,9 @@ public sealed class RefTypeBrushConverter : IValueConverter
     public static readonly RefTypeBrushConverter Instance = new();
 
     public static string GetResourceKey(bool isRemote, bool isTag) =>
-        isTag ? "RefLabelTag" :
-        isRemote ? "RefLabelRemoteBranch" :
-        "RefLabelLocalBranch";
+        isTag ? "RefBadgeTagBackground" :
+        isRemote ? "RefBadgeRemoteBranchBackground" :
+        "RefBadgeLocalBranchBackground";
 
     public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
     {

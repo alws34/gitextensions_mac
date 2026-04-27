@@ -10,15 +10,23 @@
     x:Class="GitUI.Avalonia.MainWindow"
     Title="Git Extensions"
     Width="1280" Height="800"
-    MinWidth="800" MinHeight="500">
+    MinWidth="1024" MinHeight="600">
 
     <DockPanel>
+        <!-- Menu bar -->
         <Menu DockPanel.Dock="Top" x:Name="MainMenu" />
-        <Border DockPanel.Dock="Top" Height="32" Background="{DynamicResource SystemChromeMediumColor}">
+
+        <!-- Tool bar -->
+        <Border DockPanel.Dock="Top" Height="34"
+                Background="{DynamicResource SystemChromeMediumColor}">
             <StackPanel x:Name="MainToolBar" Orientation="Horizontal" Spacing="2" Margin="4,2" />
         </Border>
+
+        <!-- Filter bar (only visible when a repo is open) -->
         <controls:FilterToolBar DockPanel.Dock="Top" x:Name="FilterBar"
                                 IsVisible="{Binding HasRepository}" />
+
+        <!-- In-progress action banner (merge / cherry-pick / etc.) -->
         <Border DockPanel.Dock="Top"
                 x:Name="ActionBar"
                 Background="#FFFFF3CD"
@@ -38,26 +46,49 @@
                            FontSize="12" />
             </DockPanel>
         </Border>
-        <Border DockPanel.Dock="Bottom" Height="24" Background="{DynamicResource SystemChromeLowColor}">
-            <TextBlock x:Name="StatusLabel" VerticalAlignment="Center" Margin="8,0" FontSize="12" />
+
+        <!-- Status bar at the very bottom -->
+        <Border DockPanel.Dock="Bottom" Height="22"
+                Background="{DynamicResource SystemChromeLowColor}">
+            <TextBlock x:Name="StatusLabel"
+                       VerticalAlignment="Center"
+                       Margin="8,0"
+                       FontSize="11" />
         </Border>
+
+        <!-- Main content area -->
         <Grid>
+            <!-- No-repo dashboard -->
             <dashboard:DashboardView x:Name="Dashboard"
                                      IsVisible="{Binding !HasRepository}" />
+
+            <!-- Repo view: [left panel | splitter | revision grid] / [splitter] / [commit details] -->
             <Grid x:Name="RepoView" IsVisible="{Binding HasRepository}">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="220" MinWidth="0" />
-                    <ColumnDefinition Width="5" />
-                    <ColumnDefinition Width="*" MinWidth="300" />
-                    <ColumnDefinition Width="5" />
-                    <ColumnDefinition Width="400" MinWidth="200" />
-                </Grid.ColumnDefinitions>
-                <leftpanel:RepoBrowserPanel Grid.Column="0" x:Name="LeftPanel"
-                                            Background="{DynamicResource SystemChromeMediumLowColor}" />
-                <GridSplitter Grid.Column="1" ResizeDirection="Columns" />
-                <grid:RevisionGridControl Grid.Column="2" x:Name="RevisionGrid" />
-                <GridSplitter Grid.Column="3" ResizeDirection="Columns" />
-                <details:CommitDetailsPanel Grid.Column="4" x:Name="DetailsPanel" />
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*" MinHeight="150" />
+                    <RowDefinition Height="5" />
+                    <RowDefinition Height="250" MinHeight="100" />
+                </Grid.RowDefinitions>
+
+                <!-- Top row: left panel + revision grid side by side -->
+                <Grid Grid.Row="0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="220" MinWidth="0" />
+                        <ColumnDefinition Width="5" />
+                        <ColumnDefinition Width="*" MinWidth="300" />
+                    </Grid.ColumnDefinitions>
+
+                    <leftpanel:RepoBrowserPanel Grid.Column="0" x:Name="LeftPanel"
+                                                Background="{DynamicResource SystemChromeMediumLowColor}" />
+                    <GridSplitter Grid.Column="1" ResizeDirection="Columns" />
+                    <grid:RevisionGridControl Grid.Column="2" x:Name="RevisionGrid" />
+                </Grid>
+
+                <!-- Horizontal splitter between grid and details -->
+                <GridSplitter Grid.Row="1" ResizeDirection="Rows" />
+
+                <!-- Bottom row: commit details panel -->
+                <details:CommitDetailsPanel Grid.Row="2" x:Name="DetailsPanel" />
             </Grid>
         </Grid>
     </DockPanel>

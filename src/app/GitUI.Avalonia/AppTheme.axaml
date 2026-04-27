@@ -2,6 +2,13 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:local="using:GitUI.Avalonia.Converters">
 
+    <!-- Window background -->
+    <SolidColorBrush x:Key="WindowBackground">#FF1E1E1E</SolidColorBrush>
+    <SolidColorBrush x:Key="PanelBackground">#FF252526</SolidColorBrush>
+    <SolidColorBrush x:Key="ToolBarBackground">#FF2D2D30</SolidColorBrush>
+    <SolidColorBrush x:Key="StatusBarBackground">#FF007ACC</SolidColorBrush>
+    <SolidColorBrush x:Key="SeparatorBrush">#FF555555</SolidColorBrush>
+
     <!-- Graph lane colors (match Windows version) -->
     <Color x:Key="GraphLane1">#FF0000CD</Color>
     <Color x:Key="GraphLane2">#FFFF8C00</Color>
@@ -19,13 +26,34 @@
     <SolidColorBrush x:Key="DiffSectionBackground">#22282800</SolidColorBrush>
     <SolidColorBrush x:Key="DiffSectionForeground">#FFAAAA00</SolidColorBrush>
 
-    <!-- Ref label colors -->
+    <!-- Ref label solid background colors (WinForms style) -->
     <SolidColorBrush x:Key="RefLabelLocalBranch">#FF1E90FF</SolidColorBrush>
     <SolidColorBrush x:Key="RefLabelRemoteBranch">#FF32CD32</SolidColorBrush>
     <SolidColorBrush x:Key="RefLabelTag">#FFFFB900</SolidColorBrush>
 
-    <!-- Monospace font for diff/editor views -->
-    <FontFamily x:Key="MonospaceFont">Menlo, Monaco, Courier New, monospace</FontFamily>
+    <!-- Ref label background brushes (solid fill with contrasting white text) -->
+    <SolidColorBrush x:Key="RefBadgeLocalBranchBackground">#FF1565C0</SolidColorBrush>
+    <SolidColorBrush x:Key="RefBadgeRemoteBranchBackground">#FF2E7D32</SolidColorBrush>
+    <SolidColorBrush x:Key="RefBadgeTagBackground">#FFB8860B</SolidColorBrush>
+    <SolidColorBrush x:Key="RefBadgeText">#FFFFFFFF</SolidColorBrush>
+    <SolidColorBrush x:Key="RefBadgeTagText">#FF1A1A1A</SolidColorBrush>
+
+    <!-- File status letter colors -->
+    <SolidColorBrush x:Key="FileStatusModified">#FFFF8C00</SolidColorBrush>
+    <SolidColorBrush x:Key="FileStatusAdded">#FF32CD32</SolidColorBrush>
+    <SolidColorBrush x:Key="FileStatusDeleted">#FFFF4444</SolidColorBrush>
+    <SolidColorBrush x:Key="FileStatusRenamed">#FFAA44FF</SolidColorBrush>
+
+    <!-- Alternating row colors for revision grid -->
+    <SolidColorBrush x:Key="RowEvenBackground">#FF1E1E1E</SolidColorBrush>
+    <SolidColorBrush x:Key="RowOddBackground">#FF252526</SolidColorBrush>
+    <SolidColorBrush x:Key="RowSelectedBackground">#FF094771</SolidColorBrush>
+
+    <!-- Monospace font stack (Cascadia Code first for Windows/Mac compatibility) -->
+    <FontFamily x:Key="MonospaceFont">Cascadia Code, Menlo, Monaco, Consolas, monospace</FontFamily>
+
+    <!-- Revision grid font -->
+    <x:Double x:Key="RevisionGridFontSize">12</x:Double>
 
     <!-- Converters registered here so all AXAML can use StaticResource -->
     <local:BoolToVisibilityConverter x:Key="BoolToVisibility" />

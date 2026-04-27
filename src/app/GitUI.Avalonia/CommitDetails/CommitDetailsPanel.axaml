@@ -3,10 +3,13 @@
              xmlns:details="using:GitUI.Avalonia.CommitDetails"
              x:Class="GitUI.Avalonia.CommitDetails.CommitDetailsPanel">
     <DockPanel>
+        <!-- Commit summary: short hash, author, date, subject -->
         <details:CommitSummaryControl x:Name="Summary"
                                       DockPanel.Dock="Top"
-                                      MinHeight="80"
-                                      MaxHeight="160" />
+                                      MinHeight="70"
+                                      MaxHeight="120" />
+
+        <!-- Tab control: Diff | Files | Tree -->
         <TabControl x:Name="DetailsTabs"
                     SelectionChanged="DetailsTabs_SelectionChanged">
             <TabItem Header="Diff">
@@ -14,6 +17,9 @@
             </TabItem>
             <TabItem Header="Files">
                 <details:FileStatusList x:Name="FileList" />
+            </TabItem>
+            <TabItem Header="Tree">
+                <details:FileStatusList x:Name="TreeView" />
             </TabItem>
         </TabControl>
     </DockPanel>

@@ -4,9 +4,9 @@
              xmlns:git="using:GitExtensions.Extensibility.Git"
              x:Class="GitUI.Avalonia.RevisionGrid.RevisionDataGrid">
     <DockPanel>
-        <!-- Column headers -->
+        <!-- Column headers: Graph | Subject(*) | Author(140) | Date(115) | Hash(80) -->
         <Grid DockPanel.Dock="Top"
-              ColumnDefinitions="120,*,150,100,80"
+              ColumnDefinitions="80,*,140,115,80"
               Background="{DynamicResource SystemChromeMediumColor}">
             <TextBlock Grid.Column="0" Text="Graph"
                        FontSize="11" FontWeight="SemiBold"
@@ -31,14 +31,17 @@
                  ScrollViewer.HorizontalScrollBarVisibility="Disabled">
             <ListBox.ItemTemplate>
                 <DataTemplate x:DataType="local:RevisionRow">
-                    <Grid ColumnDefinitions="120,*,150,100,80" Height="26">
+                    <!-- Row height exactly 22px; column order: Graph(80) | Subject(*) | Author(140) | Date(115) | Hash(80) -->
+                    <Grid ColumnDefinitions="80,*,140,115,80" Height="22">
+
+                        <!-- Graph column -->
                         <local:GraphCell Grid.Column="0"
                                          Row="{Binding GraphRow}"
                                          PrevRow="{Binding PrevRow}"
                                          NextRow="{Binding NextRow}"
-                                         Width="120" Height="26" />
+                                         Width="80" Height="22" />
 
-                        <!-- Subject with per-ref-type colored badges -->
+                        <!-- Subject: colored ref badges + message text -->
                         <StackPanel Grid.Column="1"
                                     Orientation="Horizontal"
                                     VerticalAlignment="Center"
@@ -52,11 +55,11 @@
                                 </ItemsControl.ItemsPanel>
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate x:DataType="git:IGitRef">
-                                        <Border Background="#22000000"
+                                        <Border Background="{Binding ., Converter={StaticResource RefTypeBrush}}"
                                                 CornerRadius="2"
-                                                Padding="3,1">
+                                                Padding="4,1">
                                             <TextBlock Text="{Binding LocalName}"
-                                                       Foreground="{Binding ., Converter={StaticResource RefTypeBrush}}"
+                                                       Foreground="White"
                                                        FontSize="10"
                                                        FontWeight="SemiBold"
                                                        VerticalAlignment="Center" />
@@ -65,28 +68,34 @@
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>
                             <TextBlock Text="{Binding Subject}"
+                                       FontSize="12"
                                        VerticalAlignment="Center"
                                        TextTrimming="CharacterEllipsis" />
                         </StackPanel>
 
+                        <!-- Author column -->
                         <TextBlock Grid.Column="2"
                                    Text="{Binding Author}"
                                    VerticalAlignment="Center"
                                    Margin="4,0"
-                                   FontSize="11"
+                                   FontSize="12"
                                    TextTrimming="CharacterEllipsis" />
+
+                        <!-- Date column: yyyy-MM-dd HH:mm -->
                         <TextBlock Grid.Column="3"
-                                   Text="{Binding AuthorDate, StringFormat='{}{0:yyyy-MM-dd}'}"
+                                   Text="{Binding AuthorDate, StringFormat='{}{0:yyyy-MM-dd HH:mm}'}"
                                    VerticalAlignment="Center"
                                    Margin="4,0"
                                    FontSize="11" />
+
+                        <!-- Hash column: monospace font -->
                         <TextBlock Grid.Column="4"
                                    Text="{Binding ShortHash}"
                                    VerticalAlignment="Center"
                                    Margin="4,0"
                                    FontSize="11"
                                    Foreground="Gray"
-                                   FontFamily="{StaticResource MonospaceFont}" />
+                                   FontFamily="{DynamicResource MonospaceFont}" />
                     </Grid>
                 </DataTemplate>
             </ListBox.ItemTemplate>
