@@ -43,6 +43,76 @@ public partial class CommitDialog : GitExtensionsDialog
         });
     }
 
+    public event Action? CommitMade;
+
+    // -------------------------------------------------------------------------
+    // Per-file stage / unstage (double-tap + context menu)
+    // -------------------------------------------------------------------------
+
+    private void UnstagedFile_DoubleTapped(object? sender, global::Avalonia.Input.TappedEventArgs e)
+    {
+        if (UnstagedList.SelectedItem is string fileName)
+        {
+            _ = StageFileAsync(fileName);
+        }
+    }
+
+    private void StagedFile_DoubleTapped(object? sender, global::Avalonia.Input.TappedEventArgs e)
+    {
+        if (StagedList.SelectedItem is string fileName)
+        {
+            _ = UnstageFileAsync(fileName);
+        }
+    }
+
+    private void CtxStage_Click(object? sender, global::Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        if (UnstagedList.SelectedItem is string f)
+        {
+            _ = StageFileAsync(f);
+        }
+    }
+
+    private void CtxUnstage_Click(object? sender, global::Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        if (StagedList.SelectedItem is string f)
+        {
+            _ = UnstageFileAsync(f);
+        }
+    }
+
+    private void CtxDiffUnstaged_Click(object? sender, global::Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        if (UnstagedList.SelectedItem is string f)
+        {
+            _ = ShowDiffAsync(f, staged: false);
+        }
+    }
+
+    private void CtxDiffStaged_Click(object? sender, global::Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        if (StagedList.SelectedItem is string f)
+        {
+            _ = ShowDiffAsync(f, staged: true);
+        }
+    }
+
+    private async System.Threading.Tasks.Task StageFileAsync(string fileName)
+    {
+        await System.Threading.Tasks.Task.Run(() =>
+            _module.GitExecutable.GetOutput($"add -- \"{fileName}\""));
+        await LoadStatusAsync();
+        await Dispatcher.UIThread.InvokeAsync(() => DiffPreview.Text = string.Empty);
+    }
+
+    private async System.Threading.Tasks.Task UnstageFileAsync(string fileName)
+    {
+        await System.Threading.Tasks.Task.Run(() =>
+            _module.GitExecutable.GetOutput($"reset HEAD -- \"{fileName}\""));
+        await LoadStatusAsync();
+        await Dispatcher.UIThread.InvokeAsync(() => DiffPreview.Text = string.Empty);
+    }
+
     // -------------------------------------------------------------------------
     // Stage / Unstage all
     // -------------------------------------------------------------------------
@@ -157,14 +227,14 @@ public partial class CommitDialog : GitExtensionsDialog
         bool success = result.Contains("master") || result.Contains("main") ||
                        result.Contains("HEAD") || result.Contains("[");
 
-        await Dispatcher.UIThread.InvokeAsync(() =>
-        {
-            DiffPreview.Text = result;
-        });
-
         if (success)
         {
-            await LoadStatusAsync();
+            CommitMade?.Invoke();
+            await Dispatcher.UIThread.InvokeAsync(() => Close(true));
+        }
+        else
+        {
+            await Dispatcher.UIThread.InvokeAsync(() => DiffPreview.Text = result);
         }
     }
 

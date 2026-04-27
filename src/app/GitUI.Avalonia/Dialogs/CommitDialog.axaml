@@ -13,7 +13,16 @@
                     <TextBlock Text="Unstaged" FontWeight="SemiBold" VerticalAlignment="Center" />
                     <Button Content="Stage All" Click="StageAll_Click" Padding="4,2" />
                 </StackPanel>
-                <ListBox x:Name="UnstagedList" SelectionChanged="UnstagedFile_Selected" />
+                <ListBox x:Name="UnstagedList"
+                         SelectionChanged="UnstagedFile_Selected"
+                         DoubleTapped="UnstagedFile_DoubleTapped">
+                    <ListBox.ContextMenu>
+                        <ContextMenu>
+                            <MenuItem Header="Stage File" Click="CtxStage_Click" />
+                            <MenuItem Header="Show Diff"  Click="CtxDiffUnstaged_Click" />
+                        </ContextMenu>
+                    </ListBox.ContextMenu>
+                </ListBox>
             </DockPanel>
             <GridSplitter Grid.Column="1" ResizeDirection="Columns" />
             <DockPanel Grid.Column="2">
@@ -21,7 +30,16 @@
                     <TextBlock Text="Staged" FontWeight="SemiBold" VerticalAlignment="Center" />
                     <Button Content="Unstage All" Click="UnstageAll_Click" Padding="4,2" />
                 </StackPanel>
-                <ListBox x:Name="StagedList" SelectionChanged="StagedFile_Selected" />
+                <ListBox x:Name="StagedList"
+                         SelectionChanged="StagedFile_Selected"
+                         DoubleTapped="StagedFile_DoubleTapped">
+                    <ListBox.ContextMenu>
+                        <ContextMenu>
+                            <MenuItem Header="Unstage File" Click="CtxUnstage_Click" />
+                            <MenuItem Header="Show Diff"    Click="CtxDiffStaged_Click" />
+                        </ContextMenu>
+                    </ListBox.ContextMenu>
+                </ListBox>
             </DockPanel>
             <GridSplitter Grid.Column="3" ResizeDirection="Columns" />
             <ae:TextEditor Grid.Column="4" x:Name="DiffPreview"
