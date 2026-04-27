@@ -3,9 +3,29 @@
                             xmlns:local="using:GitUI.Avalonia.Base"
                             xmlns:ae="clr-namespace:AvaloniaEdit;assembly=AvaloniaEdit"
                             x:Class="GitUI.Avalonia.Dialogs.FileHistoryDialog"
-                            Title="File History" Width="900" Height="700">
-  <Grid RowDefinitions="*,*">
-    <ListBox Grid.Row="0" x:Name="CommitsList" SelectionChanged="CommitsList_SelectionChanged"/>
-    <ae:TextEditor Grid.Row="1" x:Name="FileEditor" IsReadOnly="True"/>
-  </Grid>
+                            Title="File History"
+                            Width="900" Height="600"
+                            SizeToContent="Manual" CanResize="True">
+    <Grid ColumnDefinitions="300,5,*" Margin="8">
+        <!-- Left: commit list -->
+        <DockPanel Grid.Column="0">
+            <TextBlock DockPanel.Dock="Top"
+                       Text="Commits"
+                       FontWeight="SemiBold"
+                       Margin="0,0,0,4" />
+            <ListBox x:Name="CommitsList"
+                     FontFamily="{DynamicResource MonospaceFont}"
+                     FontSize="11"
+                     SelectionChanged="CommitsList_SelectionChanged" />
+        </DockPanel>
+        <GridSplitter Grid.Column="1" ResizeDirection="Columns" />
+        <!-- Right: file content at selected revision -->
+        <ae:TextEditor Grid.Column="2"
+                       x:Name="FileEditor"
+                       IsReadOnly="True"
+                       FontFamily="{DynamicResource MonospaceFont}"
+                       FontSize="12"
+                       ShowLineNumbers="True"
+                       WordWrap="False" />
+    </Grid>
 </local:GitExtensionsDialog>
