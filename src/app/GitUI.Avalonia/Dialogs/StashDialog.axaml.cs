@@ -52,8 +52,16 @@ public partial class StashDialog : GitExtensionsDialog
 
     private async Task StashSaveAsync()
     {
-        await Task.Run(() => _module.GitExecutable.GetOutput("stash push"));
+        string msg = await Dispatcher.UIThread.InvokeAsync(() =>
+            StashMessageBox.Text?.Trim() ?? string.Empty);
+
+        string args = string.IsNullOrEmpty(msg)
+            ? "stash push"
+            : $"stash push -m \"{msg}\"";
+
+        await Task.Run(() => _module.GitExecutable.GetOutput(args));
         await LoadStashesAsync();
+        await Dispatcher.UIThread.InvokeAsync(() => StashMessageBox.Text = string.Empty);
     }
 
     private void Apply_Click(object? sender, RoutedEventArgs e)

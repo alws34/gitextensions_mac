@@ -6,11 +6,15 @@
                             Title="Stash" Width="700" Height="450">
     <Grid ColumnDefinitions="240,8,*" Margin="16">
         <DockPanel Grid.Column="0">
-            <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Spacing="4" Margin="0,8,0,0">
-                <Button Content="Stash" Click="Stash_Click" />
-                <Button Content="Apply" Click="Apply_Click" />
-                <Button Content="Pop" Click="Pop_Click" />
-                <Button Content="Drop" Click="Drop_Click" />
+            <StackPanel DockPanel.Dock="Bottom" Spacing="4" Margin="0,8,0,0">
+                <TextBlock Text="Stash message (optional):" />
+                <TextBox x:Name="StashMessageBox" Watermark="WIP on feature…" Margin="0,0,0,4" />
+                <StackPanel Orientation="Horizontal" Spacing="4">
+                    <Button Content="Stash" Click="Stash_Click" />
+                    <Button Content="Apply" Click="Apply_Click" />
+                    <Button Content="Pop" Click="Pop_Click" />
+                    <Button Content="Drop" Click="Drop_Click" />
+                </StackPanel>
             </StackPanel>
             <ListBox x:Name="StashList" SelectionChanged="StashSelected" />
         </DockPanel>
