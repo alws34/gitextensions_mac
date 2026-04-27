@@ -141,6 +141,100 @@ public partial class RepoBrowserPanel : UserControl
         }
     }
 
+    // ── Stash handlers ──────────────────────────────────────────────────────
+
+    private void Stash_DoubleTapped(object? sender, TappedEventArgs e)
+    {
+        int idx = StashesList.SelectedIndex;
+        if (idx >= 0)
+        {
+            _ = StashPopAsync(idx);
+        }
+    }
+
+    private void StashMenu_Opening(object? sender, System.ComponentModel.CancelEventArgs e)
+    {
+        bool hasSelection = StashesList.SelectedIndex >= 0;
+        if (sender is ContextMenu menu)
+        {
+            foreach (var item in menu.Items.OfType<MenuItem>())
+            {
+                item.IsEnabled = hasSelection;
+            }
+        }
+    }
+
+    private void Stash_Pop(object? sender, RoutedEventArgs e)
+    {
+        int idx = StashesList.SelectedIndex;
+        if (idx >= 0)
+        {
+            _ = StashPopAsync(idx);
+        }
+    }
+
+    private void Stash_Apply(object? sender, RoutedEventArgs e)
+    {
+        int idx = StashesList.SelectedIndex;
+        if (idx >= 0)
+        {
+            _ = StashApplyAsync(idx);
+        }
+    }
+
+    private void Stash_Drop(object? sender, RoutedEventArgs e)
+    {
+        int idx = StashesList.SelectedIndex;
+        if (idx >= 0)
+        {
+            _ = StashDropAsync(idx);
+        }
+    }
+
+    private async System.Threading.Tasks.Task StashPopAsync(int index)
+    {
+        try
+        {
+            await System.Threading.Tasks.Task.Run(() =>
+                _module!.GitExecutable.GetOutput($"stash pop stash@{{{index}}}"));
+            StatusRequested?.Invoke("Stash popped");
+            await RefreshAsync();
+        }
+        catch (Exception ex)
+        {
+            ErrorOccurred?.Invoke(ex.Message);
+        }
+    }
+
+    private async System.Threading.Tasks.Task StashApplyAsync(int index)
+    {
+        try
+        {
+            await System.Threading.Tasks.Task.Run(() =>
+                _module!.GitExecutable.GetOutput($"stash apply stash@{{{index}}}"));
+            StatusRequested?.Invoke("Stash applied");
+        }
+        catch (Exception ex)
+        {
+            ErrorOccurred?.Invoke(ex.Message);
+        }
+    }
+
+    private async System.Threading.Tasks.Task StashDropAsync(int index)
+    {
+        try
+        {
+            await System.Threading.Tasks.Task.Run(() =>
+                _module!.GitExecutable.GetOutput($"stash drop stash@{{{index}}}"));
+            StatusRequested?.Invoke("Stash dropped");
+            await RefreshAsync();
+        }
+        catch (Exception ex)
+        {
+            ErrorOccurred?.Invoke(ex.Message);
+        }
+    }
+
     // ── Shared helpers ───────────────────────────────────────────────────────
 
     private async System.Threading.Tasks.Task RunGitAndRefreshAsync(string args)

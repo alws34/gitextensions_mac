@@ -38,7 +38,17 @@
                     </ListBox>
                 </Expander>
                 <Expander Header="Stashes">
-                    <ListBox x:Name="StashesList" />
+                    <ListBox x:Name="StashesList"
+                             DoubleTapped="Stash_DoubleTapped">
+                        <ListBox.ContextMenu>
+                            <ContextMenu Opening="StashMenu_Opening">
+                                <MenuItem Header="Pop (apply + drop)" Click="Stash_Pop" />
+                                <MenuItem Header="Apply (keep stash)" Click="Stash_Apply" />
+                                <Separator />
+                                <MenuItem Header="Drop…"              Click="Stash_Drop" />
+                            </ContextMenu>
+                        </ListBox.ContextMenu>
+                    </ListBox>
                 </Expander>
             </StackPanel>
         </ScrollViewer>
