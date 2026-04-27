@@ -12,11 +12,40 @@ public partial class GitPage : UserControl, ISettingsPage
     {
         InitializeComponent();
         GitPathTextBox.Text = App.Settings.GetString("gitBinDir", "git");
+        UserNameBox.Text = App.Settings.GetString("userName", string.Empty);
+        UserEmailBox.Text = App.Settings.GetString("userEmail", string.Empty);
+        _ = DetectGitVersionAsync();
     }
 
     public void SaveSettings()
     {
-        App.Settings.SetString("gitBinDir", GitPathTextBox.Text ?? "git");
+        App.Settings.SetString("gitBinDir", GitPathTextBox.Text?.Trim() ?? "git");
+        App.Settings.SetString("userName", UserNameBox.Text?.Trim() ?? string.Empty);
+        App.Settings.SetString("userEmail", UserEmailBox.Text?.Trim() ?? string.Empty);
+    }
+
+    private async Task DetectGitVersionAsync()
+    {
+        try
+        {
+            string git = GitPathTextBox.Text?.Trim() is { Length: > 0 } p ? p : "git";
+            string version = await Task.Run(() =>
+            {
+                var psi = new System.Diagnostics.ProcessStartInfo(git, "--version")
+                {
+                    RedirectStandardOutput = true,
+                    UseShellExecute = false,
+                };
+                using var proc = System.Diagnostics.Process.Start(psi);
+                return proc?.StandardOutput.ReadToEnd().Trim() ?? string.Empty;
+            });
+            await Dispatcher.UIThread.InvokeAsync(() =>
+                TestResultLabel.Text = string.IsNullOrEmpty(version) ? "git not found" : version);
+        }
+        catch
+        {
+            await Dispatcher.UIThread.InvokeAsync(() => TestResultLabel.Text = "git not found");
+        }
     }
 
     private void Browse_Click(object? sender, RoutedEventArgs e)
@@ -39,34 +68,12 @@ public partial class GitPage : UserControl, ISettingsPage
         if (files.Count > 0)
         {
             GitPathTextBox.Text = files[0].Path.LocalPath;
+            _ = DetectGitVersionAsync();
         }
     }
 
     private void Test_Click(object? sender, RoutedEventArgs e)
     {
-        _ = TestGitAsync();
-    }
-
-    private async Task TestGitAsync()
-    {
-        try
-        {
-            string result = await Task.Run(() =>
-            {
-                using var process = System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
-                {
-                    FileName = GitPathTextBox.Text ?? "git",
-                    Arguments = "--version",
-                    RedirectStandardOutput = true,
-                    UseShellExecute = false,
-                });
-                return process?.StandardOutput.ReadToEnd() ?? "Failed to start git";
-            });
-            await Dispatcher.UIThread.InvokeAsync(() => TestResultLabel.Text = result.Trim());
-        }
-        catch (Exception ex)
-        {
-            await Dispatcher.UIThread.InvokeAsync(() => TestResultLabel.Text = $"Error: {ex.Message}");
-        }
+        _ = DetectGitVersionAsync();
     }
 }

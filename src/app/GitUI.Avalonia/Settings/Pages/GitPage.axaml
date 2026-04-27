@@ -1,14 +1,32 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="GitUI.Avalonia.Settings.Pages.GitPage">
-    <StackPanel Margin="16" Spacing="8">
-        <TextBlock Text="Git" FontSize="16" FontWeight="Bold" Margin="0,0,0,8" />
-        <TextBlock Text="Git executable path:" />
-        <Grid ColumnDefinitions="*,4,Auto">
-            <TextBox Grid.Column="0" x:Name="GitPathTextBox" />
-            <Button Grid.Column="2" Content="Browse..." Click="Browse_Click" />
-        </Grid>
-        <Button Content="Test" Click="Test_Click" HorizontalAlignment="Left" />
-        <TextBlock x:Name="TestResultLabel" TextWrapping="Wrap" />
+    <StackPanel Margin="16" Spacing="12">
+        <TextBlock Text="Git Settings" FontSize="14" FontWeight="SemiBold" Margin="0,0,0,4" />
+
+        <!-- Git executable path -->
+        <StackPanel Spacing="4">
+            <TextBlock Text="Git executable path:" />
+            <Grid ColumnDefinitions="*,4,Auto">
+                <TextBox Grid.Column="0" x:Name="GitPathTextBox" Watermark="/usr/bin/git" />
+                <Button Grid.Column="2" Content="Browse…" Click="Browse_Click" />
+            </Grid>
+            <TextBlock x:Name="TestResultLabel"
+                       FontSize="11"
+                       Foreground="{DynamicResource SystemBaseMediumColor}"
+                       TextWrapping="Wrap" />
+            <Button Content="Detect version" Click="Test_Click" HorizontalAlignment="Left" Padding="8,3" />
+        </StackPanel>
+
+        <!-- User identity -->
+        <StackPanel Spacing="4">
+            <TextBlock Text="User name:" />
+            <TextBox x:Name="UserNameBox" Watermark="Your Name" />
+        </StackPanel>
+
+        <StackPanel Spacing="4">
+            <TextBlock Text="User email:" />
+            <TextBox x:Name="UserEmailBox" Watermark="you@example.com" />
+        </StackPanel>
     </StackPanel>
 </UserControl>
