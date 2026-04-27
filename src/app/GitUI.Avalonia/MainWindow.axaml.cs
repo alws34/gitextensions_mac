@@ -66,6 +66,7 @@ public partial class MainWindow : GitExtensionsWindow
         AddToRecentRepositories(path);
 
         RevisionGrid.Module = _module;
+        FilterBar.FilterChanged += (text, type) => RevisionGrid.SetFilter(text, type);
         _ = RefreshBranchSelectorAsync();
         _ = RefreshActionBarsAsync();
         RevisionGrid.SelectedRevisionChanged += OnRevisionSelected;
@@ -223,7 +224,7 @@ public partial class MainWindow : GitExtensionsWindow
         menu.Items.Add(new MenuItem { Header = "View _Diff...", Command = ReactiveCommand.CreateFromTask(() => ShowModuleDialogAsync(m => new DiffDialog(m))) });
         menu.Items.Add(new MenuItem { Header = "Git _Log...", Command = ReactiveCommand.CreateFromTask(() => ShowModuleDialogAsync(m => new LogDialog(m))) });
         menu.Items.Add(new Separator());
-        menu.Items.Add(new MenuItem { Header = "_Go to Commit...", Command = ReactiveCommand.CreateFromTask(() => ShowDialogAsync(() => new GoToCommitDialog())) });
+        menu.Items.Add(new MenuItem { Header = "_Go to Commit...", Command = ReactiveCommand.CreateFromTask(GoToCommitAsync) });
         return menu;
     }
 
@@ -287,9 +288,19 @@ public partial class MainWindow : GitExtensionsWindow
         menu.Items.Add(new MenuItem
         {
             Header = "_Go to Commit…",
-            Command = ReactiveCommand.CreateFromTask(() => ShowDialogAsync(() => new GoToCommitDialog())),
+            Command = ReactiveCommand.CreateFromTask(GoToCommitAsync),
         });
         return menu;
+    }
+
+    private async System.Threading.Tasks.Task GoToCommitAsync()
+    {
+        var dialog = new GoToCommitDialog();
+        var result = await dialog.ShowDialog<string?>(this);
+        if (result is { Length: >= 4 })
+        {
+            RevisionGrid.ScrollToHash(result);
+        }
     }
 
     private MenuItem BuildHelpMenu()

@@ -1,23 +1,39 @@
 using Avalonia.Controls;
-using Avalonia.Interactivity;
 
 namespace GitUI.Avalonia.Controls;
 
+public enum FilterType
+{
+    All,
+    Author,
+    Message,
+    Hash,
+}
+
 public partial class FilterToolBar : UserControl
 {
-    public event Action<string>? BranchFilterChanged;
-    public event Action<string>? MessageFilterChanged;
+    public event Action<string, FilterType>? FilterChanged;
 
     public FilterToolBar()
     {
         InitializeComponent();
-        BranchFilter.TextChanged += (_, _) => BranchFilterChanged?.Invoke(BranchFilter.Text ?? "");
-        MessageFilter.TextChanged += (_, _) => MessageFilterChanged?.Invoke(MessageFilter.Text ?? "");
     }
 
-    private void ClearFilter_Click(object? sender, RoutedEventArgs e)
+    private void FilterBox_TextChanged(object? sender, TextChangedEventArgs e)
     {
-        BranchFilter.Text = "";
-        MessageFilter.Text = "";
+        string text = FilterBox.Text ?? string.Empty;
+        FilterType type = FilterTypeCombo.SelectedIndex switch
+        {
+            1 => FilterType.Author,
+            2 => FilterType.Message,
+            3 => FilterType.Hash,
+            _ => FilterType.All,
+        };
+        FilterChanged?.Invoke(text, type);
+    }
+
+    private void Clear_Click(object? sender, global::Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        FilterBox.Text = string.Empty;
     }
 }

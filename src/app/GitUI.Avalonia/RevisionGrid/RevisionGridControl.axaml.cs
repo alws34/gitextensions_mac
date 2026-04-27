@@ -15,6 +15,8 @@ public partial class RevisionGridControl : GitModuleControl
 
     public event Action<GitRevision?>? SelectedRevisionChanged;
 
+    private List<RevisionRow> _allRows = [];
+
     public RevisionGridControl()
     {
         InitializeComponent();
@@ -27,6 +29,29 @@ public partial class RevisionGridControl : GitModuleControl
     }
 
     public Task RefreshAsync() => LoadRevisionsAsync();
+
+    public void ScrollToHash(string shortHash) => DataGrid.ScrollToHash(shortHash);
+
+    public void SetFilter(string text, Controls.FilterType type)
+    {
+        if (string.IsNullOrWhiteSpace(text))
+        {
+            DataGrid.LoadRevisions(_allRows);
+            return;
+        }
+
+        var filtered = _allRows.Where(r => type switch
+        {
+            Controls.FilterType.Author => r.Author.Contains(text, StringComparison.OrdinalIgnoreCase),
+            Controls.FilterType.Hash => r.ShortHash.StartsWith(text, StringComparison.OrdinalIgnoreCase),
+            Controls.FilterType.Message => r.Subject.Contains(text, StringComparison.OrdinalIgnoreCase),
+            _ => r.Author.Contains(text, StringComparison.OrdinalIgnoreCase)
+                 || r.Subject.Contains(text, StringComparison.OrdinalIgnoreCase)
+                 || r.ShortHash.StartsWith(text, StringComparison.OrdinalIgnoreCase),
+        }).ToList();
+
+        DataGrid.LoadRevisions(filtered);
+    }
 
     private async System.Threading.Tasks.Task LoadRevisionsAsync()
     {
@@ -70,6 +95,7 @@ public partial class RevisionGridControl : GitModuleControl
                 }
             }
 
+            _allRows = rows;
             await Dispatcher.UIThread.InvokeAsync(() => DataGrid.LoadRevisions(rows));
         }
         catch (Exception ex)

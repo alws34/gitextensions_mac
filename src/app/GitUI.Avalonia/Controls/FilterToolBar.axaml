@@ -1,19 +1,30 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="GitUI.Avalonia.Controls.FilterToolBar">
-    <DockPanel Height="30">
-        <TextBox DockPanel.Dock="Left" Width="200"
-                 x:Name="BranchFilter"
-                 Watermark="Filter branches..."
-                 Margin="4,2" />
-        <TextBox DockPanel.Dock="Left" Width="200"
-                 x:Name="MessageFilter"
-                 Watermark="Filter commits..."
-                 Margin="4,2" />
-        <Button DockPanel.Dock="Left" Content="×"
-                Width="24" Margin="0,2,8,2"
-                ToolTip.Tip="Clear filters"
-                Click="ClearFilter_Click" />
-        <Border />
-    </DockPanel>
+    <Grid ColumnDefinitions="Auto,*,Auto,Auto" Margin="4,2">
+        <TextBlock Grid.Column="0"
+                   Text="Filter:"
+                   VerticalAlignment="Center"
+                   Margin="0,0,6,0" />
+        <TextBox Grid.Column="1"
+                 x:Name="FilterBox"
+                 Watermark="message, author, or hash…"
+                 TextChanged="FilterBox_TextChanged" />
+        <ComboBox Grid.Column="2"
+                  x:Name="FilterTypeCombo"
+                  Margin="4,0,0,0"
+                  Width="110"
+                  SelectedIndex="0">
+            <ComboBoxItem Content="All" />
+            <ComboBoxItem Content="Author" />
+            <ComboBoxItem Content="Message" />
+            <ComboBoxItem Content="Hash" />
+        </ComboBox>
+        <Button Grid.Column="3"
+                Content="✕"
+                Margin="4,0,0,0"
+                Padding="6,2"
+                Click="Clear_Click"
+                ToolTip.Tip="Clear filter" />
+    </Grid>
 </UserControl>
