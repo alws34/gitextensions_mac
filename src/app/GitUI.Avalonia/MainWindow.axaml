@@ -71,7 +71,7 @@
                 </Grid.RowDefinitions>
 
                 <!-- Top row: left panel + revision grid side by side -->
-                <Grid Grid.Row="0">
+                <Grid Grid.Row="0" x:Name="TopContentGrid">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="220" MinWidth="0" />
                         <ColumnDefinition Width="5" />

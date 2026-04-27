@@ -193,7 +193,7 @@ public partial class MainWindow : GitExtensionsWindow
     private MenuItem BuildCommandsMenu()
     {
         var menu = new MenuItem { Header = "_Commands" };
-        menu.Items.Add(new MenuItem { Header = "_Commit...", Command = ReactiveCommand.CreateFromTask(() => ShowModuleDialogAsync(m => new CommitDialog(m))) });
+        menu.Items.Add(new MenuItem { Header = "_Commit...", Command = ReactiveCommand.CreateFromTask(ShowCommitDialogAsync) });
         menu.Items.Add(new MenuItem { Header = "_Add Files...", Command = ReactiveCommand.CreateFromTask(() => ShowModuleDialogAsync(m => new AddFilesDialog(m))) });
         menu.Items.Add(new MenuItem { Header = "Add to .git_ignore...", Command = ReactiveCommand.CreateFromTask(() => ShowModuleDialogAsync(m => new AddToGitIgnoreDialog(m))) });
         menu.Items.Add(new Separator());
@@ -303,6 +303,25 @@ public partial class MainWindow : GitExtensionsWindow
         return menu;
     }
 
+    private async System.Threading.Tasks.Task ShowCommitDialogAsync()
+    {
+        if (_module is null)
+        {
+            return;
+        }
+
+        var dialog = new CommitDialog(_module);
+        dialog.CommitMade += () =>
+        {
+            _ = Dispatcher.UIThread.InvokeAsync(async () =>
+            {
+                await RevisionGrid.RefreshAsync();
+                await RefreshBranchSelectorAsync();
+            });
+        };
+        await dialog.ShowDialog<object?>(this);
+    }
+
     private async System.Threading.Tasks.Task ShowModuleDialogAsync<T>(Func<GitModule, T> factory)
         where T : AvaloniaWindow
     {
@@ -402,18 +421,18 @@ public partial class MainWindow : GitExtensionsWindow
 
     private void BuildToolBar()
     {
-        MainToolBar.Children.Add(MakeToolButton("⊞", "Toggle left panel", ToggleLeftPanel));
+        MainToolBar.Children.Add(MakeToolButton("☰", "Toggle left panel (Ctrl+W)", ToggleLeftPanel));
         MainToolBar.Children.Add(MakeToolSeparator());
-        MainToolBar.Children.Add(MakeToolButton("↻", "Refresh revisions", () => _ = RevisionGrid.RefreshAsync()));
+        MainToolBar.Children.Add(MakeToolButton("⟳", "Refresh (F5)", () => _ = RevisionGrid.RefreshAsync()));
         MainToolBar.Children.Add(MakeToolSeparator());
-        MainToolBar.Children.Add(MakeToolButton("Commit…", "Commit staged changes",
-            () => _ = ShowModuleDialogAsync(m => new CommitDialog(m))));
-        MainToolBar.Children.Add(MakeToolButton("Fetch", "Fetch all remotes", () => _ = FetchAsync()));
-        MainToolBar.Children.Add(MakeToolButton("Pull…", "Pull / merge",
+        MainToolBar.Children.Add(MakeToolButton("✎", "Commit staged changes (Ctrl+Enter)",
+            () => _ = ShowCommitDialogAsync()));
+        MainToolBar.Children.Add(MakeToolButton("⇅", "Fetch all remotes", () => _ = FetchAsync()));
+        MainToolBar.Children.Add(MakeToolButton("⬇", "Pull / merge",
             () => _ = ShowModuleDialogAsync(m => new PullDialog(m))));
-        MainToolBar.Children.Add(MakeToolButton("Push…", "Push to remote",
+        MainToolBar.Children.Add(MakeToolButton("⬆", "Push to remote",
             () => _ = ShowModuleDialogAsync(m => new PushDialog(m))));
-        MainToolBar.Children.Add(MakeToolButton("Stash…", "Stash local changes",
+        MainToolBar.Children.Add(MakeToolButton("≡", "Stash local changes",
             () => _ = ShowModuleDialogAsync(m => new StashDialog(m))));
         MainToolBar.Children.Add(MakeToolSeparator());
 
@@ -429,13 +448,14 @@ public partial class MainWindow : GitExtensionsWindow
         MainToolBar.Children.Add(_branchSelector);
     }
 
-    private static Button MakeToolButton(string text, string tooltip, Action onClick)
+    private static Button MakeToolButton(string icon, string tooltip, Action onClick)
     {
         var btn = new Button
         {
-            Content = text,
-            Padding = new Thickness(8, 2),
-            Margin = new Thickness(1, 0),
+            Content = icon,
+            Classes = { "ToolBtn" },
+            HorizontalContentAlignment = HorizontalAlignment.Center,
+            VerticalContentAlignment = VerticalAlignment.Center,
         };
         ToolTip.SetTip(btn, tooltip);
         btn.Click += (_, _) => onClick();
@@ -525,8 +545,8 @@ public partial class MainWindow : GitExtensionsWindow
 
     private void ToggleLeftPanel()
     {
-        var col = RepoView.ColumnDefinitions[0];
-        var splitter = RepoView.ColumnDefinitions[1];
+        var col = TopContentGrid.ColumnDefinitions[0];
+        var splitter = TopContentGrid.ColumnDefinitions[1];
         if (col.Width.Value > 0)
         {
             _savedLeftPanelWidth = col.Width.Value;
