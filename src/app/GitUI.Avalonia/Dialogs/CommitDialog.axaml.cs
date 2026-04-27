@@ -4,6 +4,7 @@ using Avalonia.Threading;
 using GitCommands;
 using GitExtensions.Extensibility.Git;
 using GitUI.Avalonia.Base;
+using GitUI.Avalonia.CommitDetails;
 using GitUIPluginInterfaces;
 
 namespace GitUI.Avalonia.Dialogs;
@@ -16,6 +17,7 @@ public partial class CommitDialog : GitExtensionsDialog
     {
         _module = module;
         InitializeComponent();
+        DiffPreview.TextArea.TextView.LineTransformers.Add(new DiffLineColorizer());
         _ = LoadStatusAsync();
     }
 
