@@ -11,6 +11,9 @@ public partial class SettingsWindow : GitExtensionsWindow
     private readonly AppearancePage _appearancePage = new();
     private readonly CommitPage _commitPage = new();
     private readonly AdvancedPage _advancedPage = new();
+    private readonly SshPage _sshPage = new();
+    private readonly DiffToolsPage _diffToolsPage = new();
+    private readonly CredentialsPage _credentialsPage = new();
 
     public SettingsWindow()
     {
@@ -31,6 +34,9 @@ public partial class SettingsWindow : GitExtensionsWindow
             "appearance" => _appearancePage,
             "commit" => _commitPage,
             "advanced" => _advancedPage,
+            "ssh" => _sshPage,
+            "difftools" => _diffToolsPage,
+            "credentials" => _credentialsPage,
             _ => _gitPage,
         };
     }
@@ -41,6 +47,9 @@ public partial class SettingsWindow : GitExtensionsWindow
         _appearancePage.SaveSettings();
         _commitPage.SaveSettings();
         _advancedPage.SaveSettings();
+        _sshPage.SaveSettings();
+        _diffToolsPage.SaveSettings();
+        _credentialsPage.SaveSettings();
         App.Settings.Save();
         Close();
     }

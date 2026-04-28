@@ -10,6 +10,9 @@
                 <ListBoxItem Content="Appearance" Tag="appearance" />
                 <ListBoxItem Content="Commit" Tag="commit" />
                 <ListBoxItem Content="Advanced" Tag="advanced" />
+                <ListBoxItem Content="SSH" Tag="ssh" />
+                <ListBoxItem Content="Diff Tools" Tag="difftools" />
+                <ListBoxItem Content="Credentials" Tag="credentials" />
             </ListBox>
         </Border>
         <GridSplitter Grid.Column="1" ResizeDirection="Columns" />

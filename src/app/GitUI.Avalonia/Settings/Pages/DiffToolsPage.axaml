@@ -1,0 +1,45 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="GitUI.Avalonia.Settings.Pages.DiffToolsPage">
+    <StackPanel Margin="16" Spacing="12">
+        <TextBlock Text="Diff &amp; Merge Tools" FontSize="14" FontWeight="SemiBold" Margin="0,0,0,4" />
+
+        <!-- Diff tool -->
+        <StackPanel Spacing="4">
+            <TextBlock Text="Diff tool:" />
+            <ComboBox x:Name="DiffToolComboBox" HorizontalAlignment="Stretch"
+                      SelectionChanged="DiffTool_SelectionChanged">
+                <ComboBoxItem Content="None" Tag="none" />
+                <ComboBoxItem Content="VS Code" Tag="vscode" />
+                <ComboBoxItem Content="Meld" Tag="meld" />
+                <ComboBoxItem Content="FileMerge" Tag="filemerge" />
+                <ComboBoxItem Content="Kaleidoscope" Tag="kaleidoscope" />
+                <ComboBoxItem Content="BBEdit" Tag="bbedit" />
+                <ComboBoxItem Content="Custom" Tag="custom" />
+            </ComboBox>
+        </StackPanel>
+
+        <!-- Merge tool -->
+        <StackPanel Spacing="4">
+            <TextBlock Text="Merge tool:" />
+            <ComboBox x:Name="MergeToolComboBox" HorizontalAlignment="Stretch">
+                <ComboBoxItem Content="None" Tag="none" />
+                <ComboBoxItem Content="VS Code" Tag="vscode" />
+                <ComboBoxItem Content="Meld" Tag="meld" />
+                <ComboBoxItem Content="FileMerge" Tag="filemerge" />
+                <ComboBoxItem Content="Kaleidoscope" Tag="kaleidoscope" />
+                <ComboBoxItem Content="BBEdit" Tag="bbedit" />
+                <ComboBoxItem Content="Custom" Tag="custom" />
+            </ComboBox>
+        </StackPanel>
+
+        <!-- Custom diff command (shown only when Custom is selected) -->
+        <StackPanel x:Name="CustomCommandRow" Spacing="4" IsVisible="False">
+            <TextBlock Text="Custom diff command:" />
+            <Grid ColumnDefinitions="*,4,Auto">
+                <TextBox Grid.Column="0" x:Name="CustomDiffCommandTextBox" Watermark="/usr/local/bin/my-diff-tool" />
+                <Button Grid.Column="2" Content="Browse…" Click="BrowseCustomCommand_Click" />
+            </Grid>
+        </StackPanel>
+    </StackPanel>
+</UserControl>

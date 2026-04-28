@@ -1,0 +1,28 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="GitUI.Avalonia.Settings.Pages.SshPage">
+    <StackPanel Margin="16" Spacing="12">
+        <TextBlock Text="SSH Settings" FontSize="14" FontWeight="SemiBold" Margin="0,0,0,4" />
+
+        <!-- SSH client -->
+        <StackPanel Spacing="4">
+            <TextBlock Text="SSH client:" />
+            <ComboBox x:Name="SshClientComboBox" HorizontalAlignment="Stretch">
+                <ComboBoxItem Content="System OpenSSH" Tag="openssh" />
+                <ComboBoxItem Content="PuTTY/Plink" Tag="putty" />
+            </ComboBox>
+        </StackPanel>
+
+        <!-- Default SSH key -->
+        <StackPanel Spacing="4">
+            <TextBlock Text="Default SSH key:" />
+            <Grid ColumnDefinitions="*,4,Auto">
+                <TextBox Grid.Column="0" x:Name="SshKeyPathTextBox" Watermark="~/.ssh/id_rsa" />
+                <Button Grid.Column="2" Content="Browse…" Click="BrowseKey_Click" />
+            </Grid>
+        </StackPanel>
+
+        <!-- SSH agent -->
+        <CheckBox x:Name="UseSshAgentCheckBox" Content="Use SSH agent (ssh-agent / Pageant)" />
+    </StackPanel>
+</UserControl>
