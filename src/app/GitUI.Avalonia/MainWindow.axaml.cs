@@ -210,6 +210,11 @@ public partial class MainWindow : GitExtensionsWindow
         menu.Items.Add(new Separator());
         menu.Items.Add(new MenuItem { Header = "_Stash...", Command = ReactiveCommand.CreateFromTask(() => ShowModuleDialogAsync(m => new StashDialog(m))) });
         menu.Items.Add(new MenuItem { Header = "Cherry _Pick...", Command = ReactiveCommand.CreateFromTask(() => ShowModuleDialogAsync(m => new CherryPickDialog(m))) });
+        menu.Items.Add(new MenuItem
+        {
+            Header = "Interactive Re_base…",
+            Command = ReactiveCommand.CreateFromTask(ShowInteractiveRebaseAsync),
+        });
         menu.Items.Add(new Separator());
         menu.Items.Add(new MenuItem { Header = "Apply _Patch...", Command = ReactiveCommand.CreateFromTask(() => ShowModuleDialogAsync(m => new ApplyPatchDialog(m))) });
         menu.Items.Add(new MenuItem { Header = "Format Patc_h...", Command = ReactiveCommand.CreateFromTask(() => ShowModuleDialogAsync(m => new FormatPatchDialog(m))) });
@@ -260,6 +265,17 @@ public partial class MainWindow : GitExtensionsWindow
         menu.Items.Add(new Separator());
         menu.Items.Add(new MenuItem
         {
+            Header = "_Scripts…",
+            Command = ReactiveCommand.CreateFromTask(() => ShowModuleDialogAsync(m => new Dialogs.ScriptsManagerDialog(m))),
+        });
+        menu.Items.Add(new MenuItem
+        {
+            Header = "Git _Hooks…",
+            Command = ReactiveCommand.CreateFromTask(() => ShowModuleDialogAsync(m => new Dialogs.HooksDialog(m))),
+        });
+        menu.Items.Add(new Separator());
+        menu.Items.Add(new MenuItem
+        {
             Header = "_Settings…",
             Command = ReactiveCommand.Create(OpenSettings),
         });
@@ -291,6 +307,19 @@ public partial class MainWindow : GitExtensionsWindow
             Command = ReactiveCommand.CreateFromTask(GoToCommitAsync),
         });
         return menu;
+    }
+
+    private async System.Threading.Tasks.Task ShowInteractiveRebaseAsync()
+    {
+        if (_module is null)
+        {
+            return;
+        }
+
+        var dialog = new Dialogs.InteractiveRebaseDialog(_module, "HEAD~5");
+        await dialog.ShowDialog<object?>(this);
+        await RevisionGrid.RefreshAsync();
+        await RefreshBranchSelectorAsync();
     }
 
     private async System.Threading.Tasks.Task GoToCommitAsync()
