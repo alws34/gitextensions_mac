@@ -54,6 +54,34 @@ public partial class MainWindow : GitExtensionsWindow
         var recent = App.Settings.GetStringList("recentRepositories");
         Dashboard.RecentRepositories = recent.Select(p => new RecentRepo(p)).ToList();
         Dashboard.OnOpenRepository += OpenRepository;
+        Dashboard.OnClone = () => _ = ShowCloneDialogAsync();
+        Dashboard.OnInit = () => _ = ShowDialogAsync(() => new InitDialog());
+        Dashboard.OnBrowse = () => _ = OpenRepositoryDialogAsync();
+    }
+
+    private async System.Threading.Tasks.Task ShowCloneDialogAsync()
+    {
+        // CloneDialog requires a GitModule for git execution; use the current module
+        // or create a temporary one rooted at the user's home directory.
+        var module = _module ?? new GitModule(App.GitExecutorProvider,
+            System.Environment.GetFolderPath(System.Environment.SpecialFolder.UserProfile));
+        await new CloneDialog(module).ShowDialog<object?>(this);
+    }
+
+    private void CloseRepository()
+    {
+        _module = null;
+        HasRepository = false;
+        Title = "Git Extensions";
+        StatusLabel.Text = string.Empty;
+        ActionBar.IsVisible = false;
+        if (_branchSelector is not null)
+        {
+            _branchSelector.ItemsSource = null;
+            _branchSelector.IsVisible = false;
+        }
+
+        Dashboard.Refresh();
     }
 
     public void OpenRepository(string path)
@@ -173,6 +201,8 @@ public partial class MainWindow : GitExtensionsWindow
         menu.Items.Add(BuildRecentReposMenu());
         menu.Items.Add(new Separator());
         menu.Items.Add(new MenuItem { Header = "_Settings...", InputGesture = new KeyGesture(Key.OemComma, KeyModifiers.Control), Command = ReactiveCommand.Create(OpenSettings) });
+        menu.Items.Add(new Separator());
+        menu.Items.Add(new MenuItem { Header = "_Close Repository", Command = ReactiveCommand.Create(CloseRepository) });
         menu.Items.Add(new Separator());
         menu.Items.Add(new MenuItem
         {
