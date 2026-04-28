@@ -239,6 +239,26 @@ public partial class CommitDialog : GitExtensionsDialog
     }
 
     // -------------------------------------------------------------------------
+    // Amend
+    // -------------------------------------------------------------------------
+
+    private void AmendCheckBox_CheckedChanged(object? sender, global::Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        if (AmendCheckBox.IsChecked == true)
+        {
+            _ = LoadAmendMessageAsync();
+        }
+    }
+
+    private async System.Threading.Tasks.Task LoadAmendMessageAsync()
+    {
+        string message = await System.Threading.Tasks.Task.Run(
+            () => _module.GitExecutable.GetOutput("log -1 --format=%B").Trim());
+        await Dispatcher.UIThread.InvokeAsync(
+            () => CommitMessageEditor.Text = message);
+    }
+
+    // -------------------------------------------------------------------------
     // Cancel
     // -------------------------------------------------------------------------
 

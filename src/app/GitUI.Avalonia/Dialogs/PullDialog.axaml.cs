@@ -51,7 +51,17 @@ public partial class PullDialog : GitExtensionsDialog
 
         await Dispatcher.UIThread.InvokeAsync(() => StatusLabel.Text = "Pulling...");
         string result = await Task.Run(() => _module.GitExecutable.GetOutput(args));
-        await Dispatcher.UIThread.InvokeAsync(() => StatusLabel.Text = result.Trim());
+        await Dispatcher.UIThread.InvokeAsync(() =>
+        {
+            StatusLabel.Text = result.Trim();
+            bool failed = result.Contains("error:", StringComparison.OrdinalIgnoreCase)
+                || result.Contains("conflict", StringComparison.OrdinalIgnoreCase)
+                || result.Contains("fatal:", StringComparison.OrdinalIgnoreCase);
+            if (!failed)
+            {
+                Close(true);
+            }
+        });
     }
 
     private void Cancel_Click(object? sender, RoutedEventArgs e) => Close(false);

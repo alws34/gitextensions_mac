@@ -52,7 +52,7 @@
         <!-- Bottom: Amend checkbox, commit message, buttons -->
         <Grid Grid.Row="1" RowDefinitions="Auto,*,Auto" Margin="8">
             <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="8" Margin="0,4,0,4">
-                <CheckBox x:Name="AmendCheckBox" Content="Amend last commit" />
+                <CheckBox x:Name="AmendCheckBox" Content="Amend last commit" IsCheckedChanged="AmendCheckBox_CheckedChanged" />
             </StackPanel>
             <ae:TextEditor Grid.Row="1" x:Name="CommitMessageEditor"
                            FontFamily="Cascadia Code,Menlo,Consolas,monospace"
