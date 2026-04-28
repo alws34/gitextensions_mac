@@ -4,25 +4,49 @@
              xmlns:git="using:GitExtensions.Extensibility.Git"
              x:Class="GitUI.Avalonia.RevisionGrid.RevisionDataGrid">
     <DockPanel>
-        <!-- Column headers: Graph | Subject(*) | Author(140) | Date(115) | Hash(80) -->
+        <!-- Column headers: Graph | Subject(*) | Author(140) | Date(100) | Hash(72) -->
         <Grid DockPanel.Dock="Top"
-              ColumnDefinitions="80,*,140,115,80"
-              Background="{DynamicResource SystemChromeMediumColor}">
+              ColumnDefinitions="80,*,140,100,72"
+              Background="{DynamicResource SystemChromeMediumColor}"
+              Height="24">
+            <!-- Bottom border separator -->
+            <Border Grid.Column="0" Grid.ColumnSpan="5"
+                    BorderBrush="{DynamicResource SystemBaseMediumLowColor}"
+                    BorderThickness="0,0,0,1"
+                    IsHitTestVisible="False" />
+
+            <!-- Graph header -->
             <TextBlock Grid.Column="0" Text="Graph"
                        FontSize="11" FontWeight="SemiBold"
-                       Margin="4,2" VerticalAlignment="Center" />
+                       Margin="4,0" VerticalAlignment="Center" />
+            <Rectangle Grid.Column="0" Width="1" HorizontalAlignment="Right"
+                       Fill="{DynamicResource SystemBaseMediumLowColor}" />
+
+            <!-- Subject header -->
             <TextBlock Grid.Column="1" Text="Subject"
                        FontSize="11" FontWeight="SemiBold"
-                       Margin="4,2" VerticalAlignment="Center" />
+                       Margin="4,0" VerticalAlignment="Center" />
+            <Rectangle Grid.Column="1" Width="1" HorizontalAlignment="Right"
+                       Fill="{DynamicResource SystemBaseMediumLowColor}" />
+
+            <!-- Author header -->
             <TextBlock Grid.Column="2" Text="Author"
                        FontSize="11" FontWeight="SemiBold"
-                       Margin="4,2" VerticalAlignment="Center" />
+                       Margin="4,0" VerticalAlignment="Center" />
+            <Rectangle Grid.Column="2" Width="1" HorizontalAlignment="Right"
+                       Fill="{DynamicResource SystemBaseMediumLowColor}" />
+
+            <!-- Date header -->
             <TextBlock Grid.Column="3" Text="Date"
                        FontSize="11" FontWeight="SemiBold"
-                       Margin="4,2" VerticalAlignment="Center" />
+                       Margin="4,0" VerticalAlignment="Center" />
+            <Rectangle Grid.Column="3" Width="1" HorizontalAlignment="Right"
+                       Fill="{DynamicResource SystemBaseMediumLowColor}" />
+
+            <!-- Hash header -->
             <TextBlock Grid.Column="4" Text="Hash"
                        FontSize="11" FontWeight="SemiBold"
-                       Margin="4,2" VerticalAlignment="Center" />
+                       Margin="4,0" VerticalAlignment="Center" />
         </Grid>
 
         <ListBox x:Name="CommitList"
@@ -45,8 +69,8 @@
             </ListBox.ContextMenu>
             <ListBox.ItemTemplate>
                 <DataTemplate x:DataType="local:RevisionRow">
-                    <!-- Row height exactly 22px; column order: Graph(80) | Subject(*) | Author(140) | Date(115) | Hash(80) -->
-                    <Grid ColumnDefinitions="80,*,140,115,80" Height="22">
+                    <!-- Row height exactly 22px; column order: Graph(80) | Subject(*) | Author(140) | Date(100) | Hash(72) -->
+                    <Grid ColumnDefinitions="80,*,140,100,72" Height="22">
 
                         <!-- Graph column -->
                         <local:GraphCell Grid.Column="0"
@@ -71,7 +95,7 @@
                                     <DataTemplate x:DataType="git:IGitRef">
                                         <Border Background="{Binding ., Converter={StaticResource RefTypeBrush}}"
                                                 CornerRadius="2"
-                                                Padding="4,1">
+                                                Padding="3,1">
                                             <TextBlock Text="{Binding LocalName}"
                                                        Foreground="White"
                                                        FontSize="10"
@@ -95,20 +119,20 @@
                                    FontSize="12"
                                    TextTrimming="CharacterEllipsis" />
 
-                        <!-- Date column: yyyy-MM-dd HH:mm -->
+                        <!-- Date column: date only, no time -->
                         <TextBlock Grid.Column="3"
-                                   Text="{Binding AuthorDate, StringFormat='{}{0:yyyy-MM-dd HH:mm}'}"
+                                   Text="{Binding AuthorDate, StringFormat='{}{0:yyyy-MM-dd}'}"
                                    VerticalAlignment="Center"
                                    Margin="4,0"
                                    FontSize="11" />
 
-                        <!-- Hash column: monospace font -->
+                        <!-- Hash column: 7-char monospace, adaptive gray -->
                         <TextBlock Grid.Column="4"
                                    Text="{Binding ShortHash}"
                                    VerticalAlignment="Center"
                                    Margin="4,0"
                                    FontSize="11"
-                                   Foreground="Gray"
+                                   Foreground="{DynamicResource SystemBaseMediumColor}"
                                    FontFamily="{DynamicResource MonospaceFont}" />
                     </Grid>
                 </DataTemplate>
