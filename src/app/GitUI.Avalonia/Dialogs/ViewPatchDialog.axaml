@@ -5,13 +5,36 @@
                             x:Class="GitUI.Avalonia.Dialogs.ViewPatchDialog"
                             Title="View Patch" Width="800" Height="600">
     <Grid RowDefinitions="Auto,*,Auto" Margin="8">
+        <!-- Patch file row -->
         <Grid Grid.Row="0" ColumnDefinitions="*,4,Auto" Margin="0,0,0,4">
             <TextBox Grid.Column="0" x:Name="PatchFileTextBox" IsReadOnly="True" />
             <Button Grid.Column="2" Content="Open..." Click="Open_Click" />
         </Grid>
+
+        <!-- Patch viewer -->
         <ae:TextEditor Grid.Row="1" x:Name="PatchViewer" IsReadOnly="True"
-                       FontFamily="{DynamicResource MonospaceFont}" FontSize="12" />
-        <Button Grid.Row="2" Content="Close" Click="Cancel_Click"
-                HorizontalAlignment="Right" Margin="0,8,0,0" />
+                       FontFamily="{DynamicResource MonospaceFont}" FontSize="12"
+                       ShowLineNumbers="True" />
+
+        <!-- Bottom: repo selector + action buttons -->
+        <Grid Grid.Row="2" Margin="0,8,0,0" RowDefinitions="Auto,Auto">
+            <!-- Repo directory row -->
+            <Grid Grid.Row="0" ColumnDefinitions="Auto,*,4,Auto" Margin="0,0,0,4">
+                <TextBlock Grid.Column="0" Text="Repo:" VerticalAlignment="Center" Margin="0,0,6,0" />
+                <TextBox Grid.Column="1" x:Name="RepoPathBox"
+                         Watermark="Select working directory to apply patch into…"
+                         IsReadOnly="True" />
+                <Button Grid.Column="3" Content="Browse…" Click="BrowseRepo_Click" />
+            </Grid>
+            <!-- Buttons row -->
+            <DockPanel Grid.Row="1">
+                <TextBlock x:Name="ApplyStatusLabel" VerticalAlignment="Center" DockPanel.Dock="Left" />
+                <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">
+                    <Button x:Name="ApplyButton" Content="Apply Patch"
+                            IsEnabled="False" Click="Apply_Click" />
+                    <Button Content="Close" Click="Cancel_Click" />
+                </StackPanel>
+            </DockPanel>
+        </Grid>
     </Grid>
 </local:GitExtensionsDialog>

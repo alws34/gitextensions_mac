@@ -66,7 +66,7 @@ public partial class MainWindow : GitExtensionsWindow
         AddToRecentRepositories(path);
 
         RevisionGrid.Module = _module;
-        FilterBar.FilterChanged += (text, type) => RevisionGrid.SetFilter(text, type);
+        FilterBar.FilterChanged += (text, type) => _ = RevisionGrid.SetFilterAsync(text, type);
         _ = RefreshBranchSelectorAsync();
         _ = RefreshActionBarsAsync();
         RevisionGrid.SelectedRevisionChanged += OnRevisionSelected;
@@ -369,18 +369,13 @@ public partial class MainWindow : GitExtensionsWindow
             return;
         }
 
-        StatusLabel.Text = "Fetching…";
-        try
-        {
-            string output = await _module.GitExecutable.GetOutputAsync("fetch --all");
-            StatusLabel.Text = string.IsNullOrWhiteSpace(output) ? "Fetch complete" : output.Trim();
-            await RevisionGrid.RefreshAsync();
-            await RefreshActionBarsAsync();
-        }
-        catch (Exception ex)
-        {
-            ShowError(ex.Message);
-        }
+        var capturedModule = _module;
+        var dialog = new GitProgressDialog(
+            "Fetching all remotes…",
+            () => capturedModule.GitExecutable.GetOutputAsync("fetch --all"));
+        await dialog.ShowDialog<object?>(this);
+        await RevisionGrid.RefreshAsync();
+        await RefreshActionBarsAsync();
     }
 
     private void ActionBar_Dismiss(object? sender, global::Avalonia.Interactivity.RoutedEventArgs e)
@@ -432,7 +427,7 @@ public partial class MainWindow : GitExtensionsWindow
 
     private void BuildToolBar()
     {
-        MainToolBar.Children.Add(MakeToolButton("☰", "Toggle left panel (Ctrl+W)", ToggleLeftPanel));
+        MainToolBar.Children.Add(MakeToolButton("☰", "Toggle left panel (Ctrl+K)", ToggleLeftPanel));
         MainToolBar.Children.Add(MakeToolSeparator());
         MainToolBar.Children.Add(MakeToolButton("⟳", "Refresh (F5)", () => _ = RevisionGrid.RefreshAsync()));
         MainToolBar.Children.Add(MakeToolSeparator());
@@ -549,6 +544,37 @@ public partial class MainWindow : GitExtensionsWindow
         catch (Exception ex)
         {
             ShowError(ex.Message);
+        }
+    }
+
+    protected override void OnKeyDown(global::Avalonia.Input.KeyEventArgs e)
+    {
+        base.OnKeyDown(e);
+        bool ctrl = (e.KeyModifiers & global::Avalonia.Input.KeyModifiers.Control) != 0;
+        if (e.Key == global::Avalonia.Input.Key.F5 && HasRepository)
+        {
+            _ = RevisionGrid.RefreshAsync();
+            e.Handled = true;
+        }
+        else if (ctrl && e.Key == global::Avalonia.Input.Key.Enter && HasRepository)
+        {
+            _ = ShowCommitDialogAsync();
+            e.Handled = true;
+        }
+        else if (ctrl && e.Key == global::Avalonia.Input.Key.G && HasRepository)
+        {
+            _ = GoToCommitAsync();
+            e.Handled = true;
+        }
+        else if (ctrl && e.Key == global::Avalonia.Input.Key.F && HasRepository)
+        {
+            FilterBar.Focus();
+            e.Handled = true;
+        }
+        else if (ctrl && e.Key == global::Avalonia.Input.Key.K)
+        {
+            ToggleLeftPanel();
+            e.Handled = true;
         }
     }
 

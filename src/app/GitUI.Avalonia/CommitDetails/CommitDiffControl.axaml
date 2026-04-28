@@ -3,10 +3,39 @@
                          xmlns:local="using:GitUI.Avalonia.Base"
                          xmlns:ae="clr-namespace:AvaloniaEdit;assembly=AvaloniaEdit"
                          x:Class="GitUI.Avalonia.CommitDetails.CommitDiffControl">
-    <ae:TextEditor x:Name="DiffEditor"
-                   IsReadOnly="True"
-                   FontFamily="Cascadia Code,Menlo,Consolas,monospace"
-                   FontSize="12"
-                   ShowLineNumbers="True"
-                   WordWrap="False" />
+    <Grid RowDefinitions="Auto,*">
+        <!-- Toolbar row -->
+        <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="4" Margin="4,2">
+            <Button x:Name="UnifiedButton" Content="Unified"
+                    Classes="ToolBtn" Click="Unified_Click" />
+            <Button x:Name="SplitButton" Content="Split"
+                    Classes="ToolBtn" Click="Split_Click" />
+        </StackPanel>
+
+        <!-- Unified view -->
+        <ae:TextEditor Grid.Row="1" x:Name="DiffEditor"
+                       IsReadOnly="True"
+                       FontFamily="Cascadia Code,Menlo,Consolas,monospace"
+                       FontSize="12"
+                       ShowLineNumbers="True"
+                       WordWrap="False" />
+
+        <!-- Split view (hidden by default) -->
+        <Grid Grid.Row="1" x:Name="SplitView" IsVisible="False"
+              ColumnDefinitions="*,5,*">
+            <ae:TextEditor Grid.Column="0" x:Name="LeftEditor"
+                           IsReadOnly="True"
+                           FontFamily="Cascadia Code,Menlo,Consolas,monospace"
+                           FontSize="12"
+                           ShowLineNumbers="True"
+                           WordWrap="False" />
+            <GridSplitter Grid.Column="1" ResizeDirection="Columns" />
+            <ae:TextEditor Grid.Column="2" x:Name="RightEditor"
+                           IsReadOnly="True"
+                           FontFamily="Cascadia Code,Menlo,Consolas,monospace"
+                           FontSize="12"
+                           ShowLineNumbers="True"
+                           WordWrap="False" />
+        </Grid>
+    </Grid>
 </local:GitModuleControl>

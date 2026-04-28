@@ -53,7 +53,30 @@ public partial class RevisionGridControl : GitModuleControl
         DataGrid.LoadRevisions(filtered);
     }
 
-    private async System.Threading.Tasks.Task LoadRevisionsAsync()
+    public async System.Threading.Tasks.Task SetFilterAsync(string text, Controls.FilterType type)
+    {
+        if (string.IsNullOrWhiteSpace(text))
+        {
+            await LoadRevisionsAsync();
+            return;
+        }
+
+        if (type == Controls.FilterType.Author)
+        {
+            await LoadRevisionsAsync($"--author=\"{text}\"");
+        }
+        else if (type == Controls.FilterType.Message)
+        {
+            await LoadRevisionsAsync($"--grep=\"{text}\"");
+        }
+        else
+        {
+            // Hash and All: client-side filter on cached rows
+            SetFilter(text, type);
+        }
+    }
+
+    private async System.Threading.Tasks.Task LoadRevisionsAsync(string extraArgs = "")
     {
         if (Module is null)
         {
@@ -63,7 +86,7 @@ public partial class RevisionGridControl : GitModuleControl
         try
         {
             string output = await Module.GitExecutable.GetOutputAsync(
-                $"log --format={LogFormat}%n --max-count={MaxRevisions}");
+                $"log --format={LogFormat}%n --max-count={MaxRevisions}{(string.IsNullOrEmpty(extraArgs) ? string.Empty : " " + extraArgs)}");
 
             var gitRevisions = ParseGitLog(output);
 
