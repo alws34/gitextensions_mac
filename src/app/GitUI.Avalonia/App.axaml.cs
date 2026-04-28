@@ -55,7 +55,9 @@ public partial class App : Application
                             {
                                 var win = desktop.MainWindow;
                                 if (win is not null)
+                                {
                                     await new AboutDialog().ShowDialog<object?>(win);
+                                }
                             });
                         }
                         else if (menuItem.Header == "Settings…")
@@ -63,7 +65,9 @@ public partial class App : Application
                             menuItem.Command = ReactiveCommand.Create(() =>
                             {
                                 if (desktop.MainWindow is MainWindow mw)
+                                {
                                     mw.OpenSettingsFromNativeMenu();
+                                }
                             });
                         }
                         else if (menuItem.Header == "Quit Git Extensions")

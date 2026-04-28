@@ -3,11 +3,11 @@
              x:Class="GitUI.Avalonia.App">
     <NativeMenu.Menu>
         <NativeMenu>
-            <NativeMenuItem Header="About Git Extensions" x:Name="NativeMenuAbout" />
+            <NativeMenuItem Header="About Git Extensions" />
             <NativeMenuItemSeparator />
-            <NativeMenuItem Header="Settings…" Gesture="Meta+OemComma" x:Name="NativeMenuSettings" />
+            <NativeMenuItem Header="Settings…" Gesture="Meta+OemComma" />
             <NativeMenuItemSeparator />
-            <NativeMenuItem Header="Quit Git Extensions" Gesture="Meta+Q" x:Name="NativeMenuQuit" />
+            <NativeMenuItem Header="Quit Git Extensions" Gesture="Meta+Q" />
         </NativeMenu>
     </NativeMenu.Menu>
     <Application.Styles>
