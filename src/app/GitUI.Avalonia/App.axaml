@@ -3,21 +3,27 @@
              x:Class="GitUI.Avalonia.App">
     <Application.Styles>
         <FluentTheme />
+        <Style Selector="TextBlock">
+            <Setter Property="FontSize" Value="12" />
+        </Style>
         <Style Selector="ListBoxItem">
             <Setter Property="Padding" Value="0" />
-            <Setter Property="MinHeight" Value="26" />
+            <Setter Property="MinHeight" Value="22" />
         </Style>
         <Style Selector="ListBoxItem:nth-child(2n)">
-            <Setter Property="Background" Value="#08000000" />
+            <Setter Property="Background" Value="#0F000000" />
         </Style>
         <Style Selector="ListBoxItem:pointerover /template/ ContentPresenter">
             <Setter Property="Background" Value="#1A0078D4" />
         </Style>
         <Style Selector="ListBoxItem:selected /template/ ContentPresenter">
-            <Setter Property="Background" Value="#330078D4" />
+            <Setter Property="Background" Value="#CC0078D4" />
+        </Style>
+        <Style Selector="ListBoxItem:selected TextBlock">
+            <Setter Property="Foreground" Value="White" />
         </Style>
         <Style Selector="ListBoxItem:selected:pointerover /template/ ContentPresenter">
-            <Setter Property="Background" Value="#440078D4" />
+            <Setter Property="Background" Value="#DD0078D4" />
         </Style>
         <Style Selector="Border.ToolSeparator">
             <Setter Property="Width" Value="1" />

@@ -2,10 +2,7 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:local="using:GitUI.Avalonia.Converters">
 
-    <!-- Window background -->
-    <SolidColorBrush x:Key="WindowBackground">#FF1E1E1E</SolidColorBrush>
-    <SolidColorBrush x:Key="PanelBackground">#FF252526</SolidColorBrush>
-    <SolidColorBrush x:Key="ToolBarBackground">#FF2D2D30</SolidColorBrush>
+    <!-- Status bar background (kept — used in MainWindow toolbar) -->
     <SolidColorBrush x:Key="StatusBarBackground">#FF007ACC</SolidColorBrush>
     <SolidColorBrush x:Key="SeparatorBrush">#FF555555</SolidColorBrush>
 
@@ -18,13 +15,13 @@
     <Color x:Key="GraphLane6">#FF008080</Color>
     <Color x:Key="GraphLane7">#FFFF00FF</Color>
 
-    <!-- Diff colors -->
-    <SolidColorBrush x:Key="DiffAddedBackground">#22003300</SolidColorBrush>
-    <SolidColorBrush x:Key="DiffAddedForeground">#FF00AA00</SolidColorBrush>
-    <SolidColorBrush x:Key="DiffRemovedBackground">#22330000</SolidColorBrush>
-    <SolidColorBrush x:Key="DiffRemovedForeground">#FFAA0000</SolidColorBrush>
-    <SolidColorBrush x:Key="DiffSectionBackground">#22282800</SolidColorBrush>
-    <SolidColorBrush x:Key="DiffSectionForeground">#FFAAAA00</SolidColorBrush>
+    <!-- Diff colors (light-mode friendly) -->
+    <SolidColorBrush x:Key="DiffAddedBackground">#FFE6FFED</SolidColorBrush>
+    <SolidColorBrush x:Key="DiffAddedForeground">#FF155724</SolidColorBrush>
+    <SolidColorBrush x:Key="DiffRemovedBackground">#FFFFEEF0</SolidColorBrush>
+    <SolidColorBrush x:Key="DiffRemovedForeground">#FF6F1119</SolidColorBrush>
+    <SolidColorBrush x:Key="DiffSectionBackground">#FFFFF8CC</SolidColorBrush>
+    <SolidColorBrush x:Key="DiffSectionForeground">#FF664D00</SolidColorBrush>
 
     <!-- Ref label solid background colors (WinForms style) -->
     <SolidColorBrush x:Key="RefLabelLocalBranch">#FF1E90FF</SolidColorBrush>
@@ -44,10 +41,10 @@
     <SolidColorBrush x:Key="FileStatusDeleted">#FFFF4444</SolidColorBrush>
     <SolidColorBrush x:Key="FileStatusRenamed">#FFAA44FF</SolidColorBrush>
 
-    <!-- Alternating row colors for revision grid -->
-    <SolidColorBrush x:Key="RowEvenBackground">#FF1E1E1E</SolidColorBrush>
-    <SolidColorBrush x:Key="RowOddBackground">#FF252526</SolidColorBrush>
-    <SolidColorBrush x:Key="RowSelectedBackground">#FF094771</SolidColorBrush>
+    <!-- Revision grid row colors (light-mode adaptive) -->
+    <SolidColorBrush x:Key="RowEvenBackground">#FFFFFFFF</SolidColorBrush>
+    <SolidColorBrush x:Key="RowOddBackground">#FFF5F5F5</SolidColorBrush>
+    <SolidColorBrush x:Key="RowSelectedBackground">#FF0078D4</SolidColorBrush>
 
     <!-- Monospace font stack (Cascadia Code first for Windows/Mac compatibility) -->
     <FontFamily x:Key="MonospaceFont">Cascadia Code, Menlo, Monaco, Consolas, monospace</FontFamily>
