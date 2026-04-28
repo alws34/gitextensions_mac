@@ -43,18 +43,35 @@ public partial class RepoBrowserPanel : UserControl
             var stashes = await System.Threading.Tasks.Task.Run(
                 () => _module.GetStashes().Select(s => s.Summary).ToList());
 
+            // Working directory status
+            var workingDirFiles = await System.Threading.Tasks.Task.Run(() =>
+            {
+                string status = _module.GitExecutable.GetOutput("status --porcelain");
+                return status.Split('\n', StringSplitOptions.RemoveEmptyEntries)
+                             .Select(line => line.Length >= 3 ? line[3..].Trim() : line.Trim())
+                             .Where(s => s.Length > 0)
+                             .ToList();
+            });
+
             // Submodules
             string submoduleOut = await System.Threading.Tasks.Task.Run(() =>
                 _module.GitExecutable.GetOutput("submodule status"));
-            var submoduleNames = submoduleOut
+            var submoduleItems = submoduleOut
                 .Split('\n', StringSplitOptions.RemoveEmptyEntries)
                 .Select(line =>
                 {
+                    if (line.Length == 0)
+                    {
+                        return null;
+                    }
+
+                    char statusChar = line[0];
                     string[] parts = line.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries);
-                    return parts.Length >= 2 ? parts[1] : string.Empty;
+                    string name = parts.Length >= 2 ? parts[1] : string.Empty;
+                    return string.IsNullOrEmpty(name) ? null : new SubmoduleItem(name, statusChar.ToString());
                 })
-                .Where(s => s.Length > 0)
-                .ToList();
+                .Where(s => s is not null)
+                .ToList()!;
 
             // Worktrees
             string worktreeOut = await System.Threading.Tasks.Task.Run(() =>
@@ -73,11 +90,12 @@ public partial class RepoBrowserPanel : UserControl
             {
                 _allLocalBranches = local;
                 _allTags = tags;
+                WorkingDirList.ItemsSource = workingDirFiles;
                 LocalBranchesList.ItemsSource = local;
                 RemotesList.ItemsSource = remotes;
                 TagsList.ItemsSource = tags;
                 StashesList.ItemsSource = stashes;
-                SubmodulesList.ItemsSource = submoduleNames;
+                SubmodulesList.ItemsSource = submoduleItems;
                 WorktreesList.ItemsSource = worktreePaths;
             });
         }
@@ -198,17 +216,17 @@ public partial class RepoBrowserPanel : UserControl
 
     private void Submodule_DoubleTapped(object? sender, TappedEventArgs e)
     {
-        if (SubmodulesList.SelectedItem is string name)
+        if (SubmodulesList.SelectedItem is SubmoduleItem item)
         {
-            OpenSubmodule(name);
+            OpenSubmodule(item.Name);
         }
     }
 
     private void Submodule_Open(object? sender, RoutedEventArgs e)
     {
-        if (SubmodulesList.SelectedItem is string name)
+        if (SubmodulesList.SelectedItem is SubmoduleItem item)
         {
-            OpenSubmodule(name);
+            OpenSubmodule(item.Name);
         }
     }
 
@@ -225,9 +243,9 @@ public partial class RepoBrowserPanel : UserControl
 
     private void Submodule_Update(object? sender, RoutedEventArgs e)
     {
-        if (SubmodulesList.SelectedItem is string name)
+        if (SubmodulesList.SelectedItem is SubmoduleItem item)
         {
-            _ = UpdateSubmoduleAsync(name);
+            _ = UpdateSubmoduleAsync(item.Name);
         }
     }
 
@@ -367,5 +385,24 @@ public partial class RepoBrowserPanel : UserControl
         {
             await Dispatcher.UIThread.InvokeAsync(() => ErrorOccurred?.Invoke(ex.Message));
         }
+    }
+
+    private sealed record SubmoduleItem(string Name, string StatusChar)
+    {
+        public string DisplayName => StatusChar switch
+        {
+            "-" => $"○ {Name}",
+            "+" => $"↑ {Name}",
+            "U" => $"⚠ {Name}",
+            _ => $"✓ {Name}",
+        };
+
+        public string StatusTooltip => StatusChar switch
+        {
+            "-" => "Not initialized",
+            "+" => "Different HEAD than committed",
+            "U" => "Merge conflict",
+            _ => "In sync",
+        };
     }
 }

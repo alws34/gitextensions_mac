@@ -10,6 +10,9 @@
                  TextChanged="SearchBox_TextChanged" />
         <ScrollViewer>
             <StackPanel>
+                <Expander Header="Working Directory" IsExpanded="True">
+                    <ListBox x:Name="WorkingDirList" />
+                </Expander>
                 <Expander Header="Branches" IsExpanded="True">
                     <ListBox x:Name="LocalBranchesList"
                              DoubleTapped="LocalBranch_DoubleTapped">
@@ -41,6 +44,12 @@
                 <Expander Header="Submodules">
                     <ListBox x:Name="SubmodulesList"
                              DoubleTapped="Submodule_DoubleTapped">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding DisplayName}"
+                                           ToolTip.Tip="{Binding StatusTooltip}" />
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
                         <ListBox.ContextMenu>
                             <ContextMenu>
                                 <MenuItem Header="Open Submodule" Click="Submodule_Open" />
