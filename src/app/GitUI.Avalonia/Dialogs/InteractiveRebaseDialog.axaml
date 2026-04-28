@@ -1,0 +1,45 @@
+<local:GitExtensionsDialog xmlns="https://github.com/avaloniaui"
+                            xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                            xmlns:local="using:GitUI.Avalonia.Base"
+                            x:Class="GitUI.Avalonia.Dialogs.InteractiveRebaseDialog"
+                            Title="Interactive Rebase" Width="760" Height="500">
+    <Grid RowDefinitions="Auto,*,Auto,Auto" Margin="12">
+        <!-- Info row -->
+        <TextBlock Grid.Row="0" x:Name="InfoLabel" Margin="0,0,0,8" />
+
+        <!-- Commit list -->
+        <ListBox Grid.Row="1" x:Name="CommitList" SelectionMode="Single">
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <Grid ColumnDefinitions="120,70,*">
+                        <ComboBox Grid.Column="0" x:Name="ActionCombo"
+                                  ItemsSource="{Binding Actions}"
+                                  SelectedItem="{Binding Action}"
+                                  Width="110" Margin="2" />
+                        <TextBlock Grid.Column="1" Text="{Binding ShortHash}"
+                                   VerticalAlignment="Center" Margin="4,0"
+                                   FontFamily="{DynamicResource MonospaceFont}" FontSize="11" />
+                        <TextBlock Grid.Column="2" Text="{Binding Subject}"
+                                   VerticalAlignment="Center" Margin="4,0"
+                                   TextTrimming="CharacterEllipsis" />
+                    </Grid>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+
+        <!-- Move up/down row -->
+        <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="8" Margin="0,4">
+            <Button Content="▲ Move Up"   Click="MoveUp_Click" />
+            <Button Content="▼ Move Down" Click="MoveDown_Click" />
+        </StackPanel>
+
+        <!-- Buttons row -->
+        <DockPanel Grid.Row="3" Margin="0,8,0,0">
+            <TextBlock x:Name="StatusLabel" VerticalAlignment="Center" DockPanel.Dock="Left" />
+            <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">
+                <Button Content="Start Rebase" Click="Start_Click" />
+                <Button Content="Cancel"       Click="Cancel_Click" />
+            </StackPanel>
+        </DockPanel>
+    </Grid>
+</local:GitExtensionsDialog>
