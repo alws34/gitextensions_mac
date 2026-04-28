@@ -11,10 +11,24 @@
         <ScrollViewer>
             <StackPanel>
                 <Expander Header="Working Directory" IsExpanded="True">
-                    <ListBox x:Name="WorkingDirList" />
+                    <ListBox x:Name="WorkingDirList" Margin="8,0,0,0">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <TextBlock Text="{Binding StatusIcon}"
+                                               FontSize="11" FontWeight="Bold"
+                                               Foreground="{Binding StatusColor}"
+                                               Width="12" />
+                                    <TextBlock Text="{Binding Name}" FontSize="12" />
+                                </StackPanel>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
                 </Expander>
                 <Expander Header="Branches" IsExpanded="True">
                     <ListBox x:Name="LocalBranchesList"
+                             FontSize="12"
+                             Margin="8,0,0,0"
                              DoubleTapped="LocalBranch_DoubleTapped">
                         <ListBox.ContextMenu>
                             <ContextMenu Opening="LocalBranchMenu_Opening">
@@ -30,10 +44,10 @@
                     </ListBox>
                 </Expander>
                 <Expander Header="Remotes">
-                    <ListBox x:Name="RemotesList" />
+                    <ListBox x:Name="RemotesList" FontSize="12" Margin="8,0,0,0" />
                 </Expander>
                 <Expander Header="Tags">
-                    <ListBox x:Name="TagsList">
+                    <ListBox x:Name="TagsList" FontSize="12" Margin="8,0,0,0">
                         <ListBox.ContextMenu>
                             <ContextMenu Opening="TagMenu_Opening">
                                 <MenuItem Header="Delete Tag…" Click="Tag_Delete" />
@@ -43,10 +57,13 @@
                 </Expander>
                 <Expander Header="Submodules">
                     <ListBox x:Name="SubmodulesList"
+                             FontSize="12"
+                             Margin="8,0,0,0"
                              DoubleTapped="Submodule_DoubleTapped">
                         <ListBox.ItemTemplate>
                             <DataTemplate>
                                 <TextBlock Text="{Binding DisplayName}"
+                                           FontSize="12"
                                            ToolTip.Tip="{Binding StatusTooltip}" />
                             </DataTemplate>
                         </ListBox.ItemTemplate>
@@ -60,10 +77,14 @@
                 </Expander>
                 <Expander Header="Worktrees">
                     <ListBox x:Name="WorktreesList"
+                             FontSize="12"
+                             Margin="8,0,0,0"
                              DoubleTapped="Worktree_DoubleTapped" />
                 </Expander>
                 <Expander Header="Stashes">
                     <ListBox x:Name="StashesList"
+                             FontSize="12"
+                             Margin="8,0,0,0"
                              DoubleTapped="Stash_DoubleTapped">
                         <ListBox.ContextMenu>
                             <ContextMenu Opening="StashMenu_Opening">

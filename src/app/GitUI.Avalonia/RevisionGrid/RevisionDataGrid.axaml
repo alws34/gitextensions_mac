@@ -64,6 +64,8 @@
                     <Separator />
                     <MenuItem Header="Reset to this (hard)" Click="CtxResetHard_Click" />
                     <Separator />
+                    <MenuItem Header="Interactive Rebase from here…" Click="CtxInteractiveRebase_Click" />
+                    <Separator />
                     <MenuItem Header="Copy commit hash"     Click="CtxCopyHash_Click" />
                 </ContextMenu>
             </ListBox.ContextMenu>

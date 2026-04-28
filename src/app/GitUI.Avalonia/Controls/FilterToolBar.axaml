@@ -5,15 +5,21 @@
         <TextBlock Grid.Column="0"
                    Text="Filter:"
                    VerticalAlignment="Center"
+                   FontSize="12"
                    Margin="0,0,6,0" />
         <TextBox Grid.Column="1"
                  x:Name="FilterBox"
                  Watermark="message, author, or hash…"
+                 FontSize="12"
+                 Height="24"
+                 VerticalContentAlignment="Center"
                  TextChanged="FilterBox_TextChanged" />
         <ComboBox Grid.Column="2"
                   x:Name="FilterTypeCombo"
                   Margin="4,0,0,0"
-                  Width="110"
+                  Width="90"
+                  Height="24"
+                  FontSize="12"
                   SelectedIndex="0">
             <ComboBoxItem Content="All" />
             <ComboBoxItem Content="Author" />
@@ -24,6 +30,8 @@
                 Content="✕"
                 Margin="4,0,0,0"
                 Padding="6,2"
+                Height="24"
+                FontSize="12"
                 Click="Clear_Click"
                 ToolTip.Tip="Clear filter" />
     </Grid>

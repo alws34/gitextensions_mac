@@ -3,7 +3,6 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Layout;
-using Avalonia.Media;
 using Avalonia.Threading;
 using GitCommands;
 using GitExtensions.Extensibility;
@@ -85,6 +84,8 @@ public partial class MainWindow : GitExtensionsWindow
         RevisionGrid.CreateTagAtHashRequested += ignored =>
             _ = ShowModuleDialogAsync(m => new CreateTagDialog(m));
         RevisionGrid.ResetHardToHashRequested += hash => _ = ResetHardAsync(hash);
+        RevisionGrid.InteractiveRebaseRequested += hash =>
+            _ = ShowModuleDialogAsync(m => new InteractiveRebaseDialog(m, hash));
         DetailsPanel.SetModule(_module);
         LeftPanel.SetModule(_module);
 
@@ -219,6 +220,7 @@ public partial class MainWindow : GitExtensionsWindow
         menu.Items.Add(new MenuItem { Header = "Re_name Branch...", Command = ReactiveCommand.CreateFromTask(() => ShowModuleDialogAsync(m => new RenameBranchDialog(m))) });
         menu.Items.Add(new MenuItem { Header = "_Merge Branch...", Command = ReactiveCommand.CreateFromTask(() => ShowModuleDialogAsync(m => new MergeBranchDialog(m))) });
         menu.Items.Add(new MenuItem { Header = "Re_base...", Command = ReactiveCommand.CreateFromTask(() => ShowModuleDialogAsync(m => new RebaseDialog(m))) });
+        menu.Items.Add(new MenuItem { Header = "_Interactive Rebase…", Command = ReactiveCommand.CreateFromTask(() => ShowModuleDialogAsync(m => new InteractiveRebaseDialog(m, "HEAD~1"))) });
         menu.Items.Add(new Separator());
         menu.Items.Add(new MenuItem { Header = "Create _Tag...", Command = ReactiveCommand.CreateFromTask(() => ShowModuleDialogAsync(m => new CreateTagDialog(m))) });
         menu.Items.Add(new MenuItem { Header = "Delete Ta_g...", Command = ReactiveCommand.CreateFromTask(() => ShowModuleDialogAsync(m => new DeleteTagDialog(m))) });
@@ -498,13 +500,13 @@ public partial class MainWindow : GitExtensionsWindow
 
     private void BuildToolBar()
     {
-        MainToolBar.Children.Add(MakeToolButton("☰", "Toggle left panel (Ctrl+K)", ToggleLeftPanel));
+        MainToolBar.Children.Add(MakeToolButton("⊟", "Toggle left panel (Ctrl+K)", ToggleLeftPanel));
         MainToolBar.Children.Add(MakeToolSeparator());
-        MainToolBar.Children.Add(MakeToolButton("⟳", "Refresh (F5)", () => _ = RevisionGrid.RefreshAsync()));
+        MainToolBar.Children.Add(MakeToolButton("↺", "Refresh (F5)", () => _ = RevisionGrid.RefreshAsync()));
         MainToolBar.Children.Add(MakeToolSeparator());
         MainToolBar.Children.Add(MakeToolButton("✎", "Commit staged changes (Ctrl+Enter)",
             () => _ = ShowCommitDialogAsync()));
-        MainToolBar.Children.Add(MakeToolButton("⇅", "Fetch all remotes", () => _ = FetchAsync()));
+        MainToolBar.Children.Add(MakeToolButton("⤓", "Fetch all remotes", () => _ = FetchAsync()));
         MainToolBar.Children.Add(MakeToolButton("⬇", "Pull / merge",
             () => _ = ShowPullDialogAsync()));
         MainToolBar.Children.Add(MakeToolButton("⬆", "Push to remote",
@@ -542,11 +544,7 @@ public partial class MainWindow : GitExtensionsWindow
     private static Control MakeToolSeparator() =>
         new Border
         {
-            Width = 1,
-            Height = 20,
-            Background = Brushes.Gray,
-            Margin = new Thickness(4, 0),
-            VerticalAlignment = VerticalAlignment.Center,
+            Classes = { "ToolSeparator" },
         };
 
     private async System.Threading.Tasks.Task RefreshBranchSelectorAsync()

@@ -20,6 +20,7 @@ public partial class RevisionGridControl : GitModuleControl
     public event Action<string>? CreateBranchAtHashRequested;
     public event Action<string>? CreateTagAtHashRequested;
     public event Action<string>? ResetHardToHashRequested;
+    public event Action<string>? InteractiveRebaseRequested;
 
     private List<RevisionRow> _allRows = [];
 
@@ -33,6 +34,7 @@ public partial class RevisionGridControl : GitModuleControl
         DataGrid.CreateBranchAtHashRequested += hash => CreateBranchAtHashRequested?.Invoke(hash);
         DataGrid.CreateTagAtHashRequested += hash => CreateTagAtHashRequested?.Invoke(hash);
         DataGrid.ResetHardToHashRequested += hash => ResetHardToHashRequested?.Invoke(hash);
+        DataGrid.InteractiveRebaseRequested += hash => InteractiveRebaseRequested?.Invoke(hash);
     }
 
     protected override void OnModuleSet()

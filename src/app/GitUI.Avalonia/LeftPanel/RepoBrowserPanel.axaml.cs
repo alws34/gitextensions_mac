@@ -48,8 +48,14 @@ public partial class RepoBrowserPanel : UserControl
             {
                 string status = _module.GitExecutable.GetOutput("status --porcelain");
                 return status.Split('\n', StringSplitOptions.RemoveEmptyEntries)
-                             .Select(line => line.Length >= 3 ? line[3..].Trim() : line.Trim())
-                             .Where(s => s.Length > 0)
+                             .Where(line => line.Length >= 2)
+                             .Select(line =>
+                             {
+                                 char xy = line[0] != ' ' ? line[0] : line[1];
+                                 string name = line.Length >= 3 ? line[3..].Trim() : line.Trim();
+                                 return new WorkingDirItem(xy, name);
+                             })
+                             .Where(item => item.Name.Length > 0)
                              .ToList();
             });
 
@@ -385,6 +391,33 @@ public partial class RepoBrowserPanel : UserControl
         {
             await Dispatcher.UIThread.InvokeAsync(() => ErrorOccurred?.Invoke(ex.Message));
         }
+    }
+
+    private sealed record WorkingDirItem(char StatusChar, string Name)
+    {
+        public string StatusIcon => StatusChar switch
+        {
+            'M' => "M",
+            'A' => "A",
+            'D' => "D",
+            'R' => "R",
+            'C' => "C",
+            'U' => "U",
+            '?' => "?",
+            '!' => "!",
+            _ => " ",
+        };
+
+        public string StatusColor => StatusChar switch
+        {
+            'M' => "#FFFF8C00",
+            'A' => "#FF32CD32",
+            'D' => "#FFFF4444",
+            'R' => "#FFAA44FF",
+            'U' => "#FFFF0000",
+            '?' => "#FF888888",
+            _ => "#FF000000",
+        };
     }
 
     private sealed record SubmoduleItem(string Name, string StatusChar)

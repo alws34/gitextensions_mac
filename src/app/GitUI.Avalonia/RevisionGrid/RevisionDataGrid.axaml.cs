@@ -14,6 +14,7 @@ public partial class RevisionDataGrid : UserControl
     public event Action<string>? CreateBranchAtHashRequested;
     public event Action<string>? CreateTagAtHashRequested;
     public event Action<string>? ResetHardToHashRequested;
+    public event Action<string>? InteractiveRebaseRequested;
 
     public RevisionDataGrid() => InitializeComponent();
 
@@ -115,6 +116,15 @@ public partial class RevisionDataGrid : UserControl
         if (hash is not null)
         {
             _ = global::Avalonia.Controls.TopLevel.GetTopLevel(this)?.Clipboard?.SetTextAsync(hash);
+        }
+    }
+
+    private void CtxInteractiveRebase_Click(object? sender, global::Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        string? hash = GetSelectedRow()?.Revision.Guid;
+        if (hash is not null)
+        {
+            InteractiveRebaseRequested?.Invoke(hash);
         }
     }
 }
