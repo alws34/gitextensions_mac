@@ -45,7 +45,8 @@ public partial class MainWindow : GitExtensionsWindow
         var lastRepos = App.Settings.GetStringList("recentRepositories");
         if (lastRepos.Count > 0 && System.IO.Directory.Exists(lastRepos[0]))
         {
-            OpenRepository(lastRepos[0]);
+            string autoOpenPath = lastRepos[0];
+            Opened += (_, _) => OpenRepository(autoOpenPath);
         }
     }
 

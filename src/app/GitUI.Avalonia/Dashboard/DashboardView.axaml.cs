@@ -38,6 +38,7 @@ public partial class DashboardView : UserControl
     /// <summary>Reloads the recent repository list from settings.</summary>
     public void Refresh()
     {
+        RecentList.SelectedItem = null;
         var recent = App.Settings.GetStringList("recentRepositories");
         RecentRepositories = recent.Select(p => new RecentRepo(p)).ToList();
     }
