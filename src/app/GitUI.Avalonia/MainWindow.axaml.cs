@@ -210,7 +210,7 @@ public partial class MainWindow : GitExtensionsWindow
         {
             Header = "_Refresh",
             InputGesture = new KeyGesture(Key.F5),
-            Command = ReactiveCommand.CreateFromTask(() => { _ = RevisionGrid.RefreshAsync(); return System.Threading.Tasks.Task.CompletedTask; }),
+            Command = ReactiveCommand.CreateFromTask(RefreshRepositoryAsync),
         });
         return menu;
     }
@@ -250,7 +250,7 @@ public partial class MainWindow : GitExtensionsWindow
         menu.Items.Add(new MenuItem { Header = "View _Diff...", Command = ReactiveCommand.CreateFromTask(() => ShowModuleDialogAsync(m => new DiffDialog(m))) });
         menu.Items.Add(new MenuItem { Header = "Git _Log...", Command = ReactiveCommand.CreateFromTask(() => ShowModuleDialogAsync(m => new LogDialog(m))) });
         menu.Items.Add(new Separator());
-        menu.Items.Add(new MenuItem { Header = "_Go to Commit...", Command = ReactiveCommand.CreateFromTask(GoToCommitAsync) });
+        menu.Items.Add(new MenuItem { Header = "_Go to Commit...", InputGesture = new KeyGesture(Key.G, KeyModifiers.Control), Command = ReactiveCommand.CreateFromTask(GoToCommitAsync) });
         return menu;
     }
 
@@ -314,6 +314,7 @@ public partial class MainWindow : GitExtensionsWindow
         menu.Items.Add(new MenuItem
         {
             Header = "_Refresh",
+            InputGesture = new KeyGesture(Key.F5),
             Command = ReactiveCommand.CreateFromTask(() => RevisionGrid.RefreshAsync()),
         });
         return menu;
@@ -325,6 +326,7 @@ public partial class MainWindow : GitExtensionsWindow
         menu.Items.Add(new MenuItem
         {
             Header = "_Go to Commit…",
+            InputGesture = new KeyGesture(Key.G, KeyModifiers.Control),
             Command = ReactiveCommand.CreateFromTask(GoToCommitAsync),
         });
         return menu;
@@ -444,6 +446,11 @@ public partial class MainWindow : GitExtensionsWindow
     public void ShowError(string message)
     {
         StatusLabel.Text = $"Error: {message}";
+    }
+
+    private async System.Threading.Tasks.Task RefreshRepositoryAsync()
+    {
+        await RevisionGrid.RefreshAsync();
     }
 
     private async System.Threading.Tasks.Task FetchAsync()
