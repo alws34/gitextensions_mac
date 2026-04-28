@@ -565,11 +565,13 @@ public partial class MainWindow : GitExtensionsWindow
 
         _branchSelector = new ComboBox
         {
-            Width = 180,
+            MinWidth = 120,
+            MaxWidth = 200,
             PlaceholderText = "Branch",
             IsVisible = false,
-            Margin = new Thickness(2, 0),
+            Margin = new Thickness(4, 0),
             VerticalAlignment = VerticalAlignment.Center,
+            FontSize = 12,
         };
         _branchSelector.SelectionChanged += OnBranchSelectorChanged;
         MainToolBar.Children.Add(_branchSelector);

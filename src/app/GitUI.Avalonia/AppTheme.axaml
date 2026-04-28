@@ -46,8 +46,8 @@
     <SolidColorBrush x:Key="RowOddBackground">#FFF5F5F5</SolidColorBrush>
     <SolidColorBrush x:Key="RowSelectedBackground">#FF0078D4</SolidColorBrush>
 
-    <!-- Monospace font stack (Cascadia Code first for Windows/Mac compatibility) -->
-    <FontFamily x:Key="MonospaceFont">Cascadia Code, Menlo, Monaco, Consolas, monospace</FontFamily>
+    <!-- Monospace font stack (Menlo first for macOS, Cascadia Code for Windows) -->
+    <FontFamily x:Key="MonospaceFont">Menlo, Monaco, Cascadia Code, Consolas, monospace</FontFamily>
 
     <!-- Revision grid font -->
     <x:Double x:Key="RevisionGridFontSize">12</x:Double>
@@ -57,5 +57,6 @@
     <local:NullToVisibilityConverter x:Key="NullToVisibility" />
     <local:InverseBoolConverter x:Key="InverseBool" />
     <local:RefTypeBrushConverter x:Key="RefTypeBrush" />
+    <local:BoolToFontWeightConverter x:Key="BoolToFontWeight" />
 
 </ResourceDictionary>

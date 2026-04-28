@@ -48,11 +48,14 @@
         </Border>
 
         <!-- Status bar at the very bottom -->
-        <Border DockPanel.Dock="Bottom" Height="22"
-                Background="{DynamicResource SystemChromeLowColor}">
+        <Border DockPanel.Dock="Bottom"
+                MinHeight="22"
+                Background="{DynamicResource SystemChromeMediumColor}"
+                BorderThickness="0,1,0,0"
+                BorderBrush="{DynamicResource SystemBaseMediumLowColor}"
+                Padding="8,3">
             <TextBlock x:Name="StatusLabel"
                        VerticalAlignment="Center"
-                       Margin="8,0"
                        FontSize="11" />
         </Border>
 

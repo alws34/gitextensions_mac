@@ -10,8 +10,9 @@ namespace GitUI.Avalonia.LeftPanel;
 public partial class RepoBrowserPanel : UserControl
 {
     private GitModule? _module;
-    private List<string> _allLocalBranches = [];
+    private List<BranchItem> _allLocalBranchItems = [];
     private List<string> _allTags = [];
+    private string _currentBranch = string.Empty;
 
     public event Action<string>? CheckoutRequested;
     public event Action<string>? StatusRequested;
@@ -34,6 +35,8 @@ public partial class RepoBrowserPanel : UserControl
 
         try
         {
+            string currentBranch = await System.Threading.Tasks.Task.Run(
+                () => _module.GetCurrentBranchName());
             var local = await System.Threading.Tasks.Task.Run(
                 () => _module.GetRefs(RefsFilter.Heads).Select(r => r.LocalName).OrderBy(n => n).ToList());
             var remotes = await System.Threading.Tasks.Task.Run(
@@ -92,12 +95,20 @@ public partial class RepoBrowserPanel : UserControl
                     StringComparison.OrdinalIgnoreCase))
                 .ToList();
 
+            var branchItems = local
+                .Select(b => new BranchItem(b, b == currentBranch))
+                .ToList();
+
             await Dispatcher.UIThread.InvokeAsync(() =>
             {
-                _allLocalBranches = local;
+                _currentBranch = currentBranch;
+                _allLocalBranchItems = branchItems;
                 _allTags = tags;
                 WorkingDirList.ItemsSource = workingDirFiles;
-                LocalBranchesList.ItemsSource = local;
+                WorkingDirExpander.Header = workingDirFiles.Count > 0
+                    ? $"Working Directory ({workingDirFiles.Count})"
+                    : "Working Directory";
+                LocalBranchesList.ItemsSource = branchItems;
                 RemotesList.ItemsSource = remotes;
                 TagsList.ItemsSource = tags;
                 StashesList.ItemsSource = stashes;
@@ -113,9 +124,9 @@ public partial class RepoBrowserPanel : UserControl
 
     private void LocalBranch_DoubleTapped(object? sender, TappedEventArgs e)
     {
-        if (LocalBranchesList.SelectedItem is string branch)
+        if (LocalBranchesList.SelectedItem is BranchItem item)
         {
-            CheckoutRequested?.Invoke(branch);
+            CheckoutRequested?.Invoke(item.Name);
         }
     }
 
@@ -123,8 +134,8 @@ public partial class RepoBrowserPanel : UserControl
     {
         string filter = SearchBox.Text ?? string.Empty;
         LocalBranchesList.ItemsSource = string.IsNullOrWhiteSpace(filter)
-            ? _allLocalBranches
-            : _allLocalBranches.Where(b => b.Contains(filter, StringComparison.OrdinalIgnoreCase)).ToList();
+            ? _allLocalBranchItems
+            : _allLocalBranchItems.Where(b => b.Name.Contains(filter, StringComparison.OrdinalIgnoreCase)).ToList();
         TagsList.ItemsSource = string.IsNullOrWhiteSpace(filter)
             ? _allTags
             : _allTags.Where(t => t.Contains(filter, StringComparison.OrdinalIgnoreCase)).ToList();
@@ -134,7 +145,7 @@ public partial class RepoBrowserPanel : UserControl
 
     private void LocalBranchMenu_Opening(object? sender, System.ComponentModel.CancelEventArgs e)
     {
-        if (LocalBranchesList.SelectedItem is null)
+        if (LocalBranchesList.SelectedItem is not BranchItem)
         {
             e.Cancel = true;
         }
@@ -152,34 +163,34 @@ public partial class RepoBrowserPanel : UserControl
 
     private void LocalBranch_Checkout(object? sender, RoutedEventArgs e)
     {
-        if (LocalBranchesList.SelectedItem is string branch)
+        if (LocalBranchesList.SelectedItem is BranchItem item)
         {
-            CheckoutRequested?.Invoke(branch);
+            CheckoutRequested?.Invoke(item.Name);
         }
     }
 
     private void LocalBranch_Merge(object? sender, RoutedEventArgs e)
     {
-        if (LocalBranchesList.SelectedItem is string branch)
+        if (LocalBranchesList.SelectedItem is BranchItem item)
         {
-            StatusRequested?.Invoke($"Merging {branch}…");
-            _ = RunGitAndRefreshAsync($"merge {branch}");
+            StatusRequested?.Invoke($"Merging {item.Name}…");
+            _ = RunGitAndRefreshAsync($"merge {item.Name}");
         }
     }
 
     private void LocalBranch_Delete(object? sender, RoutedEventArgs e)
     {
-        if (LocalBranchesList.SelectedItem is string branch)
+        if (LocalBranchesList.SelectedItem is BranchItem item)
         {
-            _ = RunGitAndRefreshAsync($"branch -d {branch}");
+            _ = RunGitAndRefreshAsync($"branch -d {item.Name}");
         }
     }
 
     private void LocalBranch_Push(object? sender, RoutedEventArgs e)
     {
-        if (LocalBranchesList.SelectedItem is string branch)
+        if (LocalBranchesList.SelectedItem is BranchItem item)
         {
-            _ = RunGitAndRefreshAsync($"push origin {branch}");
+            _ = RunGitAndRefreshAsync($"push origin {item.Name}");
         }
     }
 
@@ -197,9 +208,9 @@ public partial class RepoBrowserPanel : UserControl
 
     private void LocalBranch_Rename(object? sender, RoutedEventArgs e)
     {
-        if (LocalBranchesList.SelectedItem is string branch && _module is not null)
+        if (LocalBranchesList.SelectedItem is BranchItem item && _module is not null)
         {
-            _ = RenameBranchAsync(branch);
+            _ = RenameBranchAsync(item.Name);
         }
     }
 
@@ -439,3 +450,6 @@ public partial class RepoBrowserPanel : UserControl
         };
     }
 }
+
+/// <summary>View model for a local branch item in the left panel.</summary>
+public sealed record BranchItem(string Name, bool IsCurrent);

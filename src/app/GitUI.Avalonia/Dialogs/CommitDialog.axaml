@@ -44,7 +44,7 @@
             <GridSplitter Grid.Column="3" ResizeDirection="Columns" />
             <ae:TextEditor Grid.Column="4" x:Name="DiffPreview"
                            IsReadOnly="True"
-                           FontFamily="Cascadia Code,Menlo,Consolas,monospace"
+                           FontFamily="{DynamicResource MonospaceFont}"
                            FontSize="12"
                            ShowLineNumbers="True"
                            WordWrap="False" />
@@ -55,7 +55,7 @@
                 <CheckBox x:Name="AmendCheckBox" Content="Amend last commit" IsCheckedChanged="AmendCheckBox_CheckedChanged" />
             </StackPanel>
             <ae:TextEditor Grid.Row="1" x:Name="CommitMessageEditor"
-                           FontFamily="Cascadia Code,Menlo,Consolas,monospace"
+                           FontFamily="{DynamicResource MonospaceFont}"
                            FontSize="13"
                            Margin="0,4"
                            WordWrap="True" />

@@ -1,0 +1,17 @@
+using System.Globalization;
+using Avalonia.Data.Converters;
+using Avalonia.Media;
+
+namespace GitUI.Avalonia.Converters;
+
+/// <summary>Maps bool → FontWeight. true=Bold, false=Normal.</summary>
+public class BoolToFontWeightConverter : IValueConverter
+{
+    public static readonly BoolToFontWeightConverter Instance = new();
+
+    public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+        => value is true ? FontWeight.Bold : FontWeight.Normal;
+
+    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+        => value is FontWeight fw && fw == FontWeight.Bold;
+}

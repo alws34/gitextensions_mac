@@ -1,5 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="using:GitUI.Avalonia.LeftPanel"
+             xmlns:conv="using:GitUI.Avalonia.Converters"
              x:Class="GitUI.Avalonia.LeftPanel.RepoBrowserPanel"
              MinWidth="140">
     <DockPanel>
@@ -10,7 +12,7 @@
                  TextChanged="SearchBox_TextChanged" />
         <ScrollViewer>
             <StackPanel>
-                <Expander Header="Working Directory" IsExpanded="True">
+                <Expander x:Name="WorkingDirExpander" Header="Working Directory" IsExpanded="True">
                     <ListBox x:Name="WorkingDirList" Margin="8,0,0,0">
                         <ListBox.ItemTemplate>
                             <DataTemplate>
@@ -30,6 +32,13 @@
                              FontSize="12"
                              Margin="8,0,0,0"
                              DoubleTapped="LocalBranch_DoubleTapped">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate x:DataType="local:BranchItem">
+                                <TextBlock Text="{Binding Name}"
+                                           FontSize="12"
+                                           FontWeight="{Binding IsCurrent, Converter={StaticResource BoolToFontWeight}}" />
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
                         <ListBox.ContextMenu>
                             <ContextMenu Opening="LocalBranchMenu_Opening">
                                 <MenuItem Header="Checkout"           Click="LocalBranch_Checkout" />
