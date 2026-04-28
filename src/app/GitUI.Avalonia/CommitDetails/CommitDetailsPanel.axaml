@@ -6,8 +6,8 @@
         <!-- Commit summary: short hash, author, date, subject -->
         <details:CommitSummaryControl x:Name="Summary"
                                       DockPanel.Dock="Top"
-                                      MinHeight="70"
-                                      MaxHeight="120" />
+                                      MinHeight="60"
+                                      MaxHeight="110" />
 
         <!-- Tab control: Diff | Files | Tree -->
         <TabControl x:Name="DetailsTabs"
