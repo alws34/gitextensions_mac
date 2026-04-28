@@ -29,6 +29,20 @@
                  SelectionMode="Single"
                  SelectionChanged="CommitList_SelectionChanged"
                  ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+            <ListBox.ContextMenu>
+                <ContextMenu Opening="CommitContextMenu_Opening">
+                    <MenuItem Header="Checkout this commit" Click="CtxCheckout_Click" />
+                    <MenuItem Header="Cherry-pick…"         Click="CtxCherryPick_Click" />
+                    <MenuItem Header="Revert…"              Click="CtxRevert_Click" />
+                    <Separator />
+                    <MenuItem Header="Create Branch here…"  Click="CtxCreateBranch_Click" />
+                    <MenuItem Header="Create Tag here…"     Click="CtxCreateTag_Click" />
+                    <Separator />
+                    <MenuItem Header="Reset to this (hard)" Click="CtxResetHard_Click" />
+                    <Separator />
+                    <MenuItem Header="Copy commit hash"     Click="CtxCopyHash_Click" />
+                </ContextMenu>
+            </ListBox.ContextMenu>
             <ListBox.ItemTemplate>
                 <DataTemplate x:DataType="local:RevisionRow">
                     <!-- Row height exactly 22px; column order: Graph(80) | Subject(*) | Author(140) | Date(115) | Hash(80) -->

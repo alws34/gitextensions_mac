@@ -14,6 +14,12 @@ public partial class RevisionGridControl : GitModuleControl
     private const int MaxRevisions = 2000;
 
     public event Action<GitRevision?>? SelectedRevisionChanged;
+    public event Action<string>? CheckoutHashRequested;
+    public event Action<string>? CherryPickHashRequested;
+    public event Action<string>? RevertHashRequested;
+    public event Action<string>? CreateBranchAtHashRequested;
+    public event Action<string>? CreateTagAtHashRequested;
+    public event Action<string>? ResetHardToHashRequested;
 
     private List<RevisionRow> _allRows = [];
 
@@ -21,6 +27,12 @@ public partial class RevisionGridControl : GitModuleControl
     {
         InitializeComponent();
         DataGrid.SelectedRevisionChanged += rev => SelectedRevisionChanged?.Invoke(rev);
+        DataGrid.CheckoutHashRequested += hash => CheckoutHashRequested?.Invoke(hash);
+        DataGrid.CherryPickHashRequested += hash => CherryPickHashRequested?.Invoke(hash);
+        DataGrid.RevertHashRequested += hash => RevertHashRequested?.Invoke(hash);
+        DataGrid.CreateBranchAtHashRequested += hash => CreateBranchAtHashRequested?.Invoke(hash);
+        DataGrid.CreateTagAtHashRequested += hash => CreateTagAtHashRequested?.Invoke(hash);
+        DataGrid.ResetHardToHashRequested += hash => ResetHardToHashRequested?.Invoke(hash);
     }
 
     protected override void OnModuleSet()

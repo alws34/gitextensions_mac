@@ -42,6 +42,11 @@ public partial class MainWindow : GitExtensionsWindow
         BuildMenu();
         BuildToolBar();
         LoadRecentRepositories();
+        var lastRepos = App.Settings.GetStringList("recentRepositories");
+        if (lastRepos.Count > 0 && System.IO.Directory.Exists(lastRepos[0]))
+        {
+            OpenRepository(lastRepos[0]);
+        }
     }
 
     private void LoadRecentRepositories()
@@ -70,6 +75,16 @@ public partial class MainWindow : GitExtensionsWindow
         _ = RefreshBranchSelectorAsync();
         _ = RefreshActionBarsAsync();
         RevisionGrid.SelectedRevisionChanged += OnRevisionSelected;
+        RevisionGrid.CherryPickHashRequested += hash =>
+            _ = ShowModuleDialogAsync(m => new CherryPickDialog(m, hash));
+        RevisionGrid.RevertHashRequested += hash =>
+            _ = ShowModuleDialogAsync(m => new RevertCommitDialog(m, hash));
+        RevisionGrid.CheckoutHashRequested += hash => _ = CheckoutHashAsync(hash);
+        RevisionGrid.CreateBranchAtHashRequested += ignored =>
+            _ = ShowModuleDialogAsync(m => new CreateBranchDialog(m));
+        RevisionGrid.CreateTagAtHashRequested += ignored =>
+            _ = ShowModuleDialogAsync(m => new CreateTagDialog(m));
+        RevisionGrid.ResetHardToHashRequested += hash => _ = ResetHardAsync(hash);
         DetailsPanel.SetModule(_module);
         LeftPanel.SetModule(_module);
 
@@ -169,8 +184,8 @@ public partial class MainWindow : GitExtensionsWindow
     {
         var menu = new MenuItem { Header = "_Repository" };
         menu.Items.Add(new MenuItem { Header = "_Fetch", Command = ReactiveCommand.CreateFromTask(FetchAsync) });
-        menu.Items.Add(new MenuItem { Header = "_Pull...", Command = ReactiveCommand.CreateFromTask(() => ShowModuleDialogAsync(m => new PullDialog(m))) });
-        menu.Items.Add(new MenuItem { Header = "P_ush...", Command = ReactiveCommand.CreateFromTask(() => ShowModuleDialogAsync(m => new PushDialog(m))) });
+        menu.Items.Add(new MenuItem { Header = "_Pull...", Command = ReactiveCommand.CreateFromTask(ShowPullDialogAsync) });
+        menu.Items.Add(new MenuItem { Header = "P_ush...", Command = ReactiveCommand.CreateFromTask(ShowPushDialogAsync) });
         menu.Items.Add(new Separator());
         menu.Items.Add(new MenuItem { Header = "Manage _Remotes...", Command = ReactiveCommand.CreateFromTask(() => ShowModuleDialogAsync(m => new RemotesDialog(m))) });
         menu.Items.Add(new Separator());
@@ -210,11 +225,7 @@ public partial class MainWindow : GitExtensionsWindow
         menu.Items.Add(new Separator());
         menu.Items.Add(new MenuItem { Header = "_Stash...", Command = ReactiveCommand.CreateFromTask(() => ShowModuleDialogAsync(m => new StashDialog(m))) });
         menu.Items.Add(new MenuItem { Header = "Cherry _Pick...", Command = ReactiveCommand.CreateFromTask(() => ShowModuleDialogAsync(m => new CherryPickDialog(m))) });
-        menu.Items.Add(new MenuItem
-        {
-            Header = "Interactive Re_base…",
-            Command = ReactiveCommand.CreateFromTask(ShowInteractiveRebaseAsync),
-        });
+        menu.Items.Add(new MenuItem { Header = "Re_vert Commit...", Command = ReactiveCommand.CreateFromTask(RevertSelectedCommitAsync) });
         menu.Items.Add(new Separator());
         menu.Items.Add(new MenuItem { Header = "Apply _Patch...", Command = ReactiveCommand.CreateFromTask(() => ShowModuleDialogAsync(m => new ApplyPatchDialog(m))) });
         menu.Items.Add(new MenuItem { Header = "Format Patc_h...", Command = ReactiveCommand.CreateFromTask(() => ShowModuleDialogAsync(m => new FormatPatchDialog(m))) });
@@ -309,19 +320,6 @@ public partial class MainWindow : GitExtensionsWindow
         return menu;
     }
 
-    private async System.Threading.Tasks.Task ShowInteractiveRebaseAsync()
-    {
-        if (_module is null)
-        {
-            return;
-        }
-
-        var dialog = new Dialogs.InteractiveRebaseDialog(_module, "HEAD~5");
-        await dialog.ShowDialog<object?>(this);
-        await RevisionGrid.RefreshAsync();
-        await RefreshBranchSelectorAsync();
-    }
-
     private async System.Threading.Tasks.Task GoToCommitAsync()
     {
         var dialog = new GoToCommitDialog();
@@ -360,6 +358,50 @@ public partial class MainWindow : GitExtensionsWindow
             });
         };
         await dialog.ShowDialog<object?>(this);
+    }
+
+    private async System.Threading.Tasks.Task RevertSelectedCommitAsync()
+    {
+        if (_module is null)
+        {
+            return;
+        }
+
+        string hash = "HEAD";
+        await ShowModuleDialogAsync(m => new RevertCommitDialog(m, hash));
+    }
+
+    private async System.Threading.Tasks.Task ShowPushDialogAsync()
+    {
+        if (_module is null)
+        {
+            return;
+        }
+
+        var dialog = new PushDialog(_module);
+        bool? result = await dialog.ShowDialog<bool?>(this);
+        if (result == true)
+        {
+            await RevisionGrid.RefreshAsync();
+            await RefreshBranchSelectorAsync();
+        }
+    }
+
+    private async System.Threading.Tasks.Task ShowPullDialogAsync()
+    {
+        if (_module is null)
+        {
+            return;
+        }
+
+        var dialog = new PullDialog(_module);
+        bool? result = await dialog.ShowDialog<bool?>(this);
+        if (result == true)
+        {
+            await RevisionGrid.RefreshAsync();
+            await RefreshBranchSelectorAsync();
+            _ = LeftPanel.RefreshAsync();
+        }
     }
 
     private async System.Threading.Tasks.Task ShowModuleDialogAsync<T>(Func<GitModule, T> factory)
@@ -464,9 +506,9 @@ public partial class MainWindow : GitExtensionsWindow
             () => _ = ShowCommitDialogAsync()));
         MainToolBar.Children.Add(MakeToolButton("⇅", "Fetch all remotes", () => _ = FetchAsync()));
         MainToolBar.Children.Add(MakeToolButton("⬇", "Pull / merge",
-            () => _ = ShowModuleDialogAsync(m => new PullDialog(m))));
+            () => _ = ShowPullDialogAsync()));
         MainToolBar.Children.Add(MakeToolButton("⬆", "Push to remote",
-            () => _ = ShowModuleDialogAsync(m => new PushDialog(m))));
+            () => _ = ShowPushDialogAsync()));
         MainToolBar.Children.Add(MakeToolButton("≡", "Stash local changes",
             () => _ = ShowModuleDialogAsync(m => new StashDialog(m))));
         MainToolBar.Children.Add(MakeToolSeparator());
@@ -551,6 +593,45 @@ public partial class MainWindow : GitExtensionsWindow
         if (_branchSelector?.SelectedItem is string branch)
         {
             _ = CheckoutBranchAsync(branch);
+        }
+    }
+
+    private async System.Threading.Tasks.Task CheckoutHashAsync(string hash)
+    {
+        if (_module is null)
+        {
+            return;
+        }
+
+        try
+        {
+            await _module.GitExecutable.GetOutputAsync($"checkout {hash}");
+            StatusLabel.Text = $"Detached HEAD at {hash[..7]}";
+            await RevisionGrid.RefreshAsync();
+            await RefreshBranchSelectorAsync();
+        }
+        catch (Exception ex)
+        {
+            ShowError(ex.Message);
+        }
+    }
+
+    private async System.Threading.Tasks.Task ResetHardAsync(string hash)
+    {
+        if (_module is null)
+        {
+            return;
+        }
+
+        try
+        {
+            await _module.GitExecutable.GetOutputAsync($"reset --hard {hash}");
+            StatusLabel.Text = $"Reset to {hash[..7]}";
+            await RevisionGrid.RefreshAsync();
+        }
+        catch (Exception ex)
+        {
+            ShowError(ex.Message);
         }
     }
 
