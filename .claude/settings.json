@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dotnet sdk *)",
+      "Bash(~/.dotnet/dotnet --version)",
+      "Bash(~/.dotnet/dotnet sdk *)"
+    ]
+  }
+}
