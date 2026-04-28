@@ -1,6 +1,15 @@
 <Application xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="GitUI.Avalonia.App">
+    <NativeMenu.Menu>
+        <NativeMenu>
+            <NativeMenuItem Header="About Git Extensions" x:Name="NativeMenuAbout" />
+            <NativeMenuItemSeparator />
+            <NativeMenuItem Header="Settings…" Gesture="Meta+OemComma" x:Name="NativeMenuSettings" />
+            <NativeMenuItemSeparator />
+            <NativeMenuItem Header="Quit Git Extensions" Gesture="Meta+Q" x:Name="NativeMenuQuit" />
+        </NativeMenu>
+    </NativeMenu.Menu>
     <Application.Styles>
         <FluentTheme />
         <Style Selector="TextBlock">

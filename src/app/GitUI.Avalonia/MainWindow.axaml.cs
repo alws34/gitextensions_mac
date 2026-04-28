@@ -2,6 +2,7 @@ using System.IO;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.Threading;
 using GitCommands;
@@ -166,12 +167,12 @@ public partial class MainWindow : GitExtensionsWindow
     private MenuItem BuildFileMenu()
     {
         var menu = new MenuItem { Header = "_File" };
-        menu.Items.Add(new MenuItem { Header = "_Open Repository...", Command = ReactiveCommand.CreateFromTask(OpenRepositoryDialogAsync) });
+        menu.Items.Add(new MenuItem { Header = "_Open Repository...", InputGesture = new KeyGesture(Key.O, KeyModifiers.Control), Command = ReactiveCommand.CreateFromTask(OpenRepositoryDialogAsync) });
         menu.Items.Add(new MenuItem { Header = "_Clone Repository...", Command = ReactiveCommand.CreateFromTask(() => ShowModuleDialogAsync(m => new CloneDialog(m))) });
         menu.Items.Add(new MenuItem { Header = "_Init New Repository...", Command = ReactiveCommand.CreateFromTask(() => ShowDialogAsync(() => new InitDialog())) });
         menu.Items.Add(BuildRecentReposMenu());
         menu.Items.Add(new Separator());
-        menu.Items.Add(new MenuItem { Header = "_Settings...", Command = ReactiveCommand.Create(OpenSettings) });
+        menu.Items.Add(new MenuItem { Header = "_Settings...", InputGesture = new KeyGesture(Key.OemComma, KeyModifiers.Control), Command = ReactiveCommand.Create(OpenSettings) });
         menu.Items.Add(new Separator());
         menu.Items.Add(new MenuItem
         {
@@ -204,13 +205,20 @@ public partial class MainWindow : GitExtensionsWindow
         menu.Items.Add(new MenuItem { Header = "_Reset Changes...", Command = ReactiveCommand.CreateFromTask(() => ShowModuleDialogAsync(m => new ResetChangesDialog(m))) });
         menu.Items.Add(new MenuItem { Header = "Sparse Working _Copy...", Command = ReactiveCommand.CreateFromTask(() => ShowModuleDialogAsync(m => new SparseWorkingCopyDialog(m))) });
         menu.Items.Add(new MenuItem { Header = "Mail_Map...", Command = ReactiveCommand.CreateFromTask(() => ShowModuleDialogAsync(m => new MailMapDialog(m))) });
+        menu.Items.Add(new Separator());
+        menu.Items.Add(new MenuItem
+        {
+            Header = "_Refresh",
+            InputGesture = new KeyGesture(Key.F5),
+            Command = ReactiveCommand.CreateFromTask(() => { _ = RevisionGrid.RefreshAsync(); return System.Threading.Tasks.Task.CompletedTask; }),
+        });
         return menu;
     }
 
     private MenuItem BuildCommandsMenu()
     {
         var menu = new MenuItem { Header = "_Commands" };
-        menu.Items.Add(new MenuItem { Header = "_Commit...", Command = ReactiveCommand.CreateFromTask(ShowCommitDialogAsync) });
+        menu.Items.Add(new MenuItem { Header = "_Commit...", InputGesture = new KeyGesture(Key.Enter, KeyModifiers.Control), Command = ReactiveCommand.CreateFromTask(ShowCommitDialogAsync) });
         menu.Items.Add(new MenuItem { Header = "_Add Files...", Command = ReactiveCommand.CreateFromTask(() => ShowModuleDialogAsync(m => new AddFilesDialog(m))) });
         menu.Items.Add(new MenuItem { Header = "Add to .git_ignore...", Command = ReactiveCommand.CreateFromTask(() => ShowModuleDialogAsync(m => new AddToGitIgnoreDialog(m))) });
         menu.Items.Add(new Separator());
@@ -428,6 +436,9 @@ public partial class MainWindow : GitExtensionsWindow
         var settings = new SettingsWindow();
         settings.Show();
     }
+
+    /// <summary>Called from the macOS native menu bar "Settings…" item.</summary>
+    public void OpenSettingsFromNativeMenu() => OpenSettings();
 
     /// <summary>Displays an error in the status bar. Must be called on the UI thread.</summary>
     public void ShowError(string message)
