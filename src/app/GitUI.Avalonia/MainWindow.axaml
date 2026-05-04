@@ -40,7 +40,14 @@
                         Padding="4,2"
                         Click="ActionBar_Dismiss"
                         Background="Transparent"
-                        BorderThickness="0" />
+                        BorderThickness="0"
+                        ToolTip.Tip="Dismiss" />
+                <Button DockPanel.Dock="Right"
+                        x:Name="ActionBar_AbortBtn"
+                        Padding="8,2"
+                        Margin="0,0,4,0"
+                        FontSize="11"
+                        Click="ActionBar_Abort" />
                 <TextBlock x:Name="ActionBarText"
                            VerticalAlignment="Center"
                            FontSize="12" />
@@ -54,9 +61,37 @@
                 BorderThickness="0,1,0,0"
                 BorderBrush="{DynamicResource SystemBaseMediumLowColor}"
                 Padding="8,3">
-            <TextBlock x:Name="StatusLabel"
-                       VerticalAlignment="Center"
-                       FontSize="11" />
+            <DockPanel>
+                <TextBlock x:Name="StatusLabel"
+                           DockPanel.Dock="Right"
+                           VerticalAlignment="Center"
+                           FontSize="11"
+                           FontFamily="{DynamicResource MonospaceFont}"
+                           Foreground="{DynamicResource SystemBaseMediumColor}" />
+                <TextBlock x:Name="BranchLabel"
+                           VerticalAlignment="Center"
+                           FontSize="11"
+                           FontWeight="SemiBold"
+                           Foreground="#FF2E7D32" />
+                <TextBlock x:Name="AheadBehindLabel"
+                           VerticalAlignment="Center"
+                           FontSize="11"
+                           Margin="8,0,0,0"
+                           Foreground="{DynamicResource SystemBaseMediumColor}"
+                           IsVisible="False" />
+                <TextBlock x:Name="StagedCountLabel"
+                           VerticalAlignment="Center"
+                           FontSize="11"
+                           Margin="8,0,0,0"
+                           Foreground="#FF1565C0"
+                           IsVisible="False" />
+                <TextBlock x:Name="UnstagedCountLabel"
+                           VerticalAlignment="Center"
+                           FontSize="11"
+                           Margin="8,0,0,0"
+                           Foreground="#FFE65100"
+                           IsVisible="False" />
+            </DockPanel>
         </Border>
 
         <!-- Main content area -->

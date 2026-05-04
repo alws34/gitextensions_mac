@@ -2,8 +2,11 @@ using System.IO;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Layout;
+using Avalonia.Media.Imaging;
+using Avalonia.Platform;
 using Avalonia.Threading;
 using GitCommands;
 using GitExtensions.Extensibility;
@@ -21,8 +24,10 @@ public partial class MainWindow : GitExtensionsWindow
 {
     private GitModule? _module;
     private ComboBox? _branchSelector;
+    private Button? _workingDirButton;
     private bool _suppressBranchSelection;
     private Action<string>? _leftPanelCheckoutHandler;
+    private Action<string>? _leftPanelOpenRepositoryHandler;
     private Action<string>? _leftPanelStatusHandler;
     private Action<string>? _leftPanelErrorHandler;
 
@@ -75,7 +80,16 @@ public partial class MainWindow : GitExtensionsWindow
         HasRepository = false;
         Title = "Git Extensions";
         StatusLabel.Text = string.Empty;
+        BranchLabel.Text = string.Empty;
+        AheadBehindLabel.IsVisible = false;
+        StagedCountLabel.IsVisible = false;
+        UnstagedCountLabel.IsVisible = false;
         ActionBar.IsVisible = false;
+        if (_workingDirButton is not null)
+        {
+            _workingDirButton.Content = "(no repo)";
+        }
+
         if (_branchSelector is not null)
         {
             _branchSelector.ItemsSource = null;
@@ -95,14 +109,22 @@ public partial class MainWindow : GitExtensionsWindow
 
         _module = new GitModule(App.GitExecutorProvider, path);
         HasRepository = true;
-        Title = $"{Path.GetFileName(path.TrimEnd('/', '\\'))} — Git Extensions";
-        StatusLabel.Text = path;
+        string repoName = Path.GetFileName(path.TrimEnd('/', '\\'));
+        Title = $"{repoName} — Git Extensions";
+        StatusLabel.Text = string.Empty;
+        BranchLabel.Text = "⎇  …";
+        if (_workingDirButton is not null)
+        {
+            _workingDirButton.Content = repoName;
+        }
+
         AddToRecentRepositories(path);
 
         RevisionGrid.Module = _module;
         FilterBar.FilterChanged += (text, type) => _ = RevisionGrid.SetFilterAsync(text, type);
         _ = RefreshBranchSelectorAsync();
         _ = RefreshActionBarsAsync();
+        _ = RefreshStatusBarCountsAsync();
         RevisionGrid.SelectedRevisionChanged += OnRevisionSelected;
         RevisionGrid.CherryPickHashRequested += hash =>
             _ = ShowModuleDialogAsync(m => new CherryPickDialog(m, hash));
@@ -130,16 +152,23 @@ public partial class MainWindow : GitExtensionsWindow
             LeftPanel.StatusRequested -= _leftPanelStatusHandler;
         }
 
+        if (_leftPanelOpenRepositoryHandler is not null)
+        {
+            LeftPanel.OpenRepositoryRequested -= _leftPanelOpenRepositoryHandler;
+        }
+
         if (_leftPanelErrorHandler is not null)
         {
             LeftPanel.ErrorOccurred -= _leftPanelErrorHandler;
         }
 
         _leftPanelCheckoutHandler = branch => _ = CheckoutBranchAsync(branch);
+        _leftPanelOpenRepositoryHandler = OpenRepository;
         _leftPanelStatusHandler = msg => StatusLabel.Text = msg;
         _leftPanelErrorHandler = msg => ShowError(msg);
 
         LeftPanel.CheckoutRequested += _leftPanelCheckoutHandler;
+        LeftPanel.OpenRepositoryRequested += _leftPanelOpenRepositoryHandler;
         LeftPanel.StatusRequested += _leftPanelStatusHandler;
         LeftPanel.ErrorOccurred += _leftPanelErrorHandler;
     }
@@ -342,6 +371,12 @@ public partial class MainWindow : GitExtensionsWindow
             Header = "Toggle _Left Panel",
             Command = ReactiveCommand.Create(ToggleLeftPanel),
         });
+        menu.Items.Add(new Separator());
+        menu.Items.Add(MakeCheckMenuItem("Show _Stashes in Graph", "showStashesInGraph"));
+        menu.Items.Add(MakeCheckMenuItem("Show _Worktrees in Graph", "showWorktreesInGraph"));
+        menu.Items.Add(MakeCheckMenuItem("Show _Tags", "showTags"));
+        menu.Items.Add(MakeCheckMenuItem("Show _First Parent Only", "showFirstParentOnly"));
+        menu.Items.Add(new Separator());
         menu.Items.Add(new MenuItem
         {
             Header = "_Refresh",
@@ -351,9 +386,52 @@ public partial class MainWindow : GitExtensionsWindow
         return menu;
     }
 
+    private static MenuItem MakeCheckMenuItem(string header, string settingKey)
+    {
+        bool current = App.Settings.GetBool(settingKey, false);
+        var item = new MenuItem
+        {
+            Header = header,
+            Icon = current ? new TextBlock { Text = "✓", FontSize = 12 } : null,
+        };
+        item.Command = ReactiveCommand.Create(() =>
+        {
+            bool val = !App.Settings.GetBool(settingKey, false);
+            App.Settings.SetBool(settingKey, val);
+            App.Settings.Save();
+            item.Icon = val ? new TextBlock { Text = "✓", FontSize = 12 } : null;
+        });
+        return item;
+    }
+
     private MenuItem BuildNavigateMenu()
     {
         var menu = new MenuItem { Header = "_Navigate" };
+        menu.Items.Add(new MenuItem
+        {
+            Header = "Go to _Parent Commit",
+            InputGesture = new KeyGesture(Key.Up, KeyModifiers.Alt),
+            Command = ReactiveCommand.Create(() => RevisionGrid.NavigateParent()),
+        });
+        menu.Items.Add(new MenuItem
+        {
+            Header = "Go to _Child Commit",
+            InputGesture = new KeyGesture(Key.Down, KeyModifiers.Alt),
+            Command = ReactiveCommand.Create(() => RevisionGrid.NavigateChild()),
+        });
+        menu.Items.Add(new MenuItem
+        {
+            Header = "_Back",
+            InputGesture = new KeyGesture(Key.Left, KeyModifiers.Alt),
+            Command = ReactiveCommand.Create(() => RevisionGrid.NavigateBack()),
+        });
+        menu.Items.Add(new MenuItem
+        {
+            Header = "_Forward",
+            InputGesture = new KeyGesture(Key.Right, KeyModifiers.Alt),
+            Command = ReactiveCommand.Create(() => RevisionGrid.NavigateForward()),
+        });
+        menu.Items.Add(new Separator());
         menu.Items.Add(new MenuItem
         {
             Header = "_Go to Commit…",
@@ -398,6 +476,7 @@ public partial class MainWindow : GitExtensionsWindow
             {
                 await RevisionGrid.RefreshAsync();
                 await RefreshBranchSelectorAsync();
+                await RefreshStatusBarCountsAsync();
             });
         };
         await dialog.ShowDialog<object?>(this);
@@ -427,6 +506,7 @@ public partial class MainWindow : GitExtensionsWindow
         {
             await RevisionGrid.RefreshAsync();
             await RefreshBranchSelectorAsync();
+            await RefreshStatusBarCountsAsync();
         }
     }
 
@@ -443,6 +523,7 @@ public partial class MainWindow : GitExtensionsWindow
         {
             await RevisionGrid.RefreshAsync();
             await RefreshBranchSelectorAsync();
+            await RefreshStatusBarCountsAsync();
             _ = LeftPanel.RefreshAsync();
         }
     }
@@ -482,6 +563,7 @@ public partial class MainWindow : GitExtensionsWindow
     private async System.Threading.Tasks.Task RefreshRepositoryAsync()
     {
         await RevisionGrid.RefreshAsync();
+        await RefreshStatusBarCountsAsync();
     }
 
     private async System.Threading.Tasks.Task FetchAsync()
@@ -498,11 +580,36 @@ public partial class MainWindow : GitExtensionsWindow
         await dialog.ShowDialog<object?>(this);
         await RevisionGrid.RefreshAsync();
         await RefreshActionBarsAsync();
+        await RefreshStatusBarCountsAsync();
     }
+
+    private string? _activeAbortCommand;
 
     private void ActionBar_Dismiss(object? sender, global::Avalonia.Interactivity.RoutedEventArgs e)
     {
         ActionBar.IsVisible = false;
+    }
+
+    private void ActionBar_Abort(object? sender, global::Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        if (_module is null || _activeAbortCommand is null)
+        {
+            return;
+        }
+
+        string cmd = _activeAbortCommand;
+        var capturedModule = _module;
+        _ = System.Threading.Tasks.Task.Run(async () =>
+        {
+            capturedModule.GitExecutable.GetOutput(cmd);
+            await Dispatcher.UIThread.InvokeAsync(async () =>
+            {
+                ActionBar.IsVisible = false;
+                await RevisionGrid.RefreshAsync();
+                await RefreshActionBarsAsync();
+                await RefreshStatusBarCountsAsync();
+            });
+        });
     }
 
     private async System.Threading.Tasks.Task RefreshActionBarsAsync()
@@ -512,21 +619,41 @@ public partial class MainWindow : GitExtensionsWindow
             return;
         }
 
-        string gitDir = _module.WorkingDirGitDir;
-        bool merge = await System.Threading.Tasks.Task.Run(() => File.Exists(Path.Combine(gitDir, "MERGE_HEAD")));
-        bool cherry = await System.Threading.Tasks.Task.Run(() => File.Exists(Path.Combine(gitDir, "CHERRY_PICK_HEAD")));
-        bool revert = await System.Threading.Tasks.Task.Run(() => File.Exists(Path.Combine(gitDir, "REVERT_HEAD")));
-        bool bisect = await System.Threading.Tasks.Task.Run(() => File.Exists(Path.Combine(gitDir, "BISECT_START")));
+        var capturedModule = _module;
+        var (merge, cherry, revert, bisect) = await System.Threading.Tasks.Task.Run(() =>
+        {
+            bool m = capturedModule.InTheMiddleOfMerge();
+            string gitDir = capturedModule.WorkingDirGitDir;
+            bool c = File.Exists(Path.Combine(gitDir, "CHERRY_PICK_HEAD"));
+            bool rv = File.Exists(Path.Combine(gitDir, "REVERT_HEAD"));
+            bool b = capturedModule.InTheMiddleOfBisect();
+            return (m, c, rv, b);
+        });
 
-        string? msg = merge ? "Merge in progress — resolve conflicts, then commit." :
-                      cherry ? "Cherry-pick in progress — resolve conflicts, then commit." :
-                      revert ? "Revert in progress — resolve conflicts, then commit." :
-                      bisect ? "Bisect in progress — mark commits as good or bad." :
+        string gitDir = capturedModule.WorkingDirGitDir;
+        string? msg = merge ? $"MERGE_HEAD exists in {gitDir} — resolve conflicts and commit, or abort." :
+                      cherry ? "Cherry-pick in progress — resolve conflicts and commit, or abort." :
+                      revert ? "Revert in progress — resolve conflicts and commit, or abort." :
+                      bisect ? "Bisect in progress — mark commits as good or bad, or reset." :
                       null;
+
+        string? abortCmd = merge ? "merge --abort" :
+                           cherry ? "cherry-pick --abort" :
+                           revert ? "revert --abort" :
+                           bisect ? "bisect reset" :
+                           null;
+
+        string? abortLabel = merge ? "Abort Merge" :
+                             cherry ? "Abort Cherry-pick" :
+                             revert ? "Abort Revert" :
+                             bisect ? "Reset Bisect" :
+                             null;
 
         await Dispatcher.UIThread.InvokeAsync(() =>
         {
+            _activeAbortCommand = abortCmd;
             ActionBarText.Text = msg;
+            ActionBar_AbortBtn.Content = abortLabel;
             ActionBar.IsVisible = msg is not null;
         });
     }
@@ -549,21 +676,29 @@ public partial class MainWindow : GitExtensionsWindow
 
     private void BuildToolBar()
     {
-        MainToolBar.Children.Add(MakeToolButton("⊟", "Toggle left panel (Ctrl+K)", ToggleLeftPanel));
-        MainToolBar.Children.Add(MakeToolSeparator());
-        MainToolBar.Children.Add(MakeToolButton("↺", "Refresh (F5)", () => _ = RevisionGrid.RefreshAsync()));
-        MainToolBar.Children.Add(MakeToolSeparator());
-        MainToolBar.Children.Add(MakeToolButton("✎", "Commit staged changes (Ctrl+Enter)",
-            () => _ = ShowCommitDialogAsync()));
-        MainToolBar.Children.Add(MakeToolButton("⤓", "Fetch all remotes", () => _ = FetchAsync()));
-        MainToolBar.Children.Add(MakeToolButton("⬇", "Pull / merge",
-            () => _ = ShowPullDialogAsync()));
-        MainToolBar.Children.Add(MakeToolButton("⬆", "Push to remote",
-            () => _ = ShowPushDialogAsync()));
-        MainToolBar.Children.Add(MakeToolButton("≡", "Stash local changes",
-            () => _ = ShowModuleDialogAsync(m => new StashDialog(m))));
+        // Toggle left panel
+        MainToolBar.Children.Add(MakeToolButton("avares://GitUI.Avalonia/Assets/Icons/LayoutSidebarTopLeft.png", "⊟", "Toggle left panel (Ctrl+K)", ToggleLeftPanel));
         MainToolBar.Children.Add(MakeToolSeparator());
 
+        // Refresh
+        MainToolBar.Children.Add(MakeToolButton("avares://GitUI.Avalonia/Assets/Icons/ReloadRevisions.png", "↺", "Refresh (F5)", () => _ = RevisionGrid.RefreshAsync()));
+        MainToolBar.Children.Add(MakeToolSeparator());
+
+        // Working directory button
+        _workingDirButton = new Button
+        {
+            Content = "(no repo)",
+            Classes = { "ToolBtn" },
+            Padding = new Thickness(6, 2),
+            VerticalContentAlignment = VerticalAlignment.Center,
+            FontSize = 12,
+        };
+        ToolTip.SetTip(_workingDirButton, "Working directory — click to switch repository");
+        _workingDirButton.Click += (_, _) => ShowRecentReposPopup(_workingDirButton);
+        MainToolBar.Children.Add(_workingDirButton);
+        MainToolBar.Children.Add(MakeToolSeparator());
+
+        // Branch selector
         _branchSelector = new ComboBox
         {
             MinWidth = 120,
@@ -576,6 +711,326 @@ public partial class MainWindow : GitExtensionsWindow
         };
         _branchSelector.SelectionChanged += OnBranchSelectorChanged;
         MainToolBar.Children.Add(_branchSelector);
+        MainToolBar.Children.Add(MakeToolSeparator());
+
+        // Commit
+        MainToolBar.Children.Add(MakeToolButton("avares://GitUI.Avalonia/Assets/Icons/RepoStateClean.png", "✎", "Commit staged changes (Ctrl+Enter)",
+            () => _ = ShowCommitDialogAsync()));
+        MainToolBar.Children.Add(MakeToolSeparator());
+
+        // Pull split button
+        MainToolBar.Children.Add(MakePullSplitButton());
+
+        // Push
+        MainToolBar.Children.Add(MakeToolButton("avares://GitUI.Avalonia/Assets/Icons/Push.png", "⬆", "Push to remote",
+            () => _ = ShowPushDialogAsync()));
+        MainToolBar.Children.Add(MakeToolSeparator());
+
+        // Stash split button
+        MainToolBar.Children.Add(MakeStashSplitButton());
+        MainToolBar.Children.Add(MakeToolSeparator());
+
+        // File Explorer (Finder)
+        MainToolBar.Children.Add(MakeToolButton("📁", "Open in Finder", () =>
+        {
+            if (_module is not null)
+            {
+                System.Diagnostics.Process.Start("open", _module.WorkingDir);
+            }
+        }));
+
+        // Terminal
+        MainToolBar.Children.Add(MakeToolButton("⌨", "Open Terminal here", () =>
+        {
+            if (_module is not null)
+            {
+                var psi = new System.Diagnostics.ProcessStartInfo { FileName = "open", UseShellExecute = false };
+                psi.ArgumentList.Add("-a");
+                psi.ArgumentList.Add("Terminal");
+                psi.ArgumentList.Add(_module.WorkingDir);
+                System.Diagnostics.Process.Start(psi);
+            }
+        }));
+
+        // Settings
+        MainToolBar.Children.Add(MakeToolButton("⚙", "Settings", OpenSettings));
+    }
+
+    private SplitButton MakePullSplitButton()
+    {
+        Control pullContent = MakeToolIcon("avares://GitUI.Avalonia/Assets/Icons/PullMerge.png") ?? (Control)new TextBlock { Text = "⬇" };
+        var flyout = new MenuFlyout();
+        flyout.Items.Add(new MenuItem
+        {
+            Header = "Pull + Merge",
+            Command = ReactiveCommand.CreateFromTask(ShowPullDialogAsync),
+        });
+        flyout.Items.Add(new MenuItem
+        {
+            Header = "Pull + Rebase",
+            Command = ReactiveCommand.CreateFromTask(PullRebaseAsync),
+        });
+        flyout.Items.Add(new MenuItem
+        {
+            Header = "Fetch All",
+            Command = ReactiveCommand.CreateFromTask(FetchAsync),
+        });
+        flyout.Items.Add(new MenuItem
+        {
+            Header = "Fetch (pruning)",
+            Command = ReactiveCommand.CreateFromTask(FetchPruneAsync),
+        });
+
+        var btn = new SplitButton
+        {
+            Content = pullContent,
+            Flyout = flyout,
+            Classes = { "ToolBtn" },
+            Padding = new Thickness(4, 2),
+            VerticalContentAlignment = VerticalAlignment.Center,
+        };
+        ToolTip.SetTip(btn, "Pull / merge (dropdown for more options)");
+        btn.Click += (_, _) => _ = ShowPullDialogAsync();
+        return btn;
+    }
+
+    private SplitButton MakeStashSplitButton()
+    {
+        Control stashContent = MakeToolIcon("avares://GitUI.Avalonia/Assets/Icons/stash.png") ?? (Control)new TextBlock { Text = "≡" };
+        var flyout = new MenuFlyout();
+        flyout.Items.Add(new MenuItem
+        {
+            Header = "Stash",
+            Command = ReactiveCommand.CreateFromTask(() => ShowModuleDialogAsync(m => new StashDialog(m))),
+        });
+        flyout.Items.Add(new MenuItem
+        {
+            Header = "Stash Staged",
+            Command = ReactiveCommand.CreateFromTask(StashStagedAsync),
+        });
+        flyout.Items.Add(new MenuItem
+        {
+            Header = "Pop Stash",
+            Command = ReactiveCommand.CreateFromTask(StashPopAsync),
+        });
+        flyout.Items.Add(new MenuItem
+        {
+            Header = "Manage Stashes…",
+            Command = ReactiveCommand.CreateFromTask(() => ShowModuleDialogAsync(m => new StashDialog(m))),
+        });
+
+        var btn = new SplitButton
+        {
+            Content = stashContent,
+            Flyout = flyout,
+            Classes = { "ToolBtn" },
+            Padding = new Thickness(4, 2),
+            VerticalContentAlignment = VerticalAlignment.Center,
+        };
+        ToolTip.SetTip(btn, "Stash local changes (dropdown for more options)");
+        btn.Click += (_, _) => _ = ShowModuleDialogAsync(m => new StashDialog(m));
+        return btn;
+    }
+
+    private void ShowRecentReposPopup(Control anchor)
+    {
+        var flyout = new MenuFlyout();
+        var recent = App.Settings.GetStringList("recentRepositories");
+        if (recent.Count == 0)
+        {
+            flyout.Items.Add(new MenuItem { Header = "(no recent repositories)", IsEnabled = false });
+        }
+        else
+        {
+            foreach (string path in recent)
+            {
+                string capturedPath = path;
+                flyout.Items.Add(new MenuItem
+                {
+                    Header = capturedPath,
+                    Command = ReactiveCommand.Create(() => OpenRepository(capturedPath)),
+                });
+            }
+        }
+
+        flyout.ShowAt(anchor);
+    }
+
+    private async System.Threading.Tasks.Task PullRebaseAsync()
+    {
+        if (_module is null)
+        {
+            return;
+        }
+
+        var capturedModule = _module;
+        var dialog = new GitProgressDialog(
+            "Pull (rebase)…",
+            () => capturedModule.GitExecutable.GetOutputAsync("pull --rebase"));
+        await dialog.ShowDialog<object?>(this);
+        await RevisionGrid.RefreshAsync();
+        await RefreshBranchSelectorAsync();
+        await RefreshStatusBarCountsAsync();
+        _ = LeftPanel.RefreshAsync();
+    }
+
+    private async System.Threading.Tasks.Task FetchPruneAsync()
+    {
+        if (_module is null)
+        {
+            return;
+        }
+
+        var capturedModule = _module;
+        var dialog = new GitProgressDialog(
+            "Fetching (pruning)…",
+            () => capturedModule.GitExecutable.GetOutputAsync("fetch --all --prune"));
+        await dialog.ShowDialog<object?>(this);
+        await RevisionGrid.RefreshAsync();
+        await RefreshActionBarsAsync();
+        await RefreshStatusBarCountsAsync();
+    }
+
+    private async System.Threading.Tasks.Task StashStagedAsync()
+    {
+        if (_module is null)
+        {
+            return;
+        }
+
+        var capturedModule = _module;
+        await System.Threading.Tasks.Task.Run(() =>
+            capturedModule.GitExecutable.GetOutput("stash --staged"));
+        await RevisionGrid.RefreshAsync();
+        await RefreshStatusBarCountsAsync();
+    }
+
+    private async System.Threading.Tasks.Task StashPopAsync()
+    {
+        if (_module is null)
+        {
+            return;
+        }
+
+        var capturedModule = _module;
+        await System.Threading.Tasks.Task.Run(() =>
+            capturedModule.GitExecutable.GetOutput("stash pop"));
+        await RevisionGrid.RefreshAsync();
+        await RefreshStatusBarCountsAsync();
+    }
+
+    private async System.Threading.Tasks.Task RefreshStatusBarCountsAsync()
+    {
+        if (_module is null)
+        {
+            return;
+        }
+
+        var capturedModule = _module;
+        var (ahead, behind, staged, unstaged) = await System.Threading.Tasks.Task.Run(() =>
+        {
+            int aheadCount = 0, behindCount = 0, stagedCount = 0, unstagedCount = 0;
+            try
+            {
+                string aheadStr = capturedModule.GitExecutable.GetOutput("rev-list --count @{u}..HEAD 2>/dev/null").Trim();
+                int.TryParse(aheadStr, out aheadCount);
+            }
+            catch
+            {
+            }
+
+            try
+            {
+                string behindStr = capturedModule.GitExecutable.GetOutput("rev-list --count HEAD..@{u} 2>/dev/null").Trim();
+                int.TryParse(behindStr, out behindCount);
+            }
+            catch
+            {
+            }
+
+            try
+            {
+                string stagedStr = capturedModule.GitExecutable.GetOutput("diff --cached --name-only").Trim();
+                stagedCount = string.IsNullOrEmpty(stagedStr) ? 0 : stagedStr.Split('\n', StringSplitOptions.RemoveEmptyEntries).Length;
+            }
+            catch
+            {
+            }
+
+            try
+            {
+                string unstagedStr = capturedModule.GitExecutable.GetOutput("diff --name-only").Trim();
+                unstagedCount = string.IsNullOrEmpty(unstagedStr) ? 0 : unstagedStr.Split('\n', StringSplitOptions.RemoveEmptyEntries).Length;
+            }
+            catch
+            {
+            }
+
+            return (aheadCount, behindCount, stagedCount, unstagedCount);
+        });
+
+        await Dispatcher.UIThread.InvokeAsync(() =>
+        {
+            if (ahead > 0 || behind > 0)
+            {
+                AheadBehindLabel.Text = $"↑{ahead} ↓{behind}";
+                AheadBehindLabel.IsVisible = true;
+            }
+            else
+            {
+                AheadBehindLabel.IsVisible = false;
+            }
+
+            if (staged > 0)
+            {
+                StagedCountLabel.Text = $"●{staged} staged";
+                StagedCountLabel.IsVisible = true;
+            }
+            else
+            {
+                StagedCountLabel.IsVisible = false;
+            }
+
+            if (unstaged > 0)
+            {
+                UnstagedCountLabel.Text = $"○{unstaged} unstaged";
+                UnstagedCountLabel.IsVisible = true;
+            }
+            else
+            {
+                UnstagedCountLabel.IsVisible = false;
+            }
+        });
+    }
+
+    private static Image? MakeToolIcon(string assetUri)
+    {
+        try
+        {
+            var uri = new Uri(assetUri);
+            using var stream = AssetLoader.Open(uri);
+            var bitmap = new Bitmap(stream);
+            return new Image { Source = bitmap, Width = 16, Height = 16 };
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    private static Button MakeToolButton(string assetUri, string fallbackText, string tooltip, Action onClick)
+    {
+        Control content = MakeToolIcon(assetUri) ?? (Control)new TextBlock { Text = fallbackText };
+        var btn = new Button
+        {
+            Content = content,
+            Classes = { "ToolBtn" },
+            HorizontalContentAlignment = HorizontalAlignment.Center,
+            VerticalContentAlignment = VerticalAlignment.Center,
+        };
+        ToolTip.SetTip(btn, tooltip);
+        btn.Click += (_, _) => onClick();
+        return btn;
     }
 
     private static Button MakeToolButton(string icon, string tooltip, Action onClick)
@@ -613,6 +1068,7 @@ public partial class MainWindow : GitExtensionsWindow
 
             await Dispatcher.UIThread.InvokeAsync(() =>
             {
+                BranchLabel.Text = string.IsNullOrEmpty(currentBranch) ? string.Empty : $"⎇  {currentBranch}";
                 _suppressBranchSelection = true;
                 try
                 {
@@ -658,6 +1114,7 @@ public partial class MainWindow : GitExtensionsWindow
             StatusLabel.Text = $"Detached HEAD at {hash[..7]}";
             await RevisionGrid.RefreshAsync();
             await RefreshBranchSelectorAsync();
+            await RefreshStatusBarCountsAsync();
         }
         catch (Exception ex)
         {
@@ -677,6 +1134,7 @@ public partial class MainWindow : GitExtensionsWindow
             await _module.GitExecutable.GetOutputAsync($"reset --hard {hash}");
             StatusLabel.Text = $"Reset to {hash[..7]}";
             await RevisionGrid.RefreshAsync();
+            await RefreshStatusBarCountsAsync();
         }
         catch (Exception ex)
         {
@@ -698,6 +1156,7 @@ public partial class MainWindow : GitExtensionsWindow
             StatusLabel.Text = $"On branch {branch}";
             await RevisionGrid.RefreshAsync();
             await RefreshBranchSelectorAsync();
+            await RefreshStatusBarCountsAsync();
             _ = LeftPanel.RefreshAsync();
         }
         catch (Exception ex)

@@ -22,7 +22,6 @@
                                FontWeight="Bold"
                                VerticalAlignment="Center" />
                     <TextBlock Text="{Binding Name}"
-                               FontFamily="{DynamicResource MonospaceFont}"
                                FontSize="12"
                                VerticalAlignment="Center" />
                 </StackPanel>

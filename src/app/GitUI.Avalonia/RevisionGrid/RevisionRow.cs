@@ -6,6 +6,7 @@ namespace GitUI.Avalonia.RevisionGrid;
 
 public sealed class RevisionRow
 {
+    // Normal commit row
     public RevisionRow(
         GitRevision revision,
         IRevisionGraphRow? graphRow,
@@ -18,19 +19,83 @@ public sealed class RevisionRow
         NextRow = nextRow;
     }
 
-    public GitRevision Revision { get; }
+    // Artificial row (Working Tree / Index)
+    public RevisionRow(string objectId, string subject, string artificialType)
+    {
+        Revision = null!;
+        GraphRow = null;
+        PrevRow = null;
+        NextRow = null;
+        IsArtificial = true;
+        ArtificialType = artificialType;
+        _artificialObjectId = objectId;
+        _artificialSubject = subject;
+    }
+
+    private readonly string? _artificialObjectId;
+    private readonly string? _artificialSubject;
+
+    public GitRevision? Revision { get; }
     public IRevisionGraphRow? GraphRow { get; }
     public IRevisionGraphRow? PrevRow { get; }
     public IRevisionGraphRow? NextRow { get; }
 
-    public string Subject => Revision.Subject ?? string.Empty;
-    public string Author => Revision.Author ?? string.Empty;
-    public DateTimeOffset AuthorDate => DateTimeOffset.FromUnixTimeSeconds(Revision.AuthorUnixTime);
-    public string ShortHash => Revision.ObjectId.ToShortString();
+    // Artificial row flags
+    public bool IsArtificial { get; init; }
+    public string ArtificialType { get; init; } = string.Empty;  // "Index" or "WorkTree"
 
-    public IReadOnlyList<IGitRef> Refs => Revision.Refs ?? [];
+    // HEAD indicator
+    public bool IsCurrent { get; init; }
+
+    // Tooltip body (populated lazily)
+    public string CommitBody { get; set; } = string.Empty;
+
+    public string Subject => IsArtificial ? (_artificialSubject ?? string.Empty) : (Revision?.Subject ?? string.Empty);
+    public string Author => IsArtificial ? string.Empty : (Revision?.Author ?? string.Empty);
+    public DateTimeOffset AuthorDate => IsArtificial ? DateTimeOffset.Now : DateTimeOffset.FromUnixTimeSeconds(Revision!.AuthorUnixTime);
+    public string ShortHash => IsArtificial ? "--------" : (Revision?.ObjectId?.ToShortString() ?? string.Empty);
+
+    public IReadOnlyList<IGitRef> Refs => (IsArtificial ? null : Revision?.Refs) ?? [];
 
     public string RefsText => Refs.Count == 0
         ? string.Empty
         : string.Join("  ", Refs.Select(r => r.LocalName));
+
+    public string RelativeDate => IsArtificial ? string.Empty : FormatRelative(AuthorDate);
+
+    private static string FormatRelative(DateTimeOffset date)
+    {
+        TimeSpan ago = DateTimeOffset.Now - date;
+        if (ago.TotalMinutes < 1)
+        {
+            return "just now";
+        }
+
+        if (ago.TotalHours < 1)
+        {
+            return $"{(int)ago.TotalMinutes}m ago";
+        }
+
+        if (ago.TotalDays < 1)
+        {
+            return $"{(int)ago.TotalHours}h ago";
+        }
+
+        if (ago.TotalDays < 7)
+        {
+            return $"{(int)ago.TotalDays}d ago";
+        }
+
+        if (ago.TotalDays < 30)
+        {
+            return $"{(int)(ago.TotalDays / 7)}w ago";
+        }
+
+        if (ago.TotalDays < 365)
+        {
+            return $"{(int)(ago.TotalDays / 30)}mo ago";
+        }
+
+        return $"{(int)(ago.TotalDays / 365)}y ago";
+    }
 }

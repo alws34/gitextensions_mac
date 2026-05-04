@@ -1,5 +1,6 @@
 using Avalonia.Threading;
 using GitCommands;
+using GitExtensions.Extensibility;
 using GitExtensions.Extensibility.Git;
 using GitUI.Avalonia.Base;
 using GitUI.Avalonia.RevisionGrid.Graph;
@@ -14,6 +15,7 @@ public partial class RevisionGridControl : GitModuleControl
     private const int MaxRevisions = 2000;
 
     public event Action<GitRevision?>? SelectedRevisionChanged;
+    public event Action<RevisionRow?>? SelectedRowChanged;
     public event Action<string>? CheckoutHashRequested;
     public event Action<string>? CherryPickHashRequested;
     public event Action<string>? RevertHashRequested;
@@ -28,6 +30,7 @@ public partial class RevisionGridControl : GitModuleControl
     {
         InitializeComponent();
         DataGrid.SelectedRevisionChanged += rev => SelectedRevisionChanged?.Invoke(rev);
+        DataGrid.SelectedRowChanged += row => SelectedRowChanged?.Invoke(row);
         DataGrid.CheckoutHashRequested += hash => CheckoutHashRequested?.Invoke(hash);
         DataGrid.CherryPickHashRequested += hash => CherryPickHashRequested?.Invoke(hash);
         DataGrid.RevertHashRequested += hash => RevertHashRequested?.Invoke(hash);
@@ -45,6 +48,14 @@ public partial class RevisionGridControl : GitModuleControl
     public Task RefreshAsync() => LoadRevisionsAsync();
 
     public void ScrollToHash(string shortHash) => DataGrid.ScrollToHash(shortHash);
+
+    public void NavigateParent() => DataGrid.SelectRelative(1);
+
+    public void NavigateChild() => DataGrid.SelectRelative(-1);
+
+    public void NavigateBack() => DataGrid.SelectRelative(-1);
+
+    public void NavigateForward() => DataGrid.SelectRelative(1);
 
     public void SetFilter(string text, Controls.FilterType type)
     {
@@ -99,10 +110,60 @@ public partial class RevisionGridControl : GitModuleControl
 
         try
         {
+            // --- Artificial rows: Working Tree + Index ---
+            string statusOutput = string.Empty;
+            string headHash = string.Empty;
+            try
+            {
+                statusOutput = await Module.GitExecutable.GetOutputAsync("status --porcelain");
+                headHash = (await Module.GitExecutable.GetOutputAsync("rev-parse HEAD")).Trim();
+            }
+            catch
+            {
+                // non-fatal — repo might be empty
+            }
+
+            var statusLines = statusOutput.Split('\n', StringSplitOptions.RemoveEmptyEntries);
+            int stagedCount = statusLines.Count(l => l.Length >= 2 && l[0] != ' ' && l[0] != '?');
+            int unstagedCount = statusLines.Count(l => l.Length >= 2 && (l[1] != ' ' || l[0] == '?'));
+
+            var workTreeRow = new RevisionRow(
+                "0000000000000000000000000000000000000002",
+                unstagedCount > 0 ? $"Working directory ({unstagedCount} files)" : "Working directory",
+                "WorkTree");
+
+            var indexRow = new RevisionRow(
+                "0000000000000000000000000000000000000001",
+                stagedCount > 0 ? $"Index ({stagedCount} staged files)" : "Index",
+                "Index");
+
+            // --- Regular git log rows ---
             string output = await Module.GitExecutable.GetOutputAsync(
                 $"log --format={LogFormat}%n --max-count={MaxRevisions}{(string.IsNullOrEmpty(extraArgs) ? string.Empty : " " + extraArgs)}");
 
             var gitRevisions = ParseGitLog(output);
+
+            // Assign branch/tag refs to each commit so badges render in the grid
+            try
+            {
+                var allRefs = await System.Threading.Tasks.Task.Run(
+                    () => Module.GetRefs(RefsFilter.Heads | RefsFilter.Remotes | RefsFilter.Tags));
+                var refsByGuid = allRefs
+                    .Where(r => !string.IsNullOrEmpty(r.Guid))
+                    .GroupBy(r => r.Guid!)
+                    .ToDictionary(g => g.Key, g => (IReadOnlyList<IGitRef>)g.ToArray());
+                foreach (GitRevision rev in gitRevisions)
+                {
+                    if (!string.IsNullOrEmpty(rev.Guid) && refsByGuid.TryGetValue(rev.Guid, out var revRefs))
+                    {
+                        rev.Refs = revRefs;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"LoadRefs failed: {ex.Message}");
+            }
 
             var graph = new RevisionGraph();
             foreach (GitRevision rev in gitRevisions)
@@ -118,17 +179,27 @@ public partial class RevisionGridControl : GitModuleControl
                 graph.CacheTo(count - 1, count - 1);
             }
 
-            var rows = new List<RevisionRow>(count);
+            var rows = new List<RevisionRow>(count + 2);
+
+            // Artificial rows first
+            rows.Add(workTreeRow);
+            rows.Add(indexRow);
+
             for (int i = 0; i < count; i++)
             {
                 RevisionGraphRevision? node = graph.GetNodeForRow(i);
                 if (node?.GitRevision is not null)
                 {
+                    bool isCurrent = !string.IsNullOrEmpty(headHash)
+                        && node.GitRevision.Guid == headHash;
                     rows.Add(new RevisionRow(
                         node.GitRevision,
                         graph.GetSegmentsForRow(i),
                         i > 0 ? graph.GetSegmentsForRow(i - 1) : null,
-                        i < count - 1 ? graph.GetSegmentsForRow(i + 1) : null));
+                        i < count - 1 ? graph.GetSegmentsForRow(i + 1) : null)
+                    {
+                        IsCurrent = isCurrent
+                    });
                 }
             }
 

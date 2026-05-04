@@ -41,11 +41,12 @@ public partial class CommitDetailsPanel : UserControl
             return;
         }
 
-        var files = await System.Threading.Tasks.Task.Run(() =>
+        var (files, body) = await System.Threading.Tasks.Task.Run(() =>
         {
+            List<FileStatusItem> fileList;
             try
             {
-                return _module.GetDiffFilesWithUntracked(
+                fileList = _module.GetDiffFilesWithUntracked(
                     revision.Guid + "^",
                     revision.Guid,
                     GitExtensions.Extensibility.Git.StagedStatus.None)
@@ -54,10 +55,23 @@ public partial class CommitDetailsPanel : UserControl
             }
             catch
             {
-                return new List<FileStatusItem>();
+                fileList = [];
             }
+
+            string commitBody = string.Empty;
+            try
+            {
+                commitBody = _module.GitExecutable.GetOutput($"log -1 --format=%b {revision.Guid}").Trim();
+            }
+            catch
+            {
+                // body is optional, ignore failures
+            }
+
+            return (fileList, commitBody);
         });
 
+        Summary.ShowBody(body);
         FileList.LoadFiles(files);
 
         if (DetailsTabs.SelectedIndex == 0)

@@ -41,15 +41,19 @@
                        FontWeight="SemiBold"
                        FontSize="13"
                        TextWrapping="Wrap" />
-            <!-- Author row with label -->
+            <!-- Author row -->
             <StackPanel Orientation="Horizontal" Spacing="4">
                 <TextBlock Text="Author:"
                            FontWeight="SemiBold"
                            FontSize="11"
                            Foreground="{DynamicResource SystemBaseMediumColor}" />
                 <TextBlock x:Name="AuthorName"
-                           FontSize="11" />
-                <TextBlock Text="  Date:"
+                           FontSize="11"
+                           TextTrimming="CharacterEllipsis" />
+            </StackPanel>
+            <!-- Date row -->
+            <StackPanel Orientation="Horizontal" Spacing="4">
+                <TextBlock Text="Date:"
                            FontWeight="SemiBold"
                            FontSize="11"
                            Foreground="{DynamicResource SystemBaseMediumColor}" />
@@ -57,6 +61,16 @@
                            Foreground="{DynamicResource SystemBaseMediumColor}"
                            FontSize="11" />
             </StackPanel>
+            <!-- Commit body (only shown when present) -->
+            <ScrollViewer x:Name="BodyScroll"
+                          MaxHeight="52"
+                          IsVisible="False"
+                          HorizontalScrollBarVisibility="Disabled">
+                <TextBlock x:Name="CommitBody"
+                           FontSize="11"
+                           TextWrapping="Wrap"
+                           Foreground="{DynamicResource SystemBaseMediumColor}" />
+            </ScrollViewer>
         </StackPanel>
     </Border>
 </local:GitModuleControl>

@@ -1,4 +1,6 @@
+using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Interactivity;
 using GitUIPluginInterfaces;
 
 namespace GitUI.Avalonia.RevisionGrid;
@@ -6,6 +8,7 @@ namespace GitUI.Avalonia.RevisionGrid;
 public partial class RevisionDataGrid : UserControl
 {
     public event Action<GitRevision?>? SelectedRevisionChanged;
+    public event Action<RevisionRow?>? SelectedRowChanged;
 
     // Events — bubble up to RevisionGridControl / MainWindow
     public event Action<string>? CheckoutHashRequested;
@@ -16,7 +19,37 @@ public partial class RevisionDataGrid : UserControl
     public event Action<string>? ResetHardToHashRequested;
     public event Action<string>? InteractiveRebaseRequested;
 
+    // Column width styled properties — bound from the row DataTemplate via $parent[RevisionDataGrid]
+    public static readonly StyledProperty<GridLength> GraphColWidthProperty =
+        AvaloniaProperty.Register<RevisionDataGrid, GridLength>(nameof(GraphColWidth), new GridLength(80));
+    public static readonly StyledProperty<GridLength> AuthorColWidthProperty =
+        AvaloniaProperty.Register<RevisionDataGrid, GridLength>(nameof(AuthorColWidth), new GridLength(140));
+    public static readonly StyledProperty<GridLength> DateColWidthProperty =
+        AvaloniaProperty.Register<RevisionDataGrid, GridLength>(nameof(DateColWidth), new GridLength(100));
+    public static readonly StyledProperty<GridLength> HashColWidthProperty =
+        AvaloniaProperty.Register<RevisionDataGrid, GridLength>(nameof(HashColWidth), new GridLength(72));
+
+    public GridLength GraphColWidth { get => GetValue(GraphColWidthProperty); set => SetValue(GraphColWidthProperty, value); }
+    public GridLength AuthorColWidth { get => GetValue(AuthorColWidthProperty); set => SetValue(AuthorColWidthProperty, value); }
+    public GridLength DateColWidth { get => GetValue(DateColWidthProperty); set => SetValue(DateColWidthProperty, value); }
+    public GridLength HashColWidth { get => GetValue(HashColWidthProperty); set => SetValue(HashColWidthProperty, value); }
+
     public RevisionDataGrid() => InitializeComponent();
+
+    protected override void OnLoaded(RoutedEventArgs e)
+    {
+        base.OnLoaded(e);
+
+        // When header GridSplitters are dragged, propagate new widths to row bindings
+        HeaderGrid.ColumnDefinitions[0].PropertyChanged += (_, _) =>
+            GraphColWidth = new GridLength(HeaderGrid.ColumnDefinitions[0].ActualWidth);
+        HeaderGrid.ColumnDefinitions[4].PropertyChanged += (_, _) =>
+            AuthorColWidth = new GridLength(HeaderGrid.ColumnDefinitions[4].ActualWidth);
+        HeaderGrid.ColumnDefinitions[6].PropertyChanged += (_, _) =>
+            DateColWidth = new GridLength(HeaderGrid.ColumnDefinitions[6].ActualWidth);
+        HeaderGrid.ColumnDefinitions[8].PropertyChanged += (_, _) =>
+            HashColWidth = new GridLength(HeaderGrid.ColumnDefinitions[8].ActualWidth);
+    }
 
     public void LoadRevisions(IReadOnlyList<RevisionRow> rows)
     {
@@ -41,9 +74,26 @@ public partial class RevisionDataGrid : UserControl
         }
     }
 
+    public void SelectRelative(int offset)
+    {
+        int nextIndex = CommitList.SelectedIndex + offset;
+        if (nextIndex < 0 || nextIndex >= CommitList.ItemCount)
+        {
+            return;
+        }
+
+        CommitList.SelectedIndex = nextIndex;
+        if (CommitList.SelectedItem is { } selectedItem)
+        {
+            CommitList.ScrollIntoView(selectedItem);
+        }
+    }
+
     private void CommitList_SelectionChanged(object? sender, SelectionChangedEventArgs e)
     {
-        SelectedRevisionChanged?.Invoke((CommitList.SelectedItem as RevisionRow)?.Revision);
+        var row = CommitList.SelectedItem as RevisionRow;
+        SelectedRowChanged?.Invoke(row);
+        SelectedRevisionChanged?.Invoke(row?.Revision);
     }
 
     private RevisionRow? GetSelectedRow() => CommitList.SelectedItem as RevisionRow;
@@ -58,7 +108,7 @@ public partial class RevisionDataGrid : UserControl
 
     private void CtxCheckout_Click(object? sender, global::Avalonia.Interactivity.RoutedEventArgs e)
     {
-        string? hash = GetSelectedRow()?.Revision.Guid;
+        string? hash = GetSelectedRow()?.Revision?.Guid;
         if (hash is not null)
         {
             CheckoutHashRequested?.Invoke(hash);
@@ -67,7 +117,7 @@ public partial class RevisionDataGrid : UserControl
 
     private void CtxCherryPick_Click(object? sender, global::Avalonia.Interactivity.RoutedEventArgs e)
     {
-        string? hash = GetSelectedRow()?.Revision.Guid;
+        string? hash = GetSelectedRow()?.Revision?.Guid;
         if (hash is not null)
         {
             CherryPickHashRequested?.Invoke(hash);
@@ -76,7 +126,7 @@ public partial class RevisionDataGrid : UserControl
 
     private void CtxRevert_Click(object? sender, global::Avalonia.Interactivity.RoutedEventArgs e)
     {
-        string? hash = GetSelectedRow()?.Revision.Guid;
+        string? hash = GetSelectedRow()?.Revision?.Guid;
         if (hash is not null)
         {
             RevertHashRequested?.Invoke(hash);
@@ -85,7 +135,7 @@ public partial class RevisionDataGrid : UserControl
 
     private void CtxCreateBranch_Click(object? sender, global::Avalonia.Interactivity.RoutedEventArgs e)
     {
-        string? hash = GetSelectedRow()?.Revision.Guid;
+        string? hash = GetSelectedRow()?.Revision?.Guid;
         if (hash is not null)
         {
             CreateBranchAtHashRequested?.Invoke(hash);
@@ -94,7 +144,7 @@ public partial class RevisionDataGrid : UserControl
 
     private void CtxCreateTag_Click(object? sender, global::Avalonia.Interactivity.RoutedEventArgs e)
     {
-        string? hash = GetSelectedRow()?.Revision.Guid;
+        string? hash = GetSelectedRow()?.Revision?.Guid;
         if (hash is not null)
         {
             CreateTagAtHashRequested?.Invoke(hash);
@@ -103,7 +153,7 @@ public partial class RevisionDataGrid : UserControl
 
     private void CtxResetHard_Click(object? sender, global::Avalonia.Interactivity.RoutedEventArgs e)
     {
-        string? hash = GetSelectedRow()?.Revision.Guid;
+        string? hash = GetSelectedRow()?.Revision?.Guid;
         if (hash is not null)
         {
             ResetHardToHashRequested?.Invoke(hash);
@@ -121,7 +171,7 @@ public partial class RevisionDataGrid : UserControl
 
     private void CtxInteractiveRebase_Click(object? sender, global::Avalonia.Interactivity.RoutedEventArgs e)
     {
-        string? hash = GetSelectedRow()?.Revision.Guid;
+        string? hash = GetSelectedRow()?.Revision?.Guid;
         if (hash is not null)
         {
             InteractiveRebaseRequested?.Invoke(hash);

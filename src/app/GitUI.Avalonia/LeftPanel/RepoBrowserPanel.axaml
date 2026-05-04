@@ -5,13 +5,23 @@
              x:Class="GitUI.Avalonia.LeftPanel.RepoBrowserPanel"
              MinWidth="140">
     <DockPanel>
-        <TextBox DockPanel.Dock="Top"
-                 x:Name="SearchBox"
-                 Watermark="Search branches…"
-                 Margin="4,4,4,2"
-                 TextChanged="SearchBox_TextChanged" />
+
+        <!-- Toolbar row: Collapse All + search -->
+        <DockPanel DockPanel.Dock="Top" Margin="4,4,4,2">
+            <Button DockPanel.Dock="Left"
+                    Content="⊟"
+                    ToolTip.Tip="Collapse All"
+                    Classes="ToolBtn"
+                    Click="CollapseAll_Click" />
+            <TextBox x:Name="SearchBox"
+                     Watermark="Search…"
+                     Margin="4,0,0,0"
+                     TextChanged="SearchBox_TextChanged" />
+        </DockPanel>
+
         <ScrollViewer>
             <StackPanel>
+
                 <Expander x:Name="WorkingDirExpander" Header="Working Directory" IsExpanded="True">
                     <ListBox x:Name="WorkingDirList" Margin="8,0,0,0">
                         <ListBox.ItemTemplate>
@@ -27,43 +37,79 @@
                         </ListBox.ItemTemplate>
                     </ListBox>
                 </Expander>
-                <Expander Header="Branches" IsExpanded="True">
+
+                <Expander x:Name="LocalBranchesExpander" Header="Branches" IsExpanded="True">
                     <ListBox x:Name="LocalBranchesList"
                              FontSize="12"
-                             Margin="8,0,0,0"
                              DoubleTapped="LocalBranch_DoubleTapped">
                         <ListBox.ItemTemplate>
                             <DataTemplate x:DataType="local:BranchItem">
-                                <TextBlock Text="{Binding Name}"
-                                           FontSize="12"
-                                           FontWeight="{Binding IsCurrent, Converter={StaticResource BoolToFontWeight}}" />
+                                <StackPanel Orientation="Horizontal" Spacing="4"
+                                            Margin="{Binding Depth, Converter={StaticResource DepthToMargin}}">
+                                    <TextBlock Text="{Binding Icon}"
+                                               FontSize="11"
+                                               Foreground="{Binding IconColor}"
+                                               Width="14"
+                                               VerticalAlignment="Center" />
+                                    <TextBlock Text="{Binding DisplayName}"
+                                               FontSize="12"
+                                               FontWeight="{Binding IsCurrent, Converter={StaticResource BoolToFontWeight}}"
+                                               VerticalAlignment="Center" />
+                                    <TextBlock Text="{Binding AheadBehind}"
+                                               FontSize="10"
+                                               Foreground="#FF888888"
+                                               IsVisible="{Binding HasAheadBehind}"
+                                               Margin="4,0,0,0"
+                                               VerticalAlignment="Center" />
+                                </StackPanel>
                             </DataTemplate>
                         </ListBox.ItemTemplate>
                         <ListBox.ContextMenu>
                             <ContextMenu Opening="LocalBranchMenu_Opening">
-                                <MenuItem Header="Checkout"           Click="LocalBranch_Checkout" />
-                                <MenuItem Header="Merge into current" Click="LocalBranch_Merge" />
+                                <MenuItem Header="Checkout"              Click="LocalBranch_Checkout" />
+                                <MenuItem Header="Merge into current"    Click="LocalBranch_Merge" />
                                 <Separator />
-                                <MenuItem Header="Delete Branch…"     Click="LocalBranch_Delete" />
-                                <MenuItem Header="Rename Branch…"     Click="LocalBranch_Rename" />
+                                <MenuItem Header="Create Branch from here…" Click="LocalBranch_CreateFrom" />
+                                <MenuItem Header="Rename Branch…"        Click="LocalBranch_Rename" />
+                                <MenuItem Header="Delete Branch…"        Click="LocalBranch_Delete" />
                                 <Separator />
-                                <MenuItem Header="Push…"              Click="LocalBranch_Push" />
+                                <MenuItem Header="Push…"                 Click="LocalBranch_Push" />
+                                <MenuItem Header="Reset to Remote"       Click="LocalBranch_ResetToRemote" />
                             </ContextMenu>
                         </ListBox.ContextMenu>
                     </ListBox>
                 </Expander>
-                <Expander Header="Remotes">
-                    <ListBox x:Name="RemotesList" FontSize="12" Margin="8,0,0,0" />
+
+                <Expander x:Name="RemotesExpander" Header="Remotes">
+                    <ListBox x:Name="RemotesList" FontSize="12" Margin="8,0,0,0">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding}" FontSize="12" />
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                        <ListBox.ContextMenu>
+                            <ContextMenu Opening="RemoteMenu_Opening">
+                                <MenuItem Header="Fetch"                        Click="Remote_Fetch" />
+                                <MenuItem Header="Checkout as New Local Branch…" Click="Remote_CheckoutLocal" />
+                                <Separator />
+                                <MenuItem Header="Delete Remote Branch…"        Click="Remote_Delete" />
+                            </ContextMenu>
+                        </ListBox.ContextMenu>
+                    </ListBox>
                 </Expander>
-                <Expander Header="Tags">
+
+                <Expander x:Name="TagsExpander" Header="Tags">
                     <ListBox x:Name="TagsList" FontSize="12" Margin="8,0,0,0">
                         <ListBox.ContextMenu>
                             <ContextMenu Opening="TagMenu_Opening">
-                                <MenuItem Header="Delete Tag…" Click="Tag_Delete" />
+                                <MenuItem Header="Create Branch at Tag…" Click="Tag_CreateBranch" />
+                                <Separator />
+                                <MenuItem Header="Delete Tag…"            Click="Tag_Delete" />
                             </ContextMenu>
                         </ListBox.ContextMenu>
                     </ListBox>
                 </Expander>
+
                 <Expander Header="Submodules">
                     <ListBox x:Name="SubmodulesList"
                              FontSize="12"
@@ -84,12 +130,14 @@
                         </ListBox.ContextMenu>
                     </ListBox>
                 </Expander>
+
                 <Expander Header="Worktrees">
                     <ListBox x:Name="WorktreesList"
                              FontSize="12"
                              Margin="8,0,0,0"
                              DoubleTapped="Worktree_DoubleTapped" />
                 </Expander>
+
                 <Expander Header="Stashes">
                     <ListBox x:Name="StashesList"
                              FontSize="12"
@@ -100,11 +148,12 @@
                                 <MenuItem Header="Pop (apply + drop)" Click="Stash_Pop" />
                                 <MenuItem Header="Apply (keep stash)" Click="Stash_Apply" />
                                 <Separator />
-                                <MenuItem Header="Drop…"              Click="Stash_Drop" />
+                                <MenuItem Header="Drop…"               Click="Stash_Drop" />
                             </ContextMenu>
                         </ListBox.ContextMenu>
                     </ListBox>
                 </Expander>
+
             </StackPanel>
         </ScrollViewer>
     </DockPanel>

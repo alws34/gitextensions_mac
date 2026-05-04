@@ -58,5 +58,6 @@
     <local:InverseBoolConverter x:Key="InverseBool" />
     <local:RefTypeBrushConverter x:Key="RefTypeBrush" />
     <local:BoolToFontWeightConverter x:Key="BoolToFontWeight" />
+    <local:DepthToMarginConverter x:Key="DepthToMargin" />
 
 </ResourceDictionary>

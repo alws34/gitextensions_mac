@@ -17,6 +17,21 @@ public partial class CommitDiffControl : GitModuleControl
         DiffEditor.TextArea.TextView.LineTransformers.Add(new DiffLineColorizer());
         LeftEditor.TextArea.TextView.LineTransformers.Add(new DiffLineColorizer());
         RightEditor.TextArea.TextView.LineTransformers.Add(new DiffLineColorizer());
+        UpdateToolbarState();
+    }
+
+    private void UpdateToolbarState()
+    {
+        if (_isSplitView)
+        {
+            UnifiedButton.Classes.Remove("Active");
+            SplitButton.Classes.Add("Active");
+        }
+        else
+        {
+            UnifiedButton.Classes.Add("Active");
+            SplitButton.Classes.Remove("Active");
+        }
     }
 
     public async System.Threading.Tasks.Task ShowDiffAsync(GitRevision revision, string? filePath = null)
@@ -95,6 +110,7 @@ public partial class CommitDiffControl : GitModuleControl
             _isSplitView = false;
             DiffEditor.IsVisible = true;
             SplitView.IsVisible = false;
+            UpdateToolbarState();
             ApplyDiff(_lastDiff, _lastFilePath);
         }
     }
@@ -106,6 +122,7 @@ public partial class CommitDiffControl : GitModuleControl
             _isSplitView = true;
             DiffEditor.IsVisible = false;
             SplitView.IsVisible = true;
+            UpdateToolbarState();
             ApplyDiff(_lastDiff, _lastFilePath);
         }
     }

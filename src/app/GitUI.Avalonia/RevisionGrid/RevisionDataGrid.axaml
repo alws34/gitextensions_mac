@@ -4,47 +4,63 @@
              xmlns:git="using:GitExtensions.Extensibility.Git"
              x:Class="GitUI.Avalonia.RevisionGrid.RevisionDataGrid">
     <DockPanel>
-        <!-- Column headers: Graph | Subject(*) | Author(140) | Date(100) | Hash(72) -->
+        <!-- Column headers with drag-resizable GridSplitters -->
+        <!-- Col layout: 0=Graph 1=Splitter 2=Subject(*) 3=Splitter 4=Author 5=Splitter 6=Date 7=Splitter 8=Hash -->
         <Grid DockPanel.Dock="Top"
-              ColumnDefinitions="80,*,140,100,72"
+              x:Name="HeaderGrid"
+              ColumnDefinitions="80,4,*,4,120,4,100,4,68"
               Background="{DynamicResource SystemChromeMediumColor}"
-              Height="24">
-            <!-- Bottom border separator -->
-            <Border Grid.Column="0" Grid.ColumnSpan="5"
+              Height="22">
+            <Border Grid.Column="0" Grid.ColumnSpan="9"
                     BorderBrush="{DynamicResource SystemBaseMediumLowColor}"
                     BorderThickness="0,0,0,1"
                     IsHitTestVisible="False" />
 
-            <!-- Graph header -->
             <TextBlock Grid.Column="0" Text="Graph"
                        FontSize="11" FontWeight="SemiBold"
                        Margin="4,0" VerticalAlignment="Center" />
-            <Rectangle Grid.Column="0" Width="1" HorizontalAlignment="Right"
-                       Fill="{DynamicResource SystemBaseMediumLowColor}" />
+            <GridSplitter Grid.Column="1"
+                          ResizeDirection="Columns"
+                          ResizeBehavior="PreviousAndNext"
+                          HorizontalAlignment="Stretch"
+                          VerticalAlignment="Stretch"
+                          Cursor="SizeWestEast"
+                          Background="{DynamicResource SystemBaseMediumLowColor}" />
 
-            <!-- Subject header -->
-            <TextBlock Grid.Column="1" Text="Subject"
+            <TextBlock Grid.Column="2" Text="Subject"
                        FontSize="11" FontWeight="SemiBold"
                        Margin="4,0" VerticalAlignment="Center" />
-            <Rectangle Grid.Column="1" Width="1" HorizontalAlignment="Right"
-                       Fill="{DynamicResource SystemBaseMediumLowColor}" />
+            <GridSplitter Grid.Column="3"
+                          ResizeDirection="Columns"
+                          ResizeBehavior="PreviousAndNext"
+                          HorizontalAlignment="Stretch"
+                          VerticalAlignment="Stretch"
+                          Cursor="SizeWestEast"
+                          Background="{DynamicResource SystemBaseMediumLowColor}" />
 
-            <!-- Author header -->
-            <TextBlock Grid.Column="2" Text="Author"
+            <TextBlock Grid.Column="4" Text="Author"
                        FontSize="11" FontWeight="SemiBold"
                        Margin="4,0" VerticalAlignment="Center" />
-            <Rectangle Grid.Column="2" Width="1" HorizontalAlignment="Right"
-                       Fill="{DynamicResource SystemBaseMediumLowColor}" />
+            <GridSplitter Grid.Column="5"
+                          ResizeDirection="Columns"
+                          ResizeBehavior="PreviousAndNext"
+                          HorizontalAlignment="Stretch"
+                          VerticalAlignment="Stretch"
+                          Cursor="SizeWestEast"
+                          Background="{DynamicResource SystemBaseMediumLowColor}" />
 
-            <!-- Date header -->
-            <TextBlock Grid.Column="3" Text="Date"
+            <TextBlock Grid.Column="6" Text="Date"
                        FontSize="11" FontWeight="SemiBold"
                        Margin="4,0" VerticalAlignment="Center" />
-            <Rectangle Grid.Column="3" Width="1" HorizontalAlignment="Right"
-                       Fill="{DynamicResource SystemBaseMediumLowColor}" />
+            <GridSplitter Grid.Column="7"
+                          ResizeDirection="Columns"
+                          ResizeBehavior="PreviousAndNext"
+                          HorizontalAlignment="Stretch"
+                          VerticalAlignment="Stretch"
+                          Cursor="SizeWestEast"
+                          Background="{DynamicResource SystemBaseMediumLowColor}" />
 
-            <!-- Hash header -->
-            <TextBlock Grid.Column="4" Text="Hash"
+            <TextBlock Grid.Column="8" Text="Hash"
                        FontSize="11" FontWeight="SemiBold"
                        Margin="4,0" VerticalAlignment="Center" />
         </Grid>
@@ -71,15 +87,21 @@
             </ListBox.ContextMenu>
             <ListBox.ItemTemplate>
                 <DataTemplate x:DataType="local:RevisionRow">
-                    <!-- Row height exactly 22px; column order: Graph(80) | Subject(*) | Author(140) | Date(100) | Hash(72) -->
-                    <Grid ColumnDefinitions="80,*,140,100,72" Height="22">
+                    <Grid Height="18">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="{Binding $parent[local:RevisionDataGrid].GraphColWidth}" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="{Binding $parent[local:RevisionDataGrid].AuthorColWidth}" />
+                            <ColumnDefinition Width="{Binding $parent[local:RevisionDataGrid].DateColWidth}" />
+                            <ColumnDefinition Width="{Binding $parent[local:RevisionDataGrid].HashColWidth}" />
+                        </Grid.ColumnDefinitions>
 
                         <!-- Graph column -->
                         <local:GraphCell Grid.Column="0"
                                          Row="{Binding GraphRow}"
                                          PrevRow="{Binding PrevRow}"
                                          NextRow="{Binding NextRow}"
-                                         Width="80" Height="22" />
+                                         Height="18" />
 
                         <!-- Subject: colored ref badges + message text -->
                         <StackPanel Grid.Column="1"
@@ -121,9 +143,9 @@
                                    FontSize="12"
                                    TextTrimming="CharacterEllipsis" />
 
-                        <!-- Date column: date only, no time -->
+                        <!-- Date column: relative age -->
                         <TextBlock Grid.Column="3"
-                                   Text="{Binding AuthorDate, StringFormat='{}{0:yyyy-MM-dd}'}"
+                                   Text="{Binding RelativeDate}"
                                    VerticalAlignment="Center"
                                    Margin="4,0"
                                    FontSize="11" />

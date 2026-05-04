@@ -11,10 +11,12 @@ public partial class RepoBrowserPanel : UserControl
 {
     private GitModule? _module;
     private List<BranchItem> _allLocalBranchItems = [];
+    private List<string> _allRemotes = [];
     private List<string> _allTags = [];
     private string _currentBranch = string.Empty;
 
     public event Action<string>? CheckoutRequested;
+    public event Action<string>? OpenRepositoryRequested;
     public event Action<string>? StatusRequested;
     public event Action<string>? ErrorOccurred;
 
@@ -103,6 +105,7 @@ public partial class RepoBrowserPanel : UserControl
             {
                 _currentBranch = currentBranch;
                 _allLocalBranchItems = branchItems;
+                _allRemotes = remotes;
                 _allTags = tags;
                 WorkingDirList.ItemsSource = workingDirFiles;
                 WorkingDirExpander.Header = workingDirFiles.Count > 0
@@ -136,9 +139,20 @@ public partial class RepoBrowserPanel : UserControl
         LocalBranchesList.ItemsSource = string.IsNullOrWhiteSpace(filter)
             ? _allLocalBranchItems
             : _allLocalBranchItems.Where(b => b.Name.Contains(filter, StringComparison.OrdinalIgnoreCase)).ToList();
+        RemotesList.ItemsSource = string.IsNullOrWhiteSpace(filter)
+            ? _allRemotes
+            : _allRemotes.Where(r => r.Contains(filter, StringComparison.OrdinalIgnoreCase)).ToList();
         TagsList.ItemsSource = string.IsNullOrWhiteSpace(filter)
             ? _allTags
             : _allTags.Where(t => t.Contains(filter, StringComparison.OrdinalIgnoreCase)).ToList();
+    }
+
+    private void CollapseAll_Click(object? sender, RoutedEventArgs e)
+    {
+        WorkingDirExpander.IsExpanded = false;
+        LocalBranchesExpander.IsExpanded = false;
+        RemotesExpander.IsExpanded = false;
+        TagsExpander.IsExpanded = false;
     }
 
     // ── Context menu guards ──────────────────────────────────────────────────
@@ -154,6 +168,14 @@ public partial class RepoBrowserPanel : UserControl
     private void TagMenu_Opening(object? sender, System.ComponentModel.CancelEventArgs e)
     {
         if (TagsList.SelectedItem is null)
+        {
+            e.Cancel = true;
+        }
+    }
+
+    private void RemoteMenu_Opening(object? sender, System.ComponentModel.CancelEventArgs e)
+    {
+        if (RemotesList.SelectedItem is null)
         {
             e.Cancel = true;
         }
@@ -186,6 +208,16 @@ public partial class RepoBrowserPanel : UserControl
         }
     }
 
+    private void LocalBranch_CreateFrom(object? sender, RoutedEventArgs e)
+    {
+        if (_module is null)
+        {
+            return;
+        }
+
+        _ = ShowDialogAndRefreshAsync(new Dialogs.CreateBranchDialog(_module));
+    }
+
     private void LocalBranch_Push(object? sender, RoutedEventArgs e)
     {
         if (LocalBranchesList.SelectedItem is BranchItem item)
@@ -194,7 +226,59 @@ public partial class RepoBrowserPanel : UserControl
         }
     }
 
+    private void LocalBranch_ResetToRemote(object? sender, RoutedEventArgs e)
+    {
+        if (LocalBranchesList.SelectedItem is BranchItem item)
+        {
+            _ = RunGitAndRefreshAsync($"reset --hard origin/{item.Name}");
+        }
+    }
+
+    // ── Remote context menu handlers ─────────────────────────────────────────
+
+    private void Remote_Fetch(object? sender, RoutedEventArgs e)
+    {
+        if (RemotesList.SelectedItem is string remote)
+        {
+            string remoteName = remote.Contains('/', StringComparison.Ordinal)
+                ? remote.Split('/', 2)[0]
+                : remote;
+            _ = RunGitAndRefreshAsync($"fetch {remoteName}");
+        }
+    }
+
+    private void Remote_CheckoutLocal(object? sender, RoutedEventArgs e)
+    {
+        if (RemotesList.SelectedItem is string remote)
+        {
+            string branchName = remote.Contains('/', StringComparison.Ordinal)
+                ? remote[(remote.IndexOf('/') + 1)..]
+                : remote;
+            _ = RunGitAndRefreshAsync($"checkout -b {branchName} {remote}");
+        }
+    }
+
+    private void Remote_Delete(object? sender, RoutedEventArgs e)
+    {
+        if (_module is null)
+        {
+            return;
+        }
+
+        _ = ShowDialogAndRefreshAsync(new Dialogs.DeleteRemoteBranchDialog(_module));
+    }
+
     // ── Tag context menu handlers ────────────────────────────────────────────
+
+    private void Tag_CreateBranch(object? sender, RoutedEventArgs e)
+    {
+        if (_module is null)
+        {
+            return;
+        }
+
+        _ = ShowDialogAndRefreshAsync(new Dialogs.CreateBranchDialog(_module));
+    }
 
     private void Tag_Delete(object? sender, RoutedEventArgs e)
     {
@@ -255,7 +339,7 @@ public partial class RepoBrowserPanel : UserControl
         }
 
         string path = System.IO.Path.Combine(_module.WorkingDir, name);
-        CheckoutRequested?.Invoke(path);
+        OpenRepositoryRequested?.Invoke(path);
     }
 
     private void Submodule_Update(object? sender, RoutedEventArgs e)
@@ -286,7 +370,7 @@ public partial class RepoBrowserPanel : UserControl
     {
         if (WorktreesList.SelectedItem is string path)
         {
-            CheckoutRequested?.Invoke(path);
+            OpenRepositoryRequested?.Invoke(path);
         }
     }
 
@@ -404,6 +488,20 @@ public partial class RepoBrowserPanel : UserControl
         }
     }
 
+    private async System.Threading.Tasks.Task ShowDialogAndRefreshAsync(global::Avalonia.Controls.Window dialog)
+    {
+        var mainWindow = (global::Avalonia.Application.Current?.ApplicationLifetime
+            as global::Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime)
+            ?.MainWindow;
+        if (mainWindow is null)
+        {
+            return;
+        }
+
+        await dialog.ShowDialog<object?>(mainWindow);
+        await RefreshAsync();
+    }
+
     private sealed record WorkingDirItem(char StatusChar, string Name)
     {
         public string StatusIcon => StatusChar switch
@@ -452,4 +550,19 @@ public partial class RepoBrowserPanel : UserControl
 }
 
 /// <summary>View model for a local branch item in the left panel.</summary>
-public sealed record BranchItem(string Name, bool IsCurrent);
+public sealed record BranchItem(string Name, bool IsCurrent)
+{
+    public int Depth => Math.Max(0, Name.Count(c => c == '/'));
+
+    public string DisplayName => Name.Contains('/', StringComparison.Ordinal)
+        ? Name[(Name.LastIndexOf('/') + 1)..]
+        : Name;
+
+    public string Icon => IsCurrent ? "●" : "○";
+
+    public string IconColor => IsCurrent ? "#FF2E7D32" : "#FF888888";
+
+    public string AheadBehind => string.Empty;
+
+    public bool HasAheadBehind => false;
+}
