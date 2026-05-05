@@ -9,14 +9,19 @@
                                       MinHeight="60"
                                       MaxHeight="110" />
 
-        <!-- Tab control: Diff | Files | Tree -->
+        <!-- Tab control: Diff | Tree -->
         <TabControl x:Name="DetailsTabs"
                     SelectionChanged="DetailsTabs_SelectionChanged">
             <TabItem Header="Diff">
-                <details:CommitDiffControl x:Name="DiffView" />
-            </TabItem>
-            <TabItem Header="Files">
-                <details:FileStatusList x:Name="FileList" />
+                <Grid ColumnDefinitions="320,5,*">
+                    <details:FileStatusList Grid.Column="0"
+                                            x:Name="FileList"
+                                            MinWidth="180" />
+                    <GridSplitter Grid.Column="1"
+                                  ResizeDirection="Columns" />
+                    <details:CommitDiffControl Grid.Column="2"
+                                               x:Name="DiffView" />
+                </Grid>
             </TabItem>
             <TabItem Header="Tree">
                 <TreeView x:Name="CommitTreeView">

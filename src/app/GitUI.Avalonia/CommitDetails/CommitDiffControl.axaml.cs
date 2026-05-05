@@ -14,7 +14,7 @@ public partial class CommitDiffControl : GitModuleControl
     public CommitDiffControl()
     {
         InitializeComponent();
-        _isSplitView = App.Settings.GetBool("diffSplitViewDefault", false);
+        _isSplitView = GetSettingBool("diffSplitViewDefault", false);
         DiffEditor.IsVisible = !_isSplitView;
         SplitView.IsVisible = _isSplitView;
         ApplyEditorSettings();
@@ -26,10 +26,18 @@ public partial class CommitDiffControl : GitModuleControl
 
     private void ApplyEditorSettings()
     {
-        bool wordWrap = App.Settings.GetBool("diffWordWrap", false);
+        bool wordWrap = GetSettingBool("diffWordWrap", false);
         DiffEditor.WordWrap = wordWrap;
         LeftEditor.WordWrap = wordWrap;
         RightEditor.WordWrap = wordWrap;
+    }
+
+    public void ApplySettings()
+    {
+        bool splitView = GetSettingBool("diffSplitViewDefault", false);
+        SetSplitView(splitView);
+        ApplyEditorSettings();
+        ApplyDiff(_lastDiff, _lastFilePath);
     }
 
     private void UpdateToolbarState()
@@ -55,9 +63,7 @@ public partial class CommitDiffControl : GitModuleControl
 
         try
         {
-            string gitArgs = filePath is null
-                ? $"diff-tree --no-commit-id -p {revision.Guid}"
-                : $"diff-tree --no-commit-id -p {revision.Guid} -- \"{filePath}\"";
+            string gitArgs = BuildDiffTreeArguments(revision.Guid, filePath);
 
             string diff = await Module.GitExecutable.GetOutputAsync(gitArgs);
             _lastDiff = diff;
@@ -97,7 +103,7 @@ public partial class CommitDiffControl : GitModuleControl
 
     private static void ApplySyntaxHighlighting(AvaloniaEdit.TextEditor editor, string? filePath)
     {
-        if (!App.Settings.GetBool("diffSyntaxHighlighting", true))
+        if (!GetSettingBool("diffSyntaxHighlighting", true))
         {
             editor.SyntaxHighlighting = null;
             return;
@@ -123,25 +129,33 @@ public partial class CommitDiffControl : GitModuleControl
 
     private void Unified_Click(object? sender, global::Avalonia.Interactivity.RoutedEventArgs e)
     {
-        if (_isSplitView)
-        {
-            _isSplitView = false;
-            DiffEditor.IsVisible = true;
-            SplitView.IsVisible = false;
-            UpdateToolbarState();
-            ApplyDiff(_lastDiff, _lastFilePath);
-        }
+        SetSplitView(false);
     }
 
     private void Split_Click(object? sender, global::Avalonia.Interactivity.RoutedEventArgs e)
     {
-        if (!_isSplitView)
-        {
-            _isSplitView = true;
-            DiffEditor.IsVisible = false;
-            SplitView.IsVisible = true;
-            UpdateToolbarState();
-            ApplyDiff(_lastDiff, _lastFilePath);
-        }
+        SetSplitView(true);
     }
+
+    private void SetSplitView(bool splitView)
+    {
+        if (_isSplitView == splitView)
+        {
+            return;
+        }
+
+        _isSplitView = splitView;
+        DiffEditor.IsVisible = !_isSplitView;
+        SplitView.IsVisible = _isSplitView;
+        UpdateToolbarState();
+        ApplyDiff(_lastDiff, _lastFilePath);
+    }
+
+    internal static string BuildDiffTreeArguments(string revisionGuid, string? filePath)
+        => string.IsNullOrWhiteSpace(filePath)
+            ? $"diff-tree --no-commit-id -p --root -r {revisionGuid}"
+            : $"diff-tree --no-commit-id -p --root -r {revisionGuid} -- {filePath.Quote()}";
+
+    private static bool GetSettingBool(string key, bool defaultValue)
+        => App.Settings is null ? defaultValue : App.Settings.GetBool(key, defaultValue);
 }

@@ -218,3 +218,14 @@
   - `~/.dotnet/dotnet test tests/app/GitUI.Avalonia.Tests/GitUI.Avalonia.Tests.csproj --nologo --verbosity minimal`: PASS, 61 passed, 0 failed.
   - `~/.dotnet/dotnet build GitExtensions.Mac.slnx`: PASS, 0 warnings, 0 errors.
 - [x] Commit the verified slice without pushing.
+
+## Live Settings And Bottom Diff Fix 2026-05-05
+
+- [x] Audit current bottom details behavior after user report: `Diff | Files | Tree` tabs hide the diff whenever the file tree is selected.
+- [x] Convert the primary bottom tab to a Windows-like file-list plus diff split, keeping commit tree as a secondary tab.
+- [x] Keep directory/folder selections in the file tree from clearing the currently displayed diff.
+- [x] Change commit diff loading to use recursive root-aware `diff-tree` arguments so normal, nested, and root commit changes are visible.
+- [x] Add a Settings saved event and wire `MainWindow` to immediately re-apply diff viewer, revision grid, view-menu, and macOS native-menu settings without restarting the app.
+- [x] Run focused Avalonia tests and full Mac solution build for this slice.
+  - `~/.dotnet/dotnet test tests/app/GitUI.Avalonia.Tests/GitUI.Avalonia.Tests.csproj --nologo --verbosity minimal`: PASS, 74 passed, 0 failed.
+  - `~/.dotnet/dotnet build GitExtensions.Mac.slnx --nologo`: PASS, 0 errors, 2 existing plugin `AVLN3001` warnings.

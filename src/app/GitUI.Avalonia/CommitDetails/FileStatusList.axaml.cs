@@ -95,7 +95,10 @@ public partial class FileStatusList : GitModuleControl
     private void FileTree_SelectionChanged(object? sender, SelectionChangedEventArgs e)
     {
         _selectedNode = FileTree.SelectedItem as FileTreeNode;
-        SelectedFileChanged?.Invoke(_selectedNode?.FileItem);
+        if (_selectedNode?.FileItem is { } file)
+        {
+            SelectedFileChanged?.Invoke(file);
+        }
     }
 
     private void FileTree_ContextMenuOpening(object? sender, System.ComponentModel.CancelEventArgs e)

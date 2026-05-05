@@ -30,7 +30,7 @@ public class FileStatusListContextMenuTests
     }
 
     [Test]
-    public void ContextMenuOpening_SelectedDirectory_DisablesFileActionsAndRaisesNullSelection()
+    public void ContextMenuOpening_SelectedDirectory_DisablesFileActionsWithoutClearingDiffSelection()
     {
         var list = new FileStatusList();
         list.LoadFiles([new FileStatusItem("src/Foo.cs", IsAdded: false, IsDeleted: false, IsRenamed: false)]);
@@ -45,7 +45,7 @@ public class FileStatusListContextMenuTests
         {
             Assert.That(args.Cancel, Is.True);
             Assert.That(list.SelectedFile, Is.Null);
-            Assert.That(selectedFile, Is.Null);
+            Assert.That(selectedFile?.Name, Is.EqualTo("previous.txt"));
             Assert.That(GetCommandMenuItems(list).Select(item => item.IsEnabled), Is.All.False);
         });
     }

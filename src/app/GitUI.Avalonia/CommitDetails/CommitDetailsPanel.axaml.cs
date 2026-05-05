@@ -11,6 +11,7 @@ public partial class CommitDetailsPanel : UserControl
     private GitModule? _module;
     private GitRevision? _currentRevision;
     private bool _diffLoaded;
+    private bool _fileListEventsAttached;
 
     public event Action? RepositoryChanged;
 
@@ -22,31 +23,29 @@ public partial class CommitDetailsPanel : UserControl
         Summary.Module = module;
         DiffView.Module = module;
         FileList.Module = module;
+        AttachFileListEvents();
+    }
+
+    public void ApplySettings()
+    {
+        DiffView.ApplySettings();
+    }
+
+    private void AttachFileListEvents()
+    {
+        if (_fileListEventsAttached)
+        {
+            return;
+        }
+
+        _fileListEventsAttached = true;
         FileList.SelectedFileChanged += OnFileSelected;
-        FileList.BlameRequested += path =>
-        {
-            new Dialogs.BlameDialog(module, path).Show();
-        };
-        FileList.HistoryRequested += path =>
-        {
-            new Dialogs.FileHistoryDialog(module, path).Show();
-        };
-        FileList.StatusRequested += message =>
-        {
-            System.Diagnostics.Debug.WriteLine(message);
-        };
-        FileList.ErrorOccurred += message =>
-        {
-            System.Diagnostics.Debug.WriteLine($"File action failed: {message}");
-        };
-        FileList.AddToGitIgnoreRequested += path =>
-        {
-            new Dialogs.AddToGitIgnoreDialog(module, path).Show();
-        };
-        FileList.UserScriptsRequested += _ =>
-        {
-            new Dialogs.ScriptsManagerDialog(module).Show();
-        };
+        FileList.BlameRequested += OnBlameRequested;
+        FileList.HistoryRequested += OnHistoryRequested;
+        FileList.StatusRequested += message => System.Diagnostics.Debug.WriteLine(message);
+        FileList.ErrorOccurred += message => System.Diagnostics.Debug.WriteLine($"File action failed: {message}");
+        FileList.AddToGitIgnoreRequested += OnAddToGitIgnoreRequested;
+        FileList.UserScriptsRequested += OnUserScriptsRequested;
         FileList.RepositoryChanged += () => RepositoryChanged?.Invoke();
     }
 
@@ -145,7 +144,7 @@ public partial class CommitDetailsPanel : UserControl
             _diffLoaded = true;
             await DiffView.ShowDiffAsync(_currentRevision);
         }
-        else if (DetailsTabs.SelectedIndex == 2)
+        else if (DetailsTabs.SelectedIndex == 1)
         {
             await LoadCommitTreeAsync(_currentRevision);
         }
@@ -178,6 +177,38 @@ public partial class CommitDetailsPanel : UserControl
         }
 
         _ = DiffView.ShowDiffAsync(_currentRevision, file.Name);
+    }
+
+    private void OnBlameRequested(string path)
+    {
+        if (_module is { } module)
+        {
+            new Dialogs.BlameDialog(module, path).Show();
+        }
+    }
+
+    private void OnHistoryRequested(string path)
+    {
+        if (_module is { } module)
+        {
+            new Dialogs.FileHistoryDialog(module, path).Show();
+        }
+    }
+
+    private void OnAddToGitIgnoreRequested(string path)
+    {
+        if (_module is { } module)
+        {
+            new Dialogs.AddToGitIgnoreDialog(module, path).Show();
+        }
+    }
+
+    private void OnUserScriptsRequested(string path)
+    {
+        if (_module is { } module)
+        {
+            new Dialogs.ScriptsManagerDialog(module).Show();
+        }
     }
 
     private List<FileStatusItem> LoadArtificialFiles(string artificialType)

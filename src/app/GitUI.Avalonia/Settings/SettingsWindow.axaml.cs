@@ -24,6 +24,8 @@ public partial class SettingsWindow : GitExtensionsWindow
     private readonly BuildServerPage _buildServerPage = new();
     private readonly PluginsPage _pluginsPage = new();
 
+    public event Action? SettingsSaved;
+
     public SettingsWindow()
     {
         InitializeComponent();
@@ -78,6 +80,7 @@ public partial class SettingsWindow : GitExtensionsWindow
         _buildServerPage.SaveSettings();
         _pluginsPage.SaveSettings();
         App.Settings.Save();
+        SettingsSaved?.Invoke();
         Close();
     }
 

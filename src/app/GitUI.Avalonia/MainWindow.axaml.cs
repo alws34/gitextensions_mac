@@ -36,6 +36,7 @@ public partial class MainWindow : GitExtensionsWindow
     private Action? _leftPanelRepositoryChangedHandler;
     private Action? _detailsRepositoryChangedHandler;
     private bool _revisionGridHandlersAttached;
+    private readonly Dictionary<string, (MenuItem Item, bool DefaultValue)> _settingsCheckMenuItems = [];
 
     public static readonly StyledProperty<bool> HasRepositoryProperty =
         AvaloniaProperty.Register<MainWindow, bool>(nameof(HasRepository));
@@ -567,7 +568,7 @@ public partial class MainWindow : GitExtensionsWindow
         menu.Items.Add(new Separator());
         menu.Items.Add(MakeCheckMenuItem("Show _Stashes in Graph", "showStashesInGraph"));
         menu.Items.Add(MakeCheckMenuItem("Show _Worktrees in Graph", "showWorktreesInGraph"));
-        menu.Items.Add(MakeCheckMenuItem("Show _Tags", "showTags"));
+        menu.Items.Add(MakeCheckMenuItem("Show _Tags", "showTags", defaultValue: true));
         menu.Items.Add(MakeCheckMenuItem("Show _First Parent Only", "showFirstParentOnly"));
         menu.Items.Add(new Separator());
         menu.Items.Add(new MenuItem
@@ -579,22 +580,38 @@ public partial class MainWindow : GitExtensionsWindow
         return menu;
     }
 
-    private static MenuItem MakeCheckMenuItem(string header, string settingKey)
+    private MenuItem MakeCheckMenuItem(string header, string settingKey, bool defaultValue = false)
     {
-        bool current = App.Settings.GetBool(settingKey, false);
+        bool current = App.Settings.GetBool(settingKey, defaultValue);
         var item = new MenuItem
         {
             Header = header,
-            Icon = current ? new TextBlock { Text = "✓", FontSize = 12 } : null,
         };
+        SetCheckMenuItemState(item, current);
+        _settingsCheckMenuItems[settingKey] = (item, defaultValue);
         item.Command = ReactiveCommand.Create(() =>
         {
-            bool val = !App.Settings.GetBool(settingKey, false);
+            bool val = !App.Settings.GetBool(settingKey, defaultValue);
             App.Settings.SetBool(settingKey, val);
             App.Settings.Save();
-            item.Icon = val ? new TextBlock { Text = "✓", FontSize = 12 } : null;
+            SetCheckMenuItemState(item, val);
+            _ = ApplyRuntimeSettingsAsync();
         });
         return item;
+    }
+
+    private static void SetCheckMenuItemState(MenuItem item, bool isChecked)
+    {
+        item.IsChecked = isChecked;
+        item.Icon = isChecked ? new TextBlock { Text = "✓", FontSize = 12 } : null;
+    }
+
+    private void RefreshSettingsCheckMenuItems()
+    {
+        foreach ((string key, (MenuItem item, bool defaultValue)) in _settingsCheckMenuItems)
+        {
+            SetCheckMenuItemState(item, App.Settings.GetBool(key, defaultValue));
+        }
     }
 
     private MenuItem BuildNavigateMenu()
@@ -861,11 +878,40 @@ public partial class MainWindow : GitExtensionsWindow
     private void OpenSettings()
     {
         var settings = new SettingsWindow();
+        settings.SettingsSaved += () => _ = ApplyRuntimeSettingsAsync();
         settings.Show();
     }
 
     /// <summary>Called from the macOS native menu bar "Settings…" item.</summary>
     public void OpenSettingsFromNativeMenu() => OpenSettings();
+
+    private async Task ApplyRuntimeSettingsAsync()
+    {
+        RefreshSettingsCheckMenuItems();
+        ApplyNativeMenuSetting();
+        DetailsPanel.ApplySettings();
+        await RevisionGrid.ApplySettingsAsync();
+        RefreshDashboard();
+    }
+
+    private void ApplyNativeMenuSetting()
+    {
+        if (!OperatingSystem.IsMacOS())
+        {
+            MainMenu.IsVisible = true;
+            return;
+        }
+
+        if (App.Settings.GetBool("useNativeMenu", true))
+        {
+            BuildNativeWindowMenu();
+        }
+        else
+        {
+            NativeMenu.SetMenu(this, null);
+            MainMenu.IsVisible = true;
+        }
+    }
 
     /// <summary>Displays an error in the status bar. Must be called on the UI thread.</summary>
     public void ShowError(string message)

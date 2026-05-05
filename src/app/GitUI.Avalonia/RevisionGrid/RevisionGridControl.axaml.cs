@@ -91,6 +91,12 @@ public partial class RevisionGridControl : GitModuleControl
 
     public Task RefreshAsync() => LoadRevisionsAsync();
 
+    public Task ApplySettingsAsync()
+    {
+        InitializeRevisionViewOptions();
+        return LoadRevisionsAsync();
+    }
+
     public void ScrollToHash(string shortHash) => DataGrid.ScrollToHash(shortHash);
 
     public void NavigateParent() => DataGrid.SelectRelative(1);
