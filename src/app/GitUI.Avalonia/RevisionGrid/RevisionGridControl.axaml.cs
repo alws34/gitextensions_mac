@@ -17,6 +17,8 @@ public partial class RevisionGridControl : GitModuleControl
     public event Action<GitRevision?>? SelectedRevisionChanged;
     public event Action<RevisionRow?>? SelectedRowChanged;
     public event Action<string>? CheckoutHashRequested;
+    public event Action<string>? CheckoutBranchRequested;
+    public event Action<string>? CheckoutRemoteBranchRequested;
     public event Action<string>? CherryPickHashRequested;
     public event Action<string>? RevertHashRequested;
     public event Action<string>? CreateBranchAtHashRequested;
@@ -32,6 +34,8 @@ public partial class RevisionGridControl : GitModuleControl
         DataGrid.SelectedRevisionChanged += rev => SelectedRevisionChanged?.Invoke(rev);
         DataGrid.SelectedRowChanged += row => SelectedRowChanged?.Invoke(row);
         DataGrid.CheckoutHashRequested += hash => CheckoutHashRequested?.Invoke(hash);
+        DataGrid.CheckoutBranchRequested += branch => CheckoutBranchRequested?.Invoke(branch);
+        DataGrid.CheckoutRemoteBranchRequested += remoteBranch => CheckoutRemoteBranchRequested?.Invoke(remoteBranch);
         DataGrid.CherryPickHashRequested += hash => CherryPickHashRequested?.Invoke(hash);
         DataGrid.RevertHashRequested += hash => RevertHashRequested?.Invoke(hash);
         DataGrid.CreateBranchAtHashRequested += hash => CreateBranchAtHashRequested?.Invoke(hash);
@@ -113,10 +117,12 @@ public partial class RevisionGridControl : GitModuleControl
             // --- Artificial rows: Working Tree + Index ---
             string statusOutput = string.Empty;
             string headHash = string.Empty;
+            string currentBranch = string.Empty;
             try
             {
                 statusOutput = await Module.GitExecutable.GetOutputAsync("status --porcelain");
                 headHash = (await Module.GitExecutable.GetOutputAsync("rev-parse HEAD")).Trim();
+                currentBranch = Module.GetCurrentBranchName();
             }
             catch
             {
@@ -212,7 +218,11 @@ public partial class RevisionGridControl : GitModuleControl
             }
 
             _allRows = rows;
-            await Dispatcher.UIThread.InvokeAsync(() => DataGrid.LoadRevisions(rows));
+            await Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                DataGrid.CurrentBranchName = currentBranch;
+                DataGrid.LoadRevisions(rows);
+            });
         }
         catch (Exception ex)
         {

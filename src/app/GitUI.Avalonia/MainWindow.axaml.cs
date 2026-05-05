@@ -11,6 +11,7 @@ using Avalonia.Threading;
 using GitCommands;
 using GitCommands.Logging;
 using GitExtensions.Extensibility;
+using GitExtUtils;
 using GitUI.Avalonia.Base;
 using GitUI.Avalonia.Dashboard;
 using GitUI.Avalonia.Dialogs;
@@ -135,6 +136,8 @@ public partial class MainWindow : GitExtensionsWindow
         RevisionGrid.RevertHashRequested += hash =>
             _ = ShowModuleDialogAsync(m => new RevertCommitDialog(m, hash));
         RevisionGrid.CheckoutHashRequested += hash => _ = CheckoutHashAsync(hash);
+        RevisionGrid.CheckoutBranchRequested += branch => _ = CheckoutBranchAsync(branch);
+        RevisionGrid.CheckoutRemoteBranchRequested += branch => _ = CheckoutRemoteBranchAsync(branch);
         RevisionGrid.CreateBranchAtHashRequested += ignored =>
             _ = ShowModuleDialogAsync(m => new CreateBranchDialog(m));
         RevisionGrid.CreateTagAtHashRequested += ignored =>
@@ -1512,7 +1515,7 @@ public partial class MainWindow : GitExtensionsWindow
         StatusLabel.Text = $"Checking out {branch}…";
         try
         {
-            await _module.GitExecutable.GetOutputAsync($"checkout {branch}");
+            await _module.GitExecutable.GetOutputAsync($"checkout {branch.Quote()}");
             StatusLabel.Text = $"On branch {branch}";
             await RevisionGrid.RefreshAsync();
             await RefreshBranchSelectorAsync();
@@ -1523,6 +1526,38 @@ public partial class MainWindow : GitExtensionsWindow
         {
             ShowError(ex.Message);
         }
+    }
+
+    private async System.Threading.Tasks.Task CheckoutRemoteBranchAsync(string remoteBranch)
+    {
+        if (_module is null)
+        {
+            return;
+        }
+
+        string localBranch = GetRemoteBranchLocalName(remoteBranch);
+        StatusLabel.Text = $"Checking out {remoteBranch} as {localBranch}…";
+        try
+        {
+            await _module.GitExecutable.GetOutputAsync($"checkout -b {localBranch.Quote()} {remoteBranch.Quote()}");
+            StatusLabel.Text = $"On branch {localBranch}";
+            await RevisionGrid.RefreshAsync();
+            await RefreshBranchSelectorAsync();
+            await RefreshStatusBarCountsAsync();
+            _ = LeftPanel.RefreshAsync();
+        }
+        catch (Exception ex)
+        {
+            ShowError(ex.Message);
+        }
+    }
+
+    private static string GetRemoteBranchLocalName(string remoteBranch)
+    {
+        int slashIndex = remoteBranch.IndexOf('/');
+        return slashIndex >= 0 && slashIndex + 1 < remoteBranch.Length
+            ? remoteBranch[(slashIndex + 1)..]
+            : remoteBranch;
     }
 
     protected override void OnKeyDown(global::Avalonia.Input.KeyEventArgs e)

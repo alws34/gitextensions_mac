@@ -75,6 +75,12 @@
                     <MenuItem x:Name="CheckoutCommitMenuItem"
                               Header="Checkout this commit"
                               Click="CtxCheckout_Click" />
+                    <MenuItem x:Name="CheckoutBranchMenuItem"
+                              Header="Checkout branch"
+                              Click="CtxCheckoutBranch_Click" />
+                    <MenuItem x:Name="CheckoutRemoteBranchMenuItem"
+                              Header="Checkout remote branch as local"
+                              Click="CtxCheckoutRemoteBranch_Click" />
                     <MenuItem x:Name="CherryPickCommitMenuItem"
                               Header="Cherry-pick…"
                               Click="CtxCherryPick_Click" />

@@ -160,3 +160,23 @@
 - [x] Targeted build: `~/.dotnet/dotnet build src/app/GitUI.Avalonia/GitUI.Avalonia.csproj` passed with the existing 51 `AVLN3001` dialog constructor warnings.
 - [x] Full verification: `~/.dotnet/dotnet build GitExtensions.Mac.slnx` passed with the existing 51 `AVLN3001` dialog constructor warnings.
 - [x] Full verification: `~/.dotnet/dotnet test tests/app/GitUI.Avalonia.Tests/GitUI.Avalonia.Tests.csproj --nologo --verbosity minimal` passed: 55 passed, 0 failed, 0 skipped.
+
+## Branch Head Context Menu Fix 2026-05-05
+
+- [x] Fixed sidebar right-click selection so local branches, remotes, tags, submodules, worktrees, and stashes select the row under the pointer before opening the context menu.
+- [x] Added revision-grid branch-ref checkout actions for commits with local branch heads.
+- [x] Added revision-grid remote branch checkout-as-local actions for commits with remote branch heads.
+- [x] Wired revision-grid branch checkout requests through `RevisionGridControl` into `MainWindow`.
+- [x] Quoted branch names when running checkout commands.
+- [x] Targeted verification: `~/.dotnet/dotnet test tests/app/GitUI.Avalonia.Tests/GitUI.Avalonia.Tests.csproj --nologo --verbosity minimal` passed: 58 passed, 0 failed, 0 skipped.
+- [x] Full verification: `~/.dotnet/dotnet build GitExtensions.Mac.slnx` passed with 53 existing `AVLN3001` constructor-loader warnings.
+
+## Next Missing Parity Queue
+
+- [ ] Revision-grid ref context menus: add merge/rebase/delete/rename/push for local and remote branch refs, and tag-specific create-branch/delete/copy actions that match Windows `RefContextMenus`.
+- [ ] Sidebar branch tree: replace flat branch list with nested branch folders, remote hierarchy, selected-ref filtering, sort modes, expand/collapse root behavior, and persisted root order.
+- [ ] File list: add flat/group/tree modes, staged/unstaged file operations, reset/open-with-difftool/open-containing-folder, submodule-specific actions, and user script actions.
+- [ ] Revision grid view: add branch scope modes, topological/author-date/first-parent controls, stash/notes/artificial commit visibility controls, selected branch highlight, and non-relative gray styling.
+- [ ] Settings: move shared GitExtensions settings off Avalonia-only JSON where Windows already has AppSettings/git-config-backed settings, then add Confirmations, Hotkeys, Scripts, Revision Links, Build Server, and Plugins pages.
+- [ ] Native menu and toolbar: keep aligning the menu taxonomy and toolbar split buttons with Windows, including repository hosts/plugins/scripts/help actions where matching Avalonia dialogs exist.
+- [ ] State/action bars: split merge/cherry-pick/revert/bisect state banners into Windows-equivalent controls with the richer per-state actions.

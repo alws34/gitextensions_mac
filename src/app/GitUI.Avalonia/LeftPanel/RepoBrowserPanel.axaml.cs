@@ -1,7 +1,9 @@
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Threading;
+using Avalonia.VisualTree;
 using GitCommands;
 using GitExtensions.Extensibility;
 
@@ -153,6 +155,33 @@ public partial class RepoBrowserPanel : UserControl
         LocalBranchesExpander.IsExpanded = false;
         RemotesExpander.IsExpanded = false;
         TagsExpander.IsExpanded = false;
+    }
+
+    private void ContextList_PointerPressed(object? sender, PointerPressedEventArgs e)
+    {
+        if (sender is not ListBox listBox || !e.GetCurrentPoint(listBox).Properties.IsRightButtonPressed)
+        {
+            return;
+        }
+
+        if (FindAncestor<ListBoxItem>(e.Source as Visual) is { DataContext: { } item })
+        {
+            listBox.SelectedItem = item;
+        }
+    }
+
+    private static T? FindAncestor<T>(Visual? source)
+        where T : Visual
+    {
+        for (Visual? current = source; current is not null; current = current.GetVisualParent())
+        {
+            if (current is T match)
+            {
+                return match;
+            }
+        }
+
+        return null;
     }
 
     // ── Context menu guards ──────────────────────────────────────────────────

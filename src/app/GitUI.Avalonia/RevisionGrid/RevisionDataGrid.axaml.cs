@@ -1,6 +1,7 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
+using GitExtensions.Extensibility.Git;
 using GitUIPluginInterfaces;
 
 namespace GitUI.Avalonia.RevisionGrid;
@@ -12,6 +13,8 @@ public partial class RevisionDataGrid : UserControl
 
     // Events — bubble up to RevisionGridControl / MainWindow
     public event Action<string>? CheckoutHashRequested;
+    public event Action<string>? CheckoutBranchRequested;
+    public event Action<string>? CheckoutRemoteBranchRequested;
     public event Action<string>? CherryPickHashRequested;
     public event Action<string>? RevertHashRequested;
     public event Action<string>? CreateBranchAtHashRequested;
@@ -33,6 +36,7 @@ public partial class RevisionDataGrid : UserControl
     public GridLength AuthorColWidth { get => GetValue(AuthorColWidthProperty); set => SetValue(AuthorColWidthProperty, value); }
     public GridLength DateColWidth { get => GetValue(DateColWidthProperty); set => SetValue(DateColWidthProperty, value); }
     public GridLength HashColWidth { get => GetValue(HashColWidthProperty); set => SetValue(HashColWidthProperty, value); }
+    public string CurrentBranchName { get; set; } = string.Empty;
 
     public RevisionDataGrid() => InitializeComponent();
 
@@ -116,11 +120,80 @@ public partial class RevisionDataGrid : UserControl
             menuItem.IsEnabled = hasCommit;
         }
 
+        if (hasCommit)
+        {
+            BuildCheckoutRefMenu(
+                CheckoutBranchMenuItem,
+                row.Refs
+                    .Where(gitRef => gitRef.IsHead && !string.Equals(gitRef.LocalName, CurrentBranchName, StringComparison.OrdinalIgnoreCase))
+                    .OrderBy(gitRef => gitRef.LocalName, StringComparer.OrdinalIgnoreCase)
+                    .ToList(),
+                "Checkout branch",
+                gitRef => gitRef.LocalName,
+                CtxCheckoutBranch_Click);
+
+            BuildCheckoutRefMenu(
+                CheckoutRemoteBranchMenuItem,
+                row.Refs
+                    .Where(gitRef => gitRef.IsRemote)
+                    .OrderBy(gitRef => gitRef.Name, StringComparer.OrdinalIgnoreCase)
+                    .ToList(),
+                "Checkout remote branch as local",
+                gitRef => gitRef.Name,
+                CtxCheckoutRemoteBranch_Click);
+        }
+        else
+        {
+            CheckoutBranchMenuItem.IsVisible = false;
+            CheckoutBranchMenuItem.IsEnabled = false;
+            CheckoutRemoteBranchMenuItem.IsVisible = false;
+            CheckoutRemoteBranchMenuItem.IsEnabled = false;
+        }
+
         bool hasSubject = !string.IsNullOrEmpty(row.Subject);
         CopySubjectMenuItem.IsVisible = hasSubject;
         CopySubjectMenuItem.IsEnabled = hasSubject;
 
         UpdateSeparators(CommitContextMenu);
+    }
+
+    private static void BuildCheckoutRefMenu(
+        MenuItem menuItem,
+        IReadOnlyList<IGitRef> refs,
+        string header,
+        Func<IGitRef, string> refName,
+        EventHandler<RoutedEventArgs> clickHandler)
+    {
+        menuItem.Items.Clear();
+        menuItem.Tag = null;
+        menuItem.IsVisible = refs.Count > 0;
+        menuItem.IsEnabled = refs.Count > 0;
+        if (refs.Count == 0)
+        {
+            menuItem.Header = header;
+            return;
+        }
+
+        if (refs.Count == 1)
+        {
+            string name = refName(refs[0]);
+            menuItem.Header = $"{header} '{name}'";
+            menuItem.Tag = name;
+            return;
+        }
+
+        menuItem.Header = header;
+        foreach (IGitRef gitRef in refs)
+        {
+            string name = refName(gitRef);
+            var child = new MenuItem
+            {
+                Header = name,
+                Tag = name,
+            };
+            child.Click += clickHandler;
+            menuItem.Items.Add(child);
+        }
     }
 
     private void CtxCheckout_Click(object? sender, global::Avalonia.Interactivity.RoutedEventArgs e)
@@ -129,6 +202,22 @@ public partial class RevisionDataGrid : UserControl
         if (hash is not null)
         {
             CheckoutHashRequested?.Invoke(hash);
+        }
+    }
+
+    private void CtxCheckoutBranch_Click(object? sender, global::Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        if (GetMenuStringTag(sender) is { } branch)
+        {
+            CheckoutBranchRequested?.Invoke(branch);
+        }
+    }
+
+    private void CtxCheckoutRemoteBranch_Click(object? sender, global::Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        if (GetMenuStringTag(sender) is { } remoteBranch)
+        {
+            CheckoutRemoteBranchRequested?.Invoke(remoteBranch);
         }
     }
 
@@ -227,6 +316,11 @@ public partial class RevisionDataGrid : UserControl
         yield return CopyFullHashMenuItem;
         yield return CopyCommitSummaryMenuItem;
     }
+
+    private static string? GetMenuStringTag(object? sender) =>
+        sender is MenuItem { Tag: string value } && !string.IsNullOrWhiteSpace(value)
+            ? value
+            : null;
 
     private void CopyToClipboard(string? text)
     {

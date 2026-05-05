@@ -41,6 +41,7 @@
                 <Expander x:Name="LocalBranchesExpander" Header="Branches" IsExpanded="True">
                     <ListBox x:Name="LocalBranchesList"
                              FontSize="12"
+                             PointerPressed="ContextList_PointerPressed"
                              DoubleTapped="LocalBranch_DoubleTapped">
                         <ListBox.ItemTemplate>
                             <DataTemplate x:DataType="local:BranchItem">
@@ -83,7 +84,8 @@
                 </Expander>
 
                 <Expander x:Name="RemotesExpander" Header="Remotes">
-                    <ListBox x:Name="RemotesList" FontSize="12" Margin="8,0,0,0">
+                    <ListBox x:Name="RemotesList" FontSize="12" Margin="8,0,0,0"
+                             PointerPressed="ContextList_PointerPressed">
                         <ListBox.ItemTemplate>
                             <DataTemplate>
                                 <TextBlock Text="{Binding}" FontSize="12" />
@@ -105,7 +107,8 @@
                 </Expander>
 
                 <Expander x:Name="TagsExpander" Header="Tags">
-                    <ListBox x:Name="TagsList" FontSize="12" Margin="8,0,0,0">
+                    <ListBox x:Name="TagsList" FontSize="12" Margin="8,0,0,0"
+                             PointerPressed="ContextList_PointerPressed">
                         <ListBox.ContextMenu>
                             <ContextMenu Opening="TagMenu_Opening">
                                 <MenuItem Header="Create Branch at Tag…" Click="Tag_CreateBranch" />
@@ -122,6 +125,7 @@
                     <ListBox x:Name="SubmodulesList"
                              FontSize="12"
                              Margin="8,0,0,0"
+                             PointerPressed="ContextList_PointerPressed"
                              DoubleTapped="Submodule_DoubleTapped">
                         <ListBox.ItemTemplate>
                             <DataTemplate>
@@ -149,6 +153,7 @@
                     <ListBox x:Name="WorktreesList"
                              FontSize="12"
                              Margin="8,0,0,0"
+                             PointerPressed="ContextList_PointerPressed"
                              DoubleTapped="Worktree_DoubleTapped">
                         <ListBox.ContextMenu>
                             <ContextMenu Opening="WorktreeMenu_Opening">
@@ -167,6 +172,7 @@
                     <ListBox x:Name="StashesList"
                              FontSize="12"
                              Margin="8,0,0,0"
+                             PointerPressed="ContextList_PointerPressed"
                              DoubleTapped="Stash_DoubleTapped">
                         <ListBox.ContextMenu>
                             <ContextMenu Opening="StashMenu_Opening">
