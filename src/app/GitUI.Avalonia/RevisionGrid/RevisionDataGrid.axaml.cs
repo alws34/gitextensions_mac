@@ -98,17 +98,34 @@ public partial class RevisionDataGrid : UserControl
 
     private RevisionRow? GetSelectedRow() => CommitList.SelectedItem as RevisionRow;
 
+    private string? GetSelectedCommitHash() => GetSelectedRow()?.Revision?.Guid;
+
     private void CommitContextMenu_Opening(object? sender, System.ComponentModel.CancelEventArgs e)
     {
-        if (GetSelectedRow() is null)
+        RevisionRow? row = GetSelectedRow();
+        if (row is null)
         {
             e.Cancel = true;
+            return;
         }
+
+        bool hasCommit = row.Revision is not null;
+        foreach (MenuItem menuItem in GetCommitOnlyMenuItems())
+        {
+            menuItem.IsVisible = hasCommit;
+            menuItem.IsEnabled = hasCommit;
+        }
+
+        bool hasSubject = !string.IsNullOrEmpty(row.Subject);
+        CopySubjectMenuItem.IsVisible = hasSubject;
+        CopySubjectMenuItem.IsEnabled = hasSubject;
+
+        UpdateSeparators(CommitContextMenu);
     }
 
     private void CtxCheckout_Click(object? sender, global::Avalonia.Interactivity.RoutedEventArgs e)
     {
-        string? hash = GetSelectedRow()?.Revision?.Guid;
+        string? hash = GetSelectedCommitHash();
         if (hash is not null)
         {
             CheckoutHashRequested?.Invoke(hash);
@@ -117,7 +134,7 @@ public partial class RevisionDataGrid : UserControl
 
     private void CtxCherryPick_Click(object? sender, global::Avalonia.Interactivity.RoutedEventArgs e)
     {
-        string? hash = GetSelectedRow()?.Revision?.Guid;
+        string? hash = GetSelectedCommitHash();
         if (hash is not null)
         {
             CherryPickHashRequested?.Invoke(hash);
@@ -126,7 +143,7 @@ public partial class RevisionDataGrid : UserControl
 
     private void CtxRevert_Click(object? sender, global::Avalonia.Interactivity.RoutedEventArgs e)
     {
-        string? hash = GetSelectedRow()?.Revision?.Guid;
+        string? hash = GetSelectedCommitHash();
         if (hash is not null)
         {
             RevertHashRequested?.Invoke(hash);
@@ -135,7 +152,7 @@ public partial class RevisionDataGrid : UserControl
 
     private void CtxCreateBranch_Click(object? sender, global::Avalonia.Interactivity.RoutedEventArgs e)
     {
-        string? hash = GetSelectedRow()?.Revision?.Guid;
+        string? hash = GetSelectedCommitHash();
         if (hash is not null)
         {
             CreateBranchAtHashRequested?.Invoke(hash);
@@ -144,7 +161,7 @@ public partial class RevisionDataGrid : UserControl
 
     private void CtxCreateTag_Click(object? sender, global::Avalonia.Interactivity.RoutedEventArgs e)
     {
-        string? hash = GetSelectedRow()?.Revision?.Guid;
+        string? hash = GetSelectedCommitHash();
         if (hash is not null)
         {
             CreateTagAtHashRequested?.Invoke(hash);
@@ -153,28 +170,98 @@ public partial class RevisionDataGrid : UserControl
 
     private void CtxResetHard_Click(object? sender, global::Avalonia.Interactivity.RoutedEventArgs e)
     {
-        string? hash = GetSelectedRow()?.Revision?.Guid;
+        string? hash = GetSelectedCommitHash();
         if (hash is not null)
         {
             ResetHardToHashRequested?.Invoke(hash);
         }
     }
 
-    private void CtxCopyHash_Click(object? sender, global::Avalonia.Interactivity.RoutedEventArgs e)
+    private void CtxCopyShortHash_Click(object? sender, global::Avalonia.Interactivity.RoutedEventArgs e)
     {
-        string? hash = GetSelectedRow()?.ShortHash;
-        if (hash is not null)
+        if (GetSelectedRow() is { Revision: not null } row)
         {
-            _ = global::Avalonia.Controls.TopLevel.GetTopLevel(this)?.Clipboard?.SetTextAsync(hash);
+            CopyToClipboard(row.ShortHash);
+        }
+    }
+
+    private void CtxCopyFullHash_Click(object? sender, global::Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        CopyToClipboard(GetSelectedCommitHash());
+    }
+
+    private void CtxCopySubject_Click(object? sender, global::Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        CopyToClipboard(GetSelectedRow()?.Subject);
+    }
+
+    private void CtxCopyCommitSummary_Click(object? sender, global::Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        if (GetSelectedRow() is { Revision: not null } row)
+        {
+            CopyToClipboard(string.IsNullOrWhiteSpace(row.Subject)
+                ? row.ShortHash
+                : $"{row.ShortHash} {row.Subject}");
         }
     }
 
     private void CtxInteractiveRebase_Click(object? sender, global::Avalonia.Interactivity.RoutedEventArgs e)
     {
-        string? hash = GetSelectedRow()?.Revision?.Guid;
+        string? hash = GetSelectedCommitHash();
         if (hash is not null)
         {
             InteractiveRebaseRequested?.Invoke(hash);
+        }
+    }
+
+    private IEnumerable<MenuItem> GetCommitOnlyMenuItems()
+    {
+        yield return CheckoutCommitMenuItem;
+        yield return CherryPickCommitMenuItem;
+        yield return RevertCommitMenuItem;
+        yield return CreateBranchMenuItem;
+        yield return CreateTagMenuItem;
+        yield return ResetHardMenuItem;
+        yield return InteractiveRebaseMenuItem;
+        yield return CopyShortHashMenuItem;
+        yield return CopyFullHashMenuItem;
+        yield return CopyCommitSummaryMenuItem;
+    }
+
+    private void CopyToClipboard(string? text)
+    {
+        if (string.IsNullOrEmpty(text))
+        {
+            return;
+        }
+
+        _ = global::Avalonia.Controls.TopLevel.GetTopLevel(this)?.Clipboard?.SetTextAsync(text);
+    }
+
+    private static void UpdateSeparators(ContextMenu menu)
+    {
+        bool hasVisibleItemBeforeSeparator = false;
+        Separator? pendingSeparator = null;
+
+        foreach (object? item in menu.Items)
+        {
+            if (item is Separator separator)
+            {
+                separator.IsVisible = false;
+                pendingSeparator = separator;
+                continue;
+            }
+
+            if (item is MenuItem { IsVisible: true })
+            {
+                if (hasVisibleItemBeforeSeparator && pendingSeparator is not null)
+                {
+                    pendingSeparator.IsVisible = true;
+                }
+
+                hasVisibleItemBeforeSeparator = true;
+                pendingSeparator = null;
+            }
         }
     }
 }

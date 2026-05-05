@@ -3,16 +3,19 @@
                            xmlns:local="using:GitUI.Avalonia.Base"
                            x:Class="GitUI.Avalonia.Settings.SettingsWindow"
                            Title="Settings" Width="720" Height="520">
-    <Grid ColumnDefinitions="180,4,*" Margin="8">
+    <Grid ColumnDefinitions="220,4,*" Margin="8">
         <Border Grid.Column="0" BorderBrush="{DynamicResource SystemBaseMediumColor}" BorderThickness="1">
             <ListBox x:Name="CategoryList" SelectionChanged="Category_Changed">
-                <ListBoxItem Content="Git" Tag="git" IsSelected="True" />
+                <ListBoxItem Content="General" Tag="general" IsSelected="True" />
+                <ListBoxItem Content="Git" Tag="git" />
+                <ListBoxItem Content="Revision Grid" Tag="revisiongrid" />
+                <ListBoxItem Content="Diff Viewer" Tag="diffviewer" />
+                <ListBoxItem Content="Diff &amp; Merge Tools" Tag="difftools" />
                 <ListBoxItem Content="Appearance" Tag="appearance" />
                 <ListBoxItem Content="Commit" Tag="commit" />
-                <ListBoxItem Content="Advanced" Tag="advanced" />
                 <ListBoxItem Content="SSH" Tag="ssh" />
-                <ListBoxItem Content="Diff Tools" Tag="difftools" />
                 <ListBoxItem Content="Credentials" Tag="credentials" />
+                <ListBoxItem Content="Advanced" Tag="advanced" />
             </ListBox>
         </Border>
         <GridSplitter Grid.Column="1" ResizeDirection="Columns" />

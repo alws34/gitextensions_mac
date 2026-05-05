@@ -181,6 +181,22 @@ public partial class RepoBrowserPanel : UserControl
         }
     }
 
+    private void SubmoduleMenu_Opening(object? sender, System.ComponentModel.CancelEventArgs e)
+    {
+        if (SubmodulesList.SelectedItem is null)
+        {
+            e.Cancel = true;
+        }
+    }
+
+    private void WorktreeMenu_Opening(object? sender, System.ComponentModel.CancelEventArgs e)
+    {
+        if (WorktreesList.SelectedItem is null)
+        {
+            e.Cancel = true;
+        }
+    }
+
     // ── Branch context menu handlers ─────────────────────────────────────────
 
     private void LocalBranch_Checkout(object? sender, RoutedEventArgs e)
@@ -234,16 +250,33 @@ public partial class RepoBrowserPanel : UserControl
         }
     }
 
+    private void LocalBranch_CopyName(object? sender, RoutedEventArgs e)
+    {
+        if (LocalBranchesList.SelectedItem is BranchItem item)
+        {
+            _ = CopyToClipboardAsync(item.Name, "Branch name");
+        }
+    }
+
     // ── Remote context menu handlers ─────────────────────────────────────────
 
     private void Remote_Fetch(object? sender, RoutedEventArgs e)
     {
         if (RemotesList.SelectedItem is string remote)
         {
-            string remoteName = remote.Contains('/', StringComparison.Ordinal)
-                ? remote.Split('/', 2)[0]
-                : remote;
-            _ = RunGitAndRefreshAsync($"fetch {remoteName}");
+            string remoteName = GetRemoteName(remote);
+            StatusRequested?.Invoke($"Fetching {remoteName}…");
+            _ = RunGitAndRefreshAsync($"fetch {remoteName.Quote()}");
+        }
+    }
+
+    private void Remote_FetchPrune(object? sender, RoutedEventArgs e)
+    {
+        if (RemotesList.SelectedItem is string remote)
+        {
+            string remoteName = GetRemoteName(remote);
+            StatusRequested?.Invoke($"Fetching and pruning {remoteName}…");
+            _ = RunGitAndRefreshAsync($"fetch --prune {remoteName.Quote()}");
         }
     }
 
@@ -251,10 +284,24 @@ public partial class RepoBrowserPanel : UserControl
     {
         if (RemotesList.SelectedItem is string remote)
         {
-            string branchName = remote.Contains('/', StringComparison.Ordinal)
-                ? remote[(remote.IndexOf('/') + 1)..]
-                : remote;
-            _ = RunGitAndRefreshAsync($"checkout -b {branchName} {remote}");
+            string branchName = GetRemoteBranchName(remote);
+            _ = RunGitAndRefreshAsync($"checkout -b {branchName.Quote()} {remote.Quote()}");
+        }
+    }
+
+    private void Remote_CopyBranchName(object? sender, RoutedEventArgs e)
+    {
+        if (RemotesList.SelectedItem is string remote)
+        {
+            _ = CopyToClipboardAsync(remote, "Remote branch name");
+        }
+    }
+
+    private void Remote_CopyName(object? sender, RoutedEventArgs e)
+    {
+        if (RemotesList.SelectedItem is string remote)
+        {
+            _ = CopyToClipboardAsync(GetRemoteName(remote), "Remote name");
         }
     }
 
@@ -285,6 +332,14 @@ public partial class RepoBrowserPanel : UserControl
         if (TagsList.SelectedItem is string tag)
         {
             _ = RunGitAndRefreshAsync($"tag -d {tag}");
+        }
+    }
+
+    private void Tag_CopyName(object? sender, RoutedEventArgs e)
+    {
+        if (TagsList.SelectedItem is string tag)
+        {
+            _ = CopyToClipboardAsync(tag, "Tag name");
         }
     }
 
@@ -331,6 +386,38 @@ public partial class RepoBrowserPanel : UserControl
         }
     }
 
+    private void Submodule_Reveal(object? sender, RoutedEventArgs e)
+    {
+        if (SubmodulesList.SelectedItem is SubmoduleItem item)
+        {
+            RevealPath(GetSubmodulePath(item.Name));
+        }
+    }
+
+    private void Submodule_CopyName(object? sender, RoutedEventArgs e)
+    {
+        if (SubmodulesList.SelectedItem is SubmoduleItem item)
+        {
+            _ = CopyToClipboardAsync(item.Name, "Submodule name");
+        }
+    }
+
+    private void Submodule_CopyPath(object? sender, RoutedEventArgs e)
+    {
+        if (SubmodulesList.SelectedItem is SubmoduleItem item)
+        {
+            _ = CopyToClipboardAsync(GetSubmodulePath(item.Name), "Submodule path");
+        }
+    }
+
+    private void Submodule_Manage(object? sender, RoutedEventArgs e)
+    {
+        if (_module is not null)
+        {
+            _ = ShowDialogAndRefreshAsync(new Dialogs.SubmodulesDialog(_module));
+        }
+    }
+
     private void OpenSubmodule(string name)
     {
         if (_module is null)
@@ -338,8 +425,7 @@ public partial class RepoBrowserPanel : UserControl
             return;
         }
 
-        string path = System.IO.Path.Combine(_module.WorkingDir, name);
-        OpenRepositoryRequested?.Invoke(path);
+        OpenRepositoryRequested?.Invoke(GetSubmodulePath(name));
     }
 
     private void Submodule_Update(object? sender, RoutedEventArgs e)
@@ -370,9 +456,43 @@ public partial class RepoBrowserPanel : UserControl
     {
         if (WorktreesList.SelectedItem is string path)
         {
-            OpenRepositoryRequested?.Invoke(path);
+            OpenWorktree(path);
         }
     }
+
+    private void Worktree_Open(object? sender, RoutedEventArgs e)
+    {
+        if (WorktreesList.SelectedItem is string path)
+        {
+            OpenWorktree(path);
+        }
+    }
+
+    private void Worktree_Reveal(object? sender, RoutedEventArgs e)
+    {
+        if (WorktreesList.SelectedItem is string path)
+        {
+            RevealPath(path);
+        }
+    }
+
+    private void Worktree_CopyPath(object? sender, RoutedEventArgs e)
+    {
+        if (WorktreesList.SelectedItem is string path)
+        {
+            _ = CopyToClipboardAsync(path, "Worktree path");
+        }
+    }
+
+    private void Worktree_Manage(object? sender, RoutedEventArgs e)
+    {
+        if (_module is not null)
+        {
+            _ = ShowDialogAndRefreshAsync(new Dialogs.ManageWorktreeDialog(_module));
+        }
+    }
+
+    private void OpenWorktree(string path) => OpenRepositoryRequested?.Invoke(path);
 
     // ── Stash handlers ──────────────────────────────────────────────────────
 
@@ -392,8 +512,19 @@ public partial class RepoBrowserPanel : UserControl
         {
             foreach (var item in menu.Items.OfType<MenuItem>())
             {
-                item.IsEnabled = hasSelection;
+                if (string.Equals(item.Tag?.ToString(), "RequiresSelection", StringComparison.Ordinal))
+                {
+                    item.IsEnabled = hasSelection;
+                }
             }
+        }
+    }
+
+    private void Stash_Manage(object? sender, RoutedEventArgs e)
+    {
+        if (_module is not null)
+        {
+            _ = ShowDialogAndRefreshAsync(new Dialogs.StashDialog(_module));
         }
     }
 
@@ -421,6 +552,23 @@ public partial class RepoBrowserPanel : UserControl
         if (idx >= 0)
         {
             _ = StashDropAsync(idx);
+        }
+    }
+
+    private void Stash_CopyText(object? sender, RoutedEventArgs e)
+    {
+        if (StashesList.SelectedItem is string stash)
+        {
+            _ = CopyToClipboardAsync(stash, "Stash text");
+        }
+    }
+
+    private void Stash_CopyRef(object? sender, RoutedEventArgs e)
+    {
+        int idx = StashesList.SelectedIndex;
+        if (idx >= 0)
+        {
+            _ = CopyToClipboardAsync(GetStashRef(idx), "Stash ref");
         }
     }
 
@@ -501,6 +649,97 @@ public partial class RepoBrowserPanel : UserControl
         await dialog.ShowDialog<object?>(mainWindow);
         await RefreshAsync();
     }
+
+    private async System.Threading.Tasks.Task CopyToClipboardAsync(string text, string description)
+    {
+        try
+        {
+            var clipboard = TopLevel.GetTopLevel(this)?.Clipboard;
+            if (clipboard is null)
+            {
+                ErrorOccurred?.Invoke("Clipboard is not available.");
+                return;
+            }
+
+            await clipboard.SetTextAsync(text);
+            StatusRequested?.Invoke($"{description} copied");
+        }
+        catch (Exception ex)
+        {
+            ErrorOccurred?.Invoke(ex.Message);
+        }
+    }
+
+    private void RevealPath(string path)
+    {
+        try
+        {
+            string fullPath = System.IO.Path.GetFullPath(path);
+            if (!System.IO.Directory.Exists(fullPath) && !System.IO.File.Exists(fullPath))
+            {
+                ErrorOccurred?.Invoke($"Path does not exist: {fullPath}");
+                return;
+            }
+
+            System.Diagnostics.Process.Start(CreateRevealPathProcessStartInfo(fullPath));
+            StatusRequested?.Invoke($"Revealing {fullPath}");
+        }
+        catch (Exception ex)
+        {
+            ErrorOccurred?.Invoke(ex.Message);
+        }
+    }
+
+    private static System.Diagnostics.ProcessStartInfo CreateRevealPathProcessStartInfo(string path)
+    {
+        if (OperatingSystem.IsMacOS())
+        {
+            var psi = new System.Diagnostics.ProcessStartInfo { FileName = "open", UseShellExecute = false };
+            psi.ArgumentList.Add("-R");
+            psi.ArgumentList.Add(path);
+            return psi;
+        }
+
+        if (OperatingSystem.IsWindows())
+        {
+            var psi = new System.Diagnostics.ProcessStartInfo { FileName = "explorer.exe", UseShellExecute = false };
+            psi.ArgumentList.Add($"/select,\"{path}\"");
+            return psi;
+        }
+
+        string folder = System.IO.Directory.Exists(path)
+            ? path
+            : System.IO.Path.GetDirectoryName(path) ?? path;
+        var fallback = new System.Diagnostics.ProcessStartInfo { FileName = "xdg-open", UseShellExecute = false };
+        fallback.ArgumentList.Add(folder);
+        return fallback;
+    }
+
+    private string GetSubmodulePath(string name)
+    {
+        if (_module is null)
+        {
+            return name;
+        }
+
+        return System.IO.Path.GetFullPath(System.IO.Path.Combine(_module.WorkingDir, name));
+    }
+
+    private static string GetRemoteName(string remoteBranch)
+    {
+        int slashIndex = remoteBranch.IndexOf('/');
+        return slashIndex > 0 ? remoteBranch[..slashIndex] : remoteBranch;
+    }
+
+    private static string GetRemoteBranchName(string remoteBranch)
+    {
+        int slashIndex = remoteBranch.IndexOf('/');
+        return slashIndex >= 0 && slashIndex + 1 < remoteBranch.Length
+            ? remoteBranch[(slashIndex + 1)..]
+            : remoteBranch;
+    }
+
+    private static string GetStashRef(int index) => $"stash@{{{index}}}";
 
     private sealed record WorkingDirItem(char StatusChar, string Name)
     {

@@ -6,10 +6,36 @@
               SelectionChanged="FileTree_SelectionChanged">
         <TreeView.ContextMenu>
             <ContextMenu Opening="FileTree_ContextMenuOpening">
-                <MenuItem Header="Open Diff"     Click="CtxDiff_Click" />
+                <MenuItem x:Name="OpenDiffMenuItem"
+                          Header="Open Diff"
+                          Click="CtxDiff_Click" />
                 <Separator />
-                <MenuItem Header="File History…" Click="CtxHistory_Click" />
-                <MenuItem Header="Blame…"        Click="CtxBlame_Click" />
+                <MenuItem x:Name="OpenFileMenuItem"
+                          Header="Open File"
+                          Click="CtxOpenFile_Click" />
+                <MenuItem x:Name="RevealInFinderMenuItem"
+                          Header="Reveal in Finder"
+                          Click="CtxRevealInFinder_Click" />
+                <MenuItem x:Name="OpenContainingFolderMenuItem"
+                          Header="Open Containing Folder"
+                          Click="CtxOpenContainingFolder_Click" />
+                <Separator />
+                <MenuItem x:Name="CopyPathMenuItem"
+                          Header="Copy File Path"
+                          Click="CtxCopyPath_Click" />
+                <MenuItem x:Name="CopyFullPathMenuItem"
+                          Header="Copy Full Path"
+                          Click="CtxCopyFullPath_Click" />
+                <MenuItem x:Name="CopyFileNameMenuItem"
+                          Header="Copy File Name"
+                          Click="CtxCopyFileName_Click" />
+                <Separator />
+                <MenuItem x:Name="HistoryMenuItem"
+                          Header="File History…"
+                          Click="CtxHistory_Click" />
+                <MenuItem x:Name="BlameMenuItem"
+                          Header="Blame…"
+                          Click="CtxBlame_Click" />
             </ContextMenu>
         </TreeView.ContextMenu>
         <TreeView.ItemTemplate>

@@ -138,16 +138,24 @@ public partial class RevisionGridControl : GitModuleControl
                 "Index");
 
             // --- Regular git log rows ---
+            int maxRevisions = Math.Clamp(App.Settings.GetInt("revisionGridMaxRevisions", MaxRevisions), 100, 50000);
+            string firstParentArg = App.Settings.GetBool("showFirstParentOnly", false) ? " --first-parent" : string.Empty;
             string output = await Module.GitExecutable.GetOutputAsync(
-                $"log --format={LogFormat}%n --max-count={MaxRevisions}{(string.IsNullOrEmpty(extraArgs) ? string.Empty : " " + extraArgs)}");
+                $"log --format={LogFormat}%n --max-count={maxRevisions}{firstParentArg}{(string.IsNullOrEmpty(extraArgs) ? string.Empty : " " + extraArgs)}");
 
             var gitRevisions = ParseGitLog(output);
 
             // Assign branch/tag refs to each commit so badges render in the grid
             try
             {
+                RefsFilter refsFilter = RefsFilter.Heads | RefsFilter.Remotes;
+                if (App.Settings.GetBool("showTags", true))
+                {
+                    refsFilter |= RefsFilter.Tags;
+                }
+
                 var allRefs = await System.Threading.Tasks.Task.Run(
-                    () => Module.GetRefs(RefsFilter.Heads | RefsFilter.Remotes | RefsFilter.Tags));
+                    () => Module.GetRefs(refsFilter));
                 var refsByGuid = allRefs
                     .Where(r => !string.IsNullOrEmpty(r.Guid))
                     .GroupBy(r => r.Guid!)

@@ -1,0 +1,16 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="GitUI.Avalonia.Settings.Pages.DiffViewerPage">
+    <ScrollViewer>
+        <StackPanel Margin="16" Spacing="12">
+            <TextBlock Text="Diff Viewer" FontSize="14" FontWeight="SemiBold" Margin="0,0,0,4" />
+
+            <CheckBox x:Name="SplitViewByDefaultCheckBox"
+                      Content="Use split diff view by default" />
+            <CheckBox x:Name="SyntaxHighlightingCheckBox"
+                      Content="Enable syntax highlighting for file diffs" />
+            <CheckBox x:Name="WordWrapCheckBox"
+                      Content="Wrap long diff lines" />
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

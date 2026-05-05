@@ -7,7 +7,10 @@ namespace GitUI.Avalonia.Settings;
 
 public partial class SettingsWindow : GitExtensionsWindow
 {
+    private readonly GeneralPage _generalPage = new();
     private readonly GitPage _gitPage = new();
+    private readonly RevisionGridPage _revisionGridPage = new();
+    private readonly DiffViewerPage _diffViewerPage = new();
     private readonly AppearancePage _appearancePage = new();
     private readonly CommitPage _commitPage = new();
     private readonly AdvancedPage _advancedPage = new();
@@ -18,7 +21,7 @@ public partial class SettingsWindow : GitExtensionsWindow
     public SettingsWindow()
     {
         InitializeComponent();
-        PageContent.Content = _gitPage;
+        PageContent.Content = _generalPage;
     }
 
     private void Category_Changed(object? sender, SelectionChangedEventArgs e)
@@ -30,20 +33,26 @@ public partial class SettingsWindow : GitExtensionsWindow
 
         PageContent.Content = item.Tag?.ToString() switch
         {
+            "general" => (object)_generalPage,
             "git" => (object)_gitPage,
+            "revisiongrid" => _revisionGridPage,
+            "diffviewer" => _diffViewerPage,
             "appearance" => _appearancePage,
             "commit" => _commitPage,
             "advanced" => _advancedPage,
             "ssh" => _sshPage,
             "difftools" => _diffToolsPage,
             "credentials" => _credentialsPage,
-            _ => _gitPage,
+            _ => _generalPage,
         };
     }
 
     private void Save_Click(object? sender, RoutedEventArgs e)
     {
+        _generalPage.SaveSettings();
         _gitPage.SaveSettings();
+        _revisionGridPage.SaveSettings();
+        _diffViewerPage.SaveSettings();
         _appearancePage.SaveSettings();
         _commitPage.SaveSettings();
         _advancedPage.SaveSettings();

@@ -70,19 +70,45 @@
                  SelectionChanged="CommitList_SelectionChanged"
                  ScrollViewer.HorizontalScrollBarVisibility="Disabled">
             <ListBox.ContextMenu>
-                <ContextMenu Opening="CommitContextMenu_Opening">
-                    <MenuItem Header="Checkout this commit" Click="CtxCheckout_Click" />
-                    <MenuItem Header="Cherry-pick…"         Click="CtxCherryPick_Click" />
-                    <MenuItem Header="Revert…"              Click="CtxRevert_Click" />
+                <ContextMenu x:Name="CommitContextMenu"
+                             Opening="CommitContextMenu_Opening">
+                    <MenuItem x:Name="CheckoutCommitMenuItem"
+                              Header="Checkout this commit"
+                              Click="CtxCheckout_Click" />
+                    <MenuItem x:Name="CherryPickCommitMenuItem"
+                              Header="Cherry-pick…"
+                              Click="CtxCherryPick_Click" />
+                    <MenuItem x:Name="RevertCommitMenuItem"
+                              Header="Revert…"
+                              Click="CtxRevert_Click" />
                     <Separator />
-                    <MenuItem Header="Create Branch here…"  Click="CtxCreateBranch_Click" />
-                    <MenuItem Header="Create Tag here…"     Click="CtxCreateTag_Click" />
+                    <MenuItem x:Name="CreateBranchMenuItem"
+                              Header="Create Branch here…"
+                              Click="CtxCreateBranch_Click" />
+                    <MenuItem x:Name="CreateTagMenuItem"
+                              Header="Create Tag here…"
+                              Click="CtxCreateTag_Click" />
                     <Separator />
-                    <MenuItem Header="Reset to this (hard)" Click="CtxResetHard_Click" />
+                    <MenuItem x:Name="ResetHardMenuItem"
+                              Header="Reset to this (hard)"
+                              Click="CtxResetHard_Click" />
                     <Separator />
-                    <MenuItem Header="Interactive Rebase from here…" Click="CtxInteractiveRebase_Click" />
+                    <MenuItem x:Name="InteractiveRebaseMenuItem"
+                              Header="Interactive Rebase from here…"
+                              Click="CtxInteractiveRebase_Click" />
                     <Separator />
-                    <MenuItem Header="Copy commit hash"     Click="CtxCopyHash_Click" />
+                    <MenuItem x:Name="CopyShortHashMenuItem"
+                              Header="Copy short hash"
+                              Click="CtxCopyShortHash_Click" />
+                    <MenuItem x:Name="CopyFullHashMenuItem"
+                              Header="Copy full hash"
+                              Click="CtxCopyFullHash_Click" />
+                    <MenuItem x:Name="CopySubjectMenuItem"
+                              Header="Copy subject"
+                              Click="CtxCopySubject_Click" />
+                    <MenuItem x:Name="CopyCommitSummaryMenuItem"
+                              Header="Copy commit summary line"
+                              Click="CtxCopyCommitSummary_Click" />
                 </ContextMenu>
             </ListBox.ContextMenu>
             <ListBox.ItemTemplate>

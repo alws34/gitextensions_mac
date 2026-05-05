@@ -75,6 +75,8 @@
                                 <Separator />
                                 <MenuItem Header="Push…"                 Click="LocalBranch_Push" />
                                 <MenuItem Header="Reset to Remote"       Click="LocalBranch_ResetToRemote" />
+                                <Separator />
+                                <MenuItem Header="Copy Branch Name"      Click="LocalBranch_CopyName" />
                             </ContextMenu>
                         </ListBox.ContextMenu>
                     </ListBox>
@@ -90,7 +92,11 @@
                         <ListBox.ContextMenu>
                             <ContextMenu Opening="RemoteMenu_Opening">
                                 <MenuItem Header="Fetch"                        Click="Remote_Fetch" />
+                                <MenuItem Header="Fetch and Prune"              Click="Remote_FetchPrune" />
                                 <MenuItem Header="Checkout as New Local Branch…" Click="Remote_CheckoutLocal" />
+                                <Separator />
+                                <MenuItem Header="Copy Remote Branch Name"      Click="Remote_CopyBranchName" />
+                                <MenuItem Header="Copy Remote Name"             Click="Remote_CopyName" />
                                 <Separator />
                                 <MenuItem Header="Delete Remote Branch…"        Click="Remote_Delete" />
                             </ContextMenu>
@@ -103,6 +109,8 @@
                         <ListBox.ContextMenu>
                             <ContextMenu Opening="TagMenu_Opening">
                                 <MenuItem Header="Create Branch at Tag…" Click="Tag_CreateBranch" />
+                                <Separator />
+                                <MenuItem Header="Copy Tag Name"         Click="Tag_CopyName" />
                                 <Separator />
                                 <MenuItem Header="Delete Tag…"            Click="Tag_Delete" />
                             </ContextMenu>
@@ -123,9 +131,15 @@
                             </DataTemplate>
                         </ListBox.ItemTemplate>
                         <ListBox.ContextMenu>
-                            <ContextMenu>
+                            <ContextMenu Opening="SubmoduleMenu_Opening">
                                 <MenuItem Header="Open Submodule" Click="Submodule_Open" />
+                                <MenuItem Header="Reveal in Finder" Click="Submodule_Reveal" />
                                 <MenuItem Header="Update"          Click="Submodule_Update" />
+                                <Separator />
+                                <MenuItem Header="Copy Submodule Name" Click="Submodule_CopyName" />
+                                <MenuItem Header="Copy Submodule Path" Click="Submodule_CopyPath" />
+                                <Separator />
+                                <MenuItem Header="Manage Submodules…" Click="Submodule_Manage" />
                             </ContextMenu>
                         </ListBox.ContextMenu>
                     </ListBox>
@@ -135,7 +149,18 @@
                     <ListBox x:Name="WorktreesList"
                              FontSize="12"
                              Margin="8,0,0,0"
-                             DoubleTapped="Worktree_DoubleTapped" />
+                             DoubleTapped="Worktree_DoubleTapped">
+                        <ListBox.ContextMenu>
+                            <ContextMenu Opening="WorktreeMenu_Opening">
+                                <MenuItem Header="Open Worktree Repository" Click="Worktree_Open" />
+                                <MenuItem Header="Reveal in Finder" Click="Worktree_Reveal" />
+                                <Separator />
+                                <MenuItem Header="Copy Worktree Path" Click="Worktree_CopyPath" />
+                                <Separator />
+                                <MenuItem Header="Manage Worktrees…" Click="Worktree_Manage" />
+                            </ContextMenu>
+                        </ListBox.ContextMenu>
+                    </ListBox>
                 </Expander>
 
                 <Expander Header="Stashes">
@@ -145,10 +170,15 @@
                              DoubleTapped="Stash_DoubleTapped">
                         <ListBox.ContextMenu>
                             <ContextMenu Opening="StashMenu_Opening">
-                                <MenuItem Header="Pop (apply + drop)" Click="Stash_Pop" />
-                                <MenuItem Header="Apply (keep stash)" Click="Stash_Apply" />
+                                <MenuItem Header="Manage Stashes…" Click="Stash_Manage" />
                                 <Separator />
-                                <MenuItem Header="Drop…"               Click="Stash_Drop" />
+                                <MenuItem Header="Pop (apply + drop)" Click="Stash_Pop" Tag="RequiresSelection" />
+                                <MenuItem Header="Apply (keep stash)" Click="Stash_Apply" Tag="RequiresSelection" />
+                                <Separator />
+                                <MenuItem Header="Copy Stash Text"    Click="Stash_CopyText" Tag="RequiresSelection" />
+                                <MenuItem Header="Copy Stash Ref"     Click="Stash_CopyRef" Tag="RequiresSelection" />
+                                <Separator />
+                                <MenuItem Header="Drop…"               Click="Stash_Drop" Tag="RequiresSelection" />
                             </ContextMenu>
                         </ListBox.ContextMenu>
                     </ListBox>

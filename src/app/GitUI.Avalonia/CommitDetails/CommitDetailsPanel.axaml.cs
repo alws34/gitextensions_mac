@@ -28,6 +28,14 @@ public partial class CommitDetailsPanel : UserControl
         {
             new Dialogs.FileHistoryDialog(module, path).Show();
         };
+        FileList.StatusRequested += message =>
+        {
+            System.Diagnostics.Debug.WriteLine(message);
+        };
+        FileList.ErrorOccurred += message =>
+        {
+            System.Diagnostics.Debug.WriteLine($"File action failed: {message}");
+        };
     }
 
     public async System.Threading.Tasks.Task ShowRevisionAsync(GitRevision? revision)

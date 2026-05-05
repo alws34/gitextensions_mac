@@ -27,4 +27,12 @@
   <ItemGroup>
     <ProjectReference Include="../../../src/app/GitUI.Avalonia/GitUI.Avalonia.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <PackageVersion Include="Avalonia.Headless" Version="11.2.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia.Headless" />
+  </ItemGroup>
 </Project>

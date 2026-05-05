@@ -1,0 +1,26 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="GitUI.Avalonia.Settings.Pages.RevisionGridPage">
+    <ScrollViewer>
+        <StackPanel Margin="16" Spacing="12">
+            <TextBlock Text="Revision Grid" FontSize="14" FontWeight="SemiBold" Margin="0,0,0,4" />
+
+            <CheckBox x:Name="ShowTagsCheckBox"
+                      Content="Show tags" />
+            <CheckBox x:Name="ShowStashesCheckBox"
+                      Content="Show stashes in graph" />
+            <CheckBox x:Name="ShowWorktreesCheckBox"
+                      Content="Show worktrees in graph" />
+            <CheckBox x:Name="FirstParentOnlyCheckBox"
+                      Content="Show first parent only" />
+
+            <StackPanel Spacing="4">
+                <TextBlock Text="Maximum revisions to load:" />
+                <NumericUpDown x:Name="MaxRevisionsBox"
+                               Minimum="100"
+                               Maximum="50000"
+                               Increment="100" />
+            </StackPanel>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

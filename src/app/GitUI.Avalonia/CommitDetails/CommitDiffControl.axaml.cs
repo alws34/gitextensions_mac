@@ -14,10 +14,22 @@ public partial class CommitDiffControl : GitModuleControl
     public CommitDiffControl()
     {
         InitializeComponent();
+        _isSplitView = App.Settings.GetBool("diffSplitViewDefault", false);
+        DiffEditor.IsVisible = !_isSplitView;
+        SplitView.IsVisible = _isSplitView;
+        ApplyEditorSettings();
         DiffEditor.TextArea.TextView.LineTransformers.Add(new DiffLineColorizer());
         LeftEditor.TextArea.TextView.LineTransformers.Add(new DiffLineColorizer());
         RightEditor.TextArea.TextView.LineTransformers.Add(new DiffLineColorizer());
         UpdateToolbarState();
+    }
+
+    private void ApplyEditorSettings()
+    {
+        bool wordWrap = App.Settings.GetBool("diffWordWrap", false);
+        DiffEditor.WordWrap = wordWrap;
+        LeftEditor.WordWrap = wordWrap;
+        RightEditor.WordWrap = wordWrap;
     }
 
     private void UpdateToolbarState()
@@ -85,6 +97,12 @@ public partial class CommitDiffControl : GitModuleControl
 
     private static void ApplySyntaxHighlighting(AvaloniaEdit.TextEditor editor, string? filePath)
     {
+        if (!App.Settings.GetBool("diffSyntaxHighlighting", true))
+        {
+            editor.SyntaxHighlighting = null;
+            return;
+        }
+
         if (string.IsNullOrEmpty(filePath))
         {
             editor.SyntaxHighlighting = null;

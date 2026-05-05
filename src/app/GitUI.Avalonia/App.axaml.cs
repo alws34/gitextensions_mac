@@ -42,7 +42,7 @@ public partial class App : Application
             desktop.MainWindow = mainWindow;
             desktop.Exit += (_, _) => Settings.Save();
 
-            // Wire macOS native menu bar commands (ignored on non-macOS platforms)
+            // Wire app-level macOS menu commands (ignored on non-macOS platforms).
             if (NativeMenu.GetMenu(this) is NativeMenu nativeMenu)
             {
                 foreach (var item in nativeMenu.Items)
