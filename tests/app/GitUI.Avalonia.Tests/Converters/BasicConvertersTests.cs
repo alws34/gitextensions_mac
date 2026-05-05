@@ -1,6 +1,7 @@
 using System.Globalization;
 using Avalonia;
 using Avalonia.Media;
+using Avalonia.Styling;
 using GitUI.Avalonia.Converters;
 using NUnit.Framework;
 
@@ -112,6 +113,28 @@ public class BasicConvertersTests
         {
             Assert.That(selected, Is.EqualTo(Brushes.White));
             Assert.That(nonRelative, Is.Not.EqualTo(Brushes.White));
+        });
+    }
+
+    [Test]
+    public void RevisionRowTextBrush_GetBrush_UsesReadableThemeText()
+    {
+        IBrush darkNormal = RevisionRowTextBrushConverter.GetBrush(
+            isRelative: true,
+            isSelected: false,
+            isHash: false,
+            ThemeVariant.Dark);
+
+        IBrush lightNormal = RevisionRowTextBrushConverter.GetBrush(
+            isRelative: true,
+            isSelected: false,
+            isHash: false,
+            ThemeVariant.Light);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(darkNormal, Is.EqualTo(Brushes.White));
+            Assert.That(lightNormal, Is.EqualTo(Brushes.Black));
         });
     }
 }
