@@ -69,6 +69,7 @@
                             <ContextMenu Opening="LocalBranchMenu_Opening">
                                 <MenuItem Header="Checkout"              Click="LocalBranch_Checkout" />
                                 <MenuItem Header="Merge into current"    Click="LocalBranch_Merge" />
+                                <MenuItem Header="Rebase current branch onto this" Click="LocalBranch_Rebase" />
                                 <Separator />
                                 <MenuItem Header="Create Branch from here…" Click="LocalBranch_CreateFrom" />
                                 <MenuItem Header="Rename Branch…"        Click="LocalBranch_Rename" />
@@ -96,6 +97,8 @@
                                 <MenuItem Header="Fetch"                        Click="Remote_Fetch" />
                                 <MenuItem Header="Fetch and Prune"              Click="Remote_FetchPrune" />
                                 <MenuItem Header="Checkout as New Local Branch…" Click="Remote_CheckoutLocal" />
+                                <MenuItem Header="Merge into current"           Click="Remote_Merge" />
+                                <MenuItem Header="Rebase current branch onto this" Click="Remote_Rebase" />
                                 <Separator />
                                 <MenuItem Header="Copy Remote Branch Name"      Click="Remote_CopyBranchName" />
                                 <MenuItem Header="Copy Remote Name"             Click="Remote_CopyName" />
@@ -112,6 +115,7 @@
                         <ListBox.ContextMenu>
                             <ContextMenu Opening="TagMenu_Opening">
                                 <MenuItem Header="Create Branch at Tag…" Click="Tag_CreateBranch" />
+                                <MenuItem Header="Merge into current"    Click="Tag_Merge" />
                                 <Separator />
                                 <MenuItem Header="Copy Tag Name"         Click="Tag_CopyName" />
                                 <Separator />

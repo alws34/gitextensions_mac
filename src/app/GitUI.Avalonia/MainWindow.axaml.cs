@@ -32,6 +32,8 @@ public partial class MainWindow : GitExtensionsWindow
     private Action<string>? _leftPanelOpenRepositoryHandler;
     private Action<string>? _leftPanelStatusHandler;
     private Action<string>? _leftPanelErrorHandler;
+    private Action? _leftPanelRepositoryChangedHandler;
+    private bool _revisionGridHandlersAttached;
 
     public static readonly StyledProperty<bool> HasRepositoryProperty =
         AvaloniaProperty.Register<MainWindow, bool>(nameof(HasRepository));
@@ -130,21 +132,7 @@ public partial class MainWindow : GitExtensionsWindow
         _ = RefreshBranchSelectorAsync();
         _ = RefreshActionBarsAsync();
         _ = RefreshStatusBarCountsAsync();
-        RevisionGrid.SelectedRevisionChanged += OnRevisionSelected;
-        RevisionGrid.CherryPickHashRequested += hash =>
-            _ = ShowModuleDialogAsync(m => new CherryPickDialog(m, hash));
-        RevisionGrid.RevertHashRequested += hash =>
-            _ = ShowModuleDialogAsync(m => new RevertCommitDialog(m, hash));
-        RevisionGrid.CheckoutHashRequested += hash => _ = CheckoutHashAsync(hash);
-        RevisionGrid.CheckoutBranchRequested += branch => _ = CheckoutBranchAsync(branch);
-        RevisionGrid.CheckoutRemoteBranchRequested += branch => _ = CheckoutRemoteBranchAsync(branch);
-        RevisionGrid.CreateBranchAtHashRequested += ignored =>
-            _ = ShowModuleDialogAsync(m => new CreateBranchDialog(m));
-        RevisionGrid.CreateTagAtHashRequested += ignored =>
-            _ = ShowModuleDialogAsync(m => new CreateTagDialog(m));
-        RevisionGrid.ResetHardToHashRequested += hash => _ = ResetHardAsync(hash);
-        RevisionGrid.InteractiveRebaseRequested += hash =>
-            _ = ShowModuleDialogAsync(m => new InteractiveRebaseDialog(m, hash));
+        AttachRevisionGridHandlers();
         DetailsPanel.SetModule(_module);
         LeftPanel.SetModule(_module);
 
@@ -169,15 +157,54 @@ public partial class MainWindow : GitExtensionsWindow
             LeftPanel.ErrorOccurred -= _leftPanelErrorHandler;
         }
 
+        if (_leftPanelRepositoryChangedHandler is not null)
+        {
+            LeftPanel.RepositoryChanged -= _leftPanelRepositoryChangedHandler;
+        }
+
         _leftPanelCheckoutHandler = branch => _ = CheckoutBranchAsync(branch);
         _leftPanelOpenRepositoryHandler = OpenRepository;
         _leftPanelStatusHandler = msg => StatusLabel.Text = msg;
         _leftPanelErrorHandler = msg => ShowError(msg);
+        _leftPanelRepositoryChangedHandler = () => _ = RefreshAfterBranchDialogAsync(refreshLeftPanel: false);
 
         LeftPanel.CheckoutRequested += _leftPanelCheckoutHandler;
         LeftPanel.OpenRepositoryRequested += _leftPanelOpenRepositoryHandler;
         LeftPanel.StatusRequested += _leftPanelStatusHandler;
         LeftPanel.ErrorOccurred += _leftPanelErrorHandler;
+        LeftPanel.RepositoryChanged += _leftPanelRepositoryChangedHandler;
+    }
+
+    private void AttachRevisionGridHandlers()
+    {
+        if (_revisionGridHandlersAttached)
+        {
+            return;
+        }
+
+        _revisionGridHandlersAttached = true;
+        RevisionGrid.SelectedRevisionChanged += OnRevisionSelected;
+        RevisionGrid.CherryPickHashRequested += hash =>
+            _ = ShowModuleDialogAsync(m => new CherryPickDialog(m, hash));
+        RevisionGrid.RevertHashRequested += hash =>
+            _ = ShowModuleDialogAsync(m => new RevertCommitDialog(m, hash));
+        RevisionGrid.CheckoutHashRequested += hash => _ = CheckoutHashAsync(hash);
+        RevisionGrid.CheckoutBranchRequested += branch => _ = CheckoutBranchAsync(branch);
+        RevisionGrid.CheckoutRemoteBranchRequested += branch => _ = CheckoutRemoteBranchAsync(branch);
+        RevisionGrid.MergeRefRequested += refName => _ = ShowMergeBranchDialogAsync(refName);
+        RevisionGrid.RebaseRefRequested += refName => _ = ShowRebaseDialogAsync(refName);
+        RevisionGrid.RenameBranchRequested += branch => _ = ShowRenameBranchDialogAsync(branch);
+        RevisionGrid.DeleteBranchRequested += branch => _ = ShowDeleteBranchDialogAsync(branch);
+        RevisionGrid.DeleteRemoteBranchRequested += branch => _ = ShowDeleteRemoteBranchDialogAsync(branch);
+        RevisionGrid.DeleteTagRequested += tag => _ = ShowDeleteTagDialogAsync(tag);
+        RevisionGrid.PushBranchRequested += branch => _ = ShowPushDialogAsync(branch);
+        RevisionGrid.CreateBranchAtHashRequested += ignored =>
+            _ = ShowModuleDialogAsync(m => new CreateBranchDialog(m));
+        RevisionGrid.CreateTagAtHashRequested += ignored =>
+            _ = ShowModuleDialogAsync(m => new CreateTagDialog(m));
+        RevisionGrid.ResetHardToHashRequested += hash => _ = ResetHardAsync(hash);
+        RevisionGrid.InteractiveRebaseRequested += hash =>
+            _ = ShowModuleDialogAsync(m => new InteractiveRebaseDialog(m, hash));
     }
 
     private void AddToRecentRepositories(string path)
@@ -370,8 +397,8 @@ public partial class MainWindow : GitExtensionsWindow
         var menu = new MenuItem { Header = "_Repository" };
         menu.Items.Add(new MenuItem { Header = "_Status...", Command = ReactiveCommand.CreateFromTask(ShowRepositoryStatusAsync) });
         menu.Items.Add(new Separator());
-        menu.Items.Add(new MenuItem { Header = "_Fetch", Command = ReactiveCommand.CreateFromTask(FetchAsync) });
-        menu.Items.Add(new MenuItem { Header = "Fetch and P_rune", Command = ReactiveCommand.CreateFromTask(FetchPruneAsync) });
+        menu.Items.Add(new MenuItem { Header = "_Fetch All", Command = ReactiveCommand.CreateFromTask(FetchAsync) });
+        menu.Items.Add(new MenuItem { Header = "Fetch and P_rune All", Command = ReactiveCommand.CreateFromTask(FetchPruneAsync) });
         menu.Items.Add(new MenuItem { Header = "_Pull...", Command = ReactiveCommand.CreateFromTask(ShowPullDialogAsync) });
         menu.Items.Add(new MenuItem { Header = "P_ush...", Command = ReactiveCommand.CreateFromTask(ShowPushDialogAsync) });
         menu.Items.Add(new Separator());
@@ -424,6 +451,9 @@ public partial class MainWindow : GitExtensionsWindow
     {
         var menu = new MenuItem { Header = "_Commands" };
         menu.Items.Add(new MenuItem { Header = "_Commit...", InputGesture = new KeyGesture(Key.Enter, KeyModifiers.Control), Command = ReactiveCommand.CreateFromTask(ShowCommitDialogAsync) });
+        menu.Items.Add(new MenuItem { Header = "_Pull/Fetch...", Command = ReactiveCommand.CreateFromTask(ShowPullDialogAsync) });
+        menu.Items.Add(new MenuItem { Header = "P_ush...", Command = ReactiveCommand.CreateFromTask(ShowPushDialogAsync) });
+        menu.Items.Add(new Separator());
         menu.Items.Add(new MenuItem { Header = "_Add Files...", Command = ReactiveCommand.CreateFromTask(() => ShowModuleDialogAsync(m => new AddFilesDialog(m))) });
         menu.Items.Add(new MenuItem { Header = "Add to .git_ignore...", Command = ReactiveCommand.CreateFromTask(() => ShowModuleDialogAsync(m => new AddToGitIgnoreDialog(m))) });
         menu.Items.Add(new Separator());
@@ -431,8 +461,8 @@ public partial class MainWindow : GitExtensionsWindow
         menu.Items.Add(new MenuItem { Header = "Checkout _Branch...", Command = ReactiveCommand.CreateFromTask(() => ShowModuleDialogAsync(m => new CheckoutBranchDialog(m))) });
         menu.Items.Add(new MenuItem { Header = "_Delete Branch...", Command = ReactiveCommand.CreateFromTask(() => ShowModuleDialogAsync(m => new DeleteBranchDialog(m))) });
         menu.Items.Add(new MenuItem { Header = "Re_name Branch...", Command = ReactiveCommand.CreateFromTask(() => ShowModuleDialogAsync(m => new RenameBranchDialog(m))) });
-        menu.Items.Add(new MenuItem { Header = "_Merge Branch...", Command = ReactiveCommand.CreateFromTask(() => ShowModuleDialogAsync(m => new MergeBranchDialog(m))) });
-        menu.Items.Add(new MenuItem { Header = "Re_base...", Command = ReactiveCommand.CreateFromTask(() => ShowModuleDialogAsync(m => new RebaseDialog(m))) });
+        menu.Items.Add(new MenuItem { Header = "_Merge Branch...", Command = ReactiveCommand.CreateFromTask(() => ShowMergeBranchDialogAsync()) });
+        menu.Items.Add(new MenuItem { Header = "Re_base...", Command = ReactiveCommand.CreateFromTask(() => ShowRebaseDialogAsync()) });
         menu.Items.Add(new MenuItem { Header = "_Interactive Rebase…", Command = ReactiveCommand.CreateFromTask(() => ShowModuleDialogAsync(m => new InteractiveRebaseDialog(m, "HEAD~1"))) });
         menu.Items.Add(new Separator());
         menu.Items.Add(new MenuItem { Header = "Create _Tag...", Command = ReactiveCommand.CreateFromTask(() => ShowModuleDialogAsync(m => new CreateTagDialog(m))) });
@@ -645,20 +675,126 @@ public partial class MainWindow : GitExtensionsWindow
         await ShowModuleDialogAsync(m => new RevertCommitDialog(m, hash));
     }
 
-    private async System.Threading.Tasks.Task ShowPushDialogAsync()
+    private System.Threading.Tasks.Task ShowPushDialogAsync() => ShowPushDialogAsync(defaultBranch: null);
+
+    private async System.Threading.Tasks.Task ShowPushDialogAsync(string? defaultBranch)
     {
         if (_module is null)
         {
             return;
         }
 
-        var dialog = new PushDialog(_module);
+        var dialog = new PushDialog(_module, defaultBranch);
         bool? result = await dialog.ShowDialog<bool?>(this);
         if (result == true)
         {
-            await RevisionGrid.RefreshAsync();
+            await RefreshAfterBranchDialogAsync();
+        }
+    }
+
+    private async System.Threading.Tasks.Task ShowMergeBranchDialogAsync(string? defaultRef = null)
+    {
+        if (_module is null)
+        {
+            return;
+        }
+
+        var dialog = new MergeBranchDialog(_module, defaultRef);
+        bool? result = await dialog.ShowDialog<bool?>(this);
+        if (result == true)
+        {
+            await RefreshAfterBranchDialogAsync(refreshBranches: false, refreshLeftPanel: true);
+        }
+    }
+
+    private async System.Threading.Tasks.Task ShowRebaseDialogAsync(string? defaultOnto = null)
+    {
+        if (_module is null)
+        {
+            return;
+        }
+
+        var dialog = new RebaseDialog(_module, defaultOnto);
+        bool? result = await dialog.ShowDialog<bool?>(this);
+        if (result == true)
+        {
+            await RefreshAfterBranchDialogAsync(refreshLeftPanel: true);
+        }
+    }
+
+    private async System.Threading.Tasks.Task ShowRenameBranchDialogAsync(string branch)
+    {
+        if (_module is null)
+        {
+            return;
+        }
+
+        var dialog = new RenameBranchDialog(_module, branch);
+        bool? result = await dialog.ShowDialog<bool?>(this);
+        if (result == true)
+        {
+            await RefreshAfterBranchDialogAsync(refreshLeftPanel: true);
+        }
+    }
+
+    private async System.Threading.Tasks.Task ShowDeleteBranchDialogAsync(string branch)
+    {
+        if (_module is null)
+        {
+            return;
+        }
+
+        var dialog = new DeleteBranchDialog(_module, branch);
+        bool? result = await dialog.ShowDialog<bool?>(this);
+        if (result == true)
+        {
+            await RefreshAfterBranchDialogAsync(refreshLeftPanel: true);
+        }
+    }
+
+    private async System.Threading.Tasks.Task ShowDeleteRemoteBranchDialogAsync(string branch)
+    {
+        if (_module is null)
+        {
+            return;
+        }
+
+        var dialog = new DeleteRemoteBranchDialog(_module, branch);
+        bool? result = await dialog.ShowDialog<bool?>(this);
+        if (result == true)
+        {
+            await RefreshAfterBranchDialogAsync(refreshLeftPanel: true);
+        }
+    }
+
+    private async System.Threading.Tasks.Task ShowDeleteTagDialogAsync(string tag)
+    {
+        if (_module is null)
+        {
+            return;
+        }
+
+        var dialog = new DeleteTagDialog(_module, tag);
+        bool? result = await dialog.ShowDialog<bool?>(this);
+        if (result == true)
+        {
+            await RefreshAfterBranchDialogAsync(refreshBranches: false, refreshLeftPanel: true);
+        }
+    }
+
+    private async System.Threading.Tasks.Task RefreshAfterBranchDialogAsync(bool refreshBranches = true, bool refreshLeftPanel = false)
+    {
+        await RevisionGrid.RefreshAsync();
+        if (refreshBranches)
+        {
             await RefreshBranchSelectorAsync();
-            await RefreshStatusBarCountsAsync();
+        }
+
+        await RefreshActionBarsAsync();
+        await RefreshStatusBarCountsAsync();
+        if (refreshLeftPanel)
+        {
+            _ = LeftPanel.RefreshAsync();
         }
     }
 
@@ -961,24 +1097,17 @@ public partial class MainWindow : GitExtensionsWindow
 
     private void BuildToolBar()
     {
-        // Toggle left panel
-        MainToolBar.Children.Add(MakeToolButton("avares://GitUI.Avalonia/Assets/Icons/LayoutSidebarTopLeft.png", "⊟", "Toggle left panel (Ctrl+K)", ToggleLeftPanel));
-        MainToolBar.Children.Add(MakeToolSeparator());
-
-        // Dashboard
-        MainToolBar.Children.Add(MakeToolButton("⌂", "Dashboard (close repository)", ShowDashboard));
-        MainToolBar.Children.Add(MakeToolSeparator());
-
-        // Refresh
+        // Refresh and layout controls
         MainToolBar.Children.Add(MakeToolButton("avares://GitUI.Avalonia/Assets/Icons/ReloadRevisions.png", "↺", "Refresh (F5)", () => _ = RevisionGrid.RefreshAsync()));
+        MainToolBar.Children.Add(MakeToolButton("avares://GitUI.Avalonia/Assets/Icons/LayoutSidebarTopLeft.png", "⊟", "Toggle left panel (Ctrl+K)", ToggleLeftPanel));
+        MainToolBar.Children.Add(MakeToolButton("⌂", "Dashboard (close repository)", ShowDashboard));
         MainToolBar.Children.Add(MakeToolSeparator());
 
         // Working directory button
         _workingDirButton = new Button
         {
             Content = "(no repo)",
-            Classes = { "ToolBtn" },
-            Padding = new Thickness(6, 2),
+            Classes = { "RepoSelector" },
             VerticalContentAlignment = VerticalAlignment.Center,
             FontSize = 12,
         };
@@ -1000,6 +1129,7 @@ public partial class MainWindow : GitExtensionsWindow
         };
         _branchSelector.SelectionChanged += OnBranchSelectorChanged;
         MainToolBar.Children.Add(_branchSelector);
+        MainToolBar.Children.Add(MakeBranchActionsSplitButton());
         MainToolBar.Children.Add(MakeToolSeparator());
 
         // Submodules and worktrees
@@ -1007,18 +1137,15 @@ public partial class MainWindow : GitExtensionsWindow
         MainToolBar.Children.Add(MakeWorktreesSplitButton());
         MainToolBar.Children.Add(MakeToolSeparator());
 
-        // Commit
-        MainToolBar.Children.Add(MakeToolButton("avares://GitUI.Avalonia/Assets/Icons/RepoStateClean.png", "✎", "Commit staged changes (Ctrl+Enter)",
-            () => _ = ShowCommitDialogAsync()));
-        MainToolBar.Children.Add(MakeToolSeparator());
-
-        // Pull split button
+        // Sync commands
         MainToolBar.Children.Add(MakePullSplitButton());
-
-        // Push
         MainToolBar.Children.Add(MakeToolButton("avares://GitUI.Avalonia/Assets/Icons/Push.png", "⬆", "Push to remote",
             () => _ = ShowPushDialogAsync()));
         MainToolBar.Children.Add(MakeToolSeparator());
+
+        // Commit and stash
+        MainToolBar.Children.Add(MakeToolButton("avares://GitUI.Avalonia/Assets/Icons/RepoStateClean.png", "✎", "Commit staged changes (Ctrl+Enter)",
+            () => _ = ShowCommitDialogAsync()));
 
         // Stash split button
         MainToolBar.Children.Add(MakeStashSplitButton());
@@ -1050,28 +1177,88 @@ public partial class MainWindow : GitExtensionsWindow
         MainToolBar.Children.Add(MakeToolButton("⚙", "Settings", OpenSettings));
     }
 
+    private SplitButton MakeBranchActionsSplitButton()
+    {
+        var flyout = new MenuFlyout();
+        flyout.Items.Add(new MenuItem
+        {
+            Header = "Checkout Branch...",
+            Command = ReactiveCommand.CreateFromTask(() => ShowModuleDialogAsync(m => new CheckoutBranchDialog(m))),
+        });
+        flyout.Items.Add(new MenuItem
+        {
+            Header = "Create Branch...",
+            Command = ReactiveCommand.CreateFromTask(() => ShowModuleDialogAsync(m => new CreateBranchDialog(m))),
+        });
+        flyout.Items.Add(new Separator());
+        flyout.Items.Add(new MenuItem
+        {
+            Header = "Merge Branch...",
+            Command = ReactiveCommand.CreateFromTask(() => ShowMergeBranchDialogAsync()),
+        });
+        flyout.Items.Add(new MenuItem
+        {
+            Header = "Rebase...",
+            Command = ReactiveCommand.CreateFromTask(() => ShowRebaseDialogAsync()),
+        });
+        flyout.Items.Add(new MenuItem
+        {
+            Header = "Interactive Rebase...",
+            Command = ReactiveCommand.CreateFromTask(() => ShowModuleDialogAsync(m => new InteractiveRebaseDialog(m, "HEAD~1"))),
+        });
+        flyout.Items.Add(new Separator());
+        flyout.Items.Add(new MenuItem
+        {
+            Header = "Rename Branch...",
+            Command = ReactiveCommand.CreateFromTask(() => ShowModuleDialogAsync(m => new RenameBranchDialog(m))),
+        });
+        flyout.Items.Add(new MenuItem
+        {
+            Header = "Delete Branch...",
+            Command = ReactiveCommand.CreateFromTask(() => ShowModuleDialogAsync(m => new DeleteBranchDialog(m))),
+        });
+        flyout.Items.Add(new MenuItem
+        {
+            Header = "Delete Remote Branch...",
+            Command = ReactiveCommand.CreateFromTask(() => ShowModuleDialogAsync(m => new DeleteRemoteBranchDialog(m))),
+        });
+
+        var btn = new SplitButton
+        {
+            Content = new TextBlock { Text = "Branch", FontSize = 11 },
+            Flyout = flyout,
+            Classes = { "ToolBtn" },
+            MinWidth = 68,
+            Padding = new Thickness(6, 2),
+            VerticalContentAlignment = VerticalAlignment.Center,
+        };
+        ToolTip.SetTip(btn, "Branch actions: checkout, merge, rebase, rename, delete");
+        btn.Click += (_, _) => _ = ShowModuleDialogAsync(m => new CheckoutBranchDialog(m));
+        return btn;
+    }
+
     private SplitButton MakePullSplitButton()
     {
         Control pullContent = MakeToolIcon("avares://GitUI.Avalonia/Assets/Icons/PullMerge.png") ?? (Control)new TextBlock { Text = "⬇" };
         var flyout = new MenuFlyout();
         flyout.Items.Add(new MenuItem
         {
-            Header = "Pull + Merge",
+            Header = "Open pull dialog...",
             Command = ReactiveCommand.CreateFromTask(ShowPullDialogAsync),
         });
         flyout.Items.Add(new MenuItem
         {
-            Header = "Pull + Rebase",
+            Header = "Pull - rebase",
             Command = ReactiveCommand.CreateFromTask(PullRebaseAsync),
         });
         flyout.Items.Add(new MenuItem
         {
-            Header = "Fetch All",
+            Header = "Fetch all",
             Command = ReactiveCommand.CreateFromTask(FetchAsync),
         });
         flyout.Items.Add(new MenuItem
         {
-            Header = "Fetch (pruning)",
+            Header = "Fetch and prune all",
             Command = ReactiveCommand.CreateFromTask(FetchPruneAsync),
         });
 
@@ -1083,7 +1270,7 @@ public partial class MainWindow : GitExtensionsWindow
             Padding = new Thickness(4, 2),
             VerticalContentAlignment = VerticalAlignment.Center,
         };
-        ToolTip.SetTip(btn, "Pull / merge (dropdown for more options)");
+        ToolTip.SetTip(btn, "Pull/Fetch");
         btn.Click += (_, _) => _ = ShowPullDialogAsync();
         return btn;
     }

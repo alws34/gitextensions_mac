@@ -3,6 +3,7 @@ using Avalonia.Interactivity;
 using Avalonia.Threading;
 using GitCommands;
 using GitExtensions.Extensibility;
+using GitExtUtils;
 using GitUI.Avalonia.Base;
 
 namespace GitUI.Avalonia.Dialogs;
@@ -10,10 +11,12 @@ namespace GitUI.Avalonia.Dialogs;
 public partial class DeleteBranchDialog : GitExtensionsDialog
 {
     private readonly GitModule _module;
+    private readonly string? _defaultBranch;
 
-    public DeleteBranchDialog(GitModule module)
+    public DeleteBranchDialog(GitModule module, string? defaultBranch = null)
     {
         _module = module;
+        _defaultBranch = defaultBranch;
         InitializeComponent();
         _ = LoadDataAsync();
     }
@@ -21,9 +24,17 @@ public partial class DeleteBranchDialog : GitExtensionsDialog
     private async Task LoadDataAsync()
     {
         var branches = await Task.Run(() => _module.GetRefs(RefsFilter.Heads));
+        var branchNames = branches.Select(b => b.Name).ToList();
         await Dispatcher.UIThread.InvokeAsync(() =>
         {
-            BranchList.ItemsSource = branches.Select(b => b.Name).ToList();
+            BranchList.ItemsSource = branchNames;
+            string? selectedBranch = string.IsNullOrWhiteSpace(_defaultBranch)
+                ? null
+                : branchNames.FirstOrDefault(branch => string.Equals(branch, _defaultBranch, StringComparison.OrdinalIgnoreCase));
+            if (selectedBranch is not null)
+            {
+                BranchList.SelectedItems?.Add(selectedBranch);
+            }
         });
     }
 
@@ -45,7 +56,7 @@ public partial class DeleteBranchDialog : GitExtensionsDialog
         {
             foreach (string branch in selected)
             {
-                _module.GitExecutable.GetOutput($"branch {forceFlag} {branch}");
+                _module.GitExecutable.GetOutput($"branch {forceFlag} {branch.Quote()}");
             }
         });
 

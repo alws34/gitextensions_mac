@@ -3,6 +3,7 @@ using Avalonia.Interactivity;
 using Avalonia.Threading;
 using GitCommands;
 using GitExtensions.Extensibility;
+using GitExtUtils;
 using GitUI.Avalonia.Base;
 
 namespace GitUI.Avalonia.Dialogs;
@@ -10,10 +11,12 @@ namespace GitUI.Avalonia.Dialogs;
 public partial class RenameBranchDialog : GitExtensionsDialog
 {
     private readonly GitModule _module;
+    private readonly string? _defaultBranch;
 
-    public RenameBranchDialog(GitModule module)
+    public RenameBranchDialog(GitModule module, string? defaultBranch = null)
     {
         _module = module;
+        _defaultBranch = defaultBranch;
         InitializeComponent();
         _ = LoadDataAsync();
     }
@@ -22,10 +25,14 @@ public partial class RenameBranchDialog : GitExtensionsDialog
     {
         var branches = await Task.Run(() => _module.GetRefs(RefsFilter.Heads));
         string currentBranch = await Task.Run(() => _module.GitExecutable.GetOutput("branch --show-current").Trim());
+        var branchNames = branches.Select(b => b.Name).ToList();
         await Dispatcher.UIThread.InvokeAsync(() =>
         {
-            OldNameComboBox.ItemsSource = branches.Select(b => b.Name).ToList();
-            int idx = branches.ToList().FindIndex(b => b.Name == currentBranch);
+            OldNameComboBox.ItemsSource = branchNames;
+            string selectedBranch = string.IsNullOrWhiteSpace(_defaultBranch)
+                ? currentBranch
+                : _defaultBranch;
+            int idx = branchNames.FindIndex(branch => string.Equals(branch, selectedBranch, StringComparison.OrdinalIgnoreCase));
             OldNameComboBox.SelectedIndex = idx >= 0 ? idx : 0;
         });
     }
@@ -44,7 +51,7 @@ public partial class RenameBranchDialog : GitExtensionsDialog
             return;
         }
 
-        await Task.Run(() => _module.GitExecutable.GetOutput($"branch -m {oldName} {newName}"));
+        await Task.Run(() => _module.GitExecutable.GetOutput($"branch -m {oldName.Quote()} {newName.Quote()}"));
         Close(true);
     }
 

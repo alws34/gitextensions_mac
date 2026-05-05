@@ -58,6 +58,38 @@
         <Style Selector="Button.ToolBtn.Active">
             <Setter Property="BorderBrush" Value="#660078D4" />
         </Style>
+        <Style Selector="SplitButton.ToolBtn">
+            <Setter Property="MinWidth" Value="32" />
+            <Setter Property="Height" Value="28" />
+            <Setter Property="Padding" Value="4,0" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+        </Style>
+        <Style Selector="SplitButton.ToolBtn:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="#1A0078D4" />
+        </Style>
+        <Style Selector="SplitButton.ToolBtn:pressed /template/ ContentPresenter">
+            <Setter Property="Background" Value="#330078D4" />
+        </Style>
+        <Style Selector="Button.RepoSelector">
+            <Setter Property="MinWidth" Value="128" />
+            <Setter Property="MaxWidth" Value="280" />
+            <Setter Property="Height" Value="28" />
+            <Setter Property="Padding" Value="8,0" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="HorizontalContentAlignment" Value="Left" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+        </Style>
+        <Style Selector="Button.RepoSelector:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="#1A0078D4" />
+        </Style>
         <Style Selector="Border.ToolSeparator">
             <Setter Property="Width" Value="1" />
             <Setter Property="Height" Value="20" />

@@ -17,9 +17,15 @@
         <Menu DockPanel.Dock="Top" x:Name="MainMenu" />
 
         <!-- Tool bar -->
-        <Border DockPanel.Dock="Top" Height="32"
+        <Border DockPanel.Dock="Top" Height="34"
                 Background="{DynamicResource SystemChromeMediumColor}">
-            <StackPanel x:Name="MainToolBar" Orientation="Horizontal" Spacing="2" Margin="4,2" />
+            <ScrollViewer HorizontalScrollBarVisibility="Auto"
+                          VerticalScrollBarVisibility="Disabled">
+                <StackPanel x:Name="MainToolBar"
+                            Orientation="Horizontal"
+                            Spacing="2"
+                            Margin="4,2" />
+            </ScrollViewer>
         </Border>
 
         <!-- Filter bar (only visible when a repo is open) -->
@@ -126,7 +132,7 @@
                 <GridSplitter Grid.Row="1" ResizeDirection="Rows" />
 
                 <!-- Bottom row: commit details panel -->
-                <details:CommitDetailsPanel Grid.Row="2" x:Name="DetailsPanel" />
+        <details:CommitDetailsPanel Grid.Row="2" x:Name="DetailsPanel" />
             </Grid>
         </Grid>
     </DockPanel>

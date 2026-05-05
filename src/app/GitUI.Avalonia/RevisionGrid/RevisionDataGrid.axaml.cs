@@ -15,6 +15,13 @@ public partial class RevisionDataGrid : UserControl
     public event Action<string>? CheckoutHashRequested;
     public event Action<string>? CheckoutBranchRequested;
     public event Action<string>? CheckoutRemoteBranchRequested;
+    public event Action<string>? MergeRefRequested;
+    public event Action<string>? RebaseRefRequested;
+    public event Action<string>? RenameBranchRequested;
+    public event Action<string>? DeleteBranchRequested;
+    public event Action<string>? DeleteRemoteBranchRequested;
+    public event Action<string>? DeleteTagRequested;
+    public event Action<string>? PushBranchRequested;
     public event Action<string>? CherryPickHashRequested;
     public event Action<string>? RevertHashRequested;
     public event Action<string>? CreateBranchAtHashRequested;
@@ -37,6 +44,7 @@ public partial class RevisionDataGrid : UserControl
     public GridLength DateColWidth { get => GetValue(DateColWidthProperty); set => SetValue(DateColWidthProperty, value); }
     public GridLength HashColWidth { get => GetValue(HashColWidthProperty); set => SetValue(HashColWidthProperty, value); }
     public string CurrentBranchName { get; set; } = string.Empty;
+    public string CurrentHeadHash { get; set; } = string.Empty;
 
     public RevisionDataGrid() => InitializeComponent();
 
@@ -122,32 +130,93 @@ public partial class RevisionDataGrid : UserControl
 
         if (hasCommit)
         {
-            BuildCheckoutRefMenu(
+            List<IGitRef> refs = row.Refs
+                .Where(gitRef => !gitRef.IsDereference)
+                .ToList();
+            List<IGitRef> localBranches = refs
+                .Where(gitRef => gitRef.IsHead)
+                .OrderBy(gitRef => gitRef.Name, StringComparer.OrdinalIgnoreCase)
+                .ToList();
+            List<IGitRef> otherLocalBranches = localBranches
+                .Where(gitRef => !string.Equals(gitRef.LocalName, CurrentBranchName, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+            List<IGitRef> remoteBranches = refs
+                .Where(gitRef => gitRef.IsRemote)
+                .OrderBy(gitRef => gitRef.Name, StringComparer.OrdinalIgnoreCase)
+                .ToList();
+            List<IGitRef> tags = refs
+                .Where(gitRef => gitRef.IsTag)
+                .OrderBy(gitRef => gitRef.Name, StringComparer.OrdinalIgnoreCase)
+                .ToList();
+            bool selectedRowIsCurrentHead = !string.IsNullOrEmpty(CurrentHeadHash)
+                && string.Equals(row.Revision?.Guid, CurrentHeadHash, StringComparison.OrdinalIgnoreCase);
+
+            BuildRefMenu(
                 CheckoutBranchMenuItem,
-                row.Refs
-                    .Where(gitRef => gitRef.IsHead && !string.Equals(gitRef.LocalName, CurrentBranchName, StringComparison.OrdinalIgnoreCase))
-                    .OrderBy(gitRef => gitRef.LocalName, StringComparer.OrdinalIgnoreCase)
-                    .ToList(),
+                otherLocalBranches,
                 "Checkout branch",
-                gitRef => gitRef.LocalName,
+                gitRef => gitRef.Name,
                 CtxCheckoutBranch_Click);
 
-            BuildCheckoutRefMenu(
+            BuildRefMenu(
                 CheckoutRemoteBranchMenuItem,
-                row.Refs
-                    .Where(gitRef => gitRef.IsRemote)
-                    .OrderBy(gitRef => gitRef.Name, StringComparer.OrdinalIgnoreCase)
-                    .ToList(),
+                remoteBranches,
                 "Checkout remote branch as local",
                 gitRef => gitRef.Name,
                 CtxCheckoutRemoteBranch_Click);
+
+            BuildRefMenu(
+                MergeRefMenuItem,
+                selectedRowIsCurrentHead ? [] : [.. otherLocalBranches, .. remoteBranches, .. tags],
+                "Merge into current branch",
+                gitRef => gitRef.Name,
+                CtxMergeRef_Click);
+
+            BuildRefMenu(
+                RebaseRefMenuItem,
+                selectedRowIsCurrentHead ? [] : [.. otherLocalBranches, .. remoteBranches],
+                "Rebase current branch onto this",
+                gitRef => gitRef.Name,
+                CtxRebaseRef_Click);
+
+            BuildRefMenu(
+                RenameBranchMenuItem,
+                localBranches,
+                "Rename branch",
+                gitRef => gitRef.Name,
+                CtxRenameBranch_Click);
+
+            BuildRefMenu(
+                DeleteBranchMenuItem,
+                otherLocalBranches,
+                "Delete branch",
+                gitRef => gitRef.Name,
+                CtxDeleteBranch_Click);
+
+            BuildRefMenu(
+                DeleteRemoteBranchMenuItem,
+                remoteBranches,
+                "Delete remote branch",
+                gitRef => gitRef.Name,
+                CtxDeleteRemoteBranch_Click);
+
+            BuildRefMenu(
+                DeleteTagMenuItem,
+                tags,
+                "Delete tag",
+                gitRef => gitRef.Name,
+                CtxDeleteTag_Click);
+
+            BuildRefMenu(
+                PushBranchMenuItem,
+                localBranches,
+                "Push branch",
+                gitRef => gitRef.Name,
+                CtxPushBranch_Click);
         }
         else
         {
-            CheckoutBranchMenuItem.IsVisible = false;
-            CheckoutBranchMenuItem.IsEnabled = false;
-            CheckoutRemoteBranchMenuItem.IsVisible = false;
-            CheckoutRemoteBranchMenuItem.IsEnabled = false;
+            HideRefMenuItems();
         }
 
         bool hasSubject = !string.IsNullOrEmpty(row.Subject);
@@ -157,7 +226,7 @@ public partial class RevisionDataGrid : UserControl
         UpdateSeparators(CommitContextMenu);
     }
 
-    private static void BuildCheckoutRefMenu(
+    private static void BuildRefMenu(
         MenuItem menuItem,
         IReadOnlyList<IGitRef> refs,
         string header,
@@ -218,6 +287,62 @@ public partial class RevisionDataGrid : UserControl
         if (GetMenuStringTag(sender) is { } remoteBranch)
         {
             CheckoutRemoteBranchRequested?.Invoke(remoteBranch);
+        }
+    }
+
+    private void CtxMergeRef_Click(object? sender, global::Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        if (GetMenuStringTag(sender) is { } refName)
+        {
+            MergeRefRequested?.Invoke(refName);
+        }
+    }
+
+    private void CtxRebaseRef_Click(object? sender, global::Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        if (GetMenuStringTag(sender) is { } refName)
+        {
+            RebaseRefRequested?.Invoke(refName);
+        }
+    }
+
+    private void CtxRenameBranch_Click(object? sender, global::Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        if (GetMenuStringTag(sender) is { } branch)
+        {
+            RenameBranchRequested?.Invoke(branch);
+        }
+    }
+
+    private void CtxDeleteBranch_Click(object? sender, global::Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        if (GetMenuStringTag(sender) is { } branch)
+        {
+            DeleteBranchRequested?.Invoke(branch);
+        }
+    }
+
+    private void CtxDeleteRemoteBranch_Click(object? sender, global::Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        if (GetMenuStringTag(sender) is { } branch)
+        {
+            DeleteRemoteBranchRequested?.Invoke(branch);
+        }
+    }
+
+    private void CtxDeleteTag_Click(object? sender, global::Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        if (GetMenuStringTag(sender) is { } tag)
+        {
+            DeleteTagRequested?.Invoke(tag);
+        }
+    }
+
+    private void CtxPushBranch_Click(object? sender, global::Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        if (GetMenuStringTag(sender) is { } branch)
+        {
+            PushBranchRequested?.Invoke(branch);
         }
     }
 
@@ -321,6 +446,30 @@ public partial class RevisionDataGrid : UserControl
         sender is MenuItem { Tag: string value } && !string.IsNullOrWhiteSpace(value)
             ? value
             : null;
+
+    private void HideRefMenuItems()
+    {
+        foreach (MenuItem menuItem in GetRefMenuItems())
+        {
+            menuItem.Items.Clear();
+            menuItem.Tag = null;
+            menuItem.IsVisible = false;
+            menuItem.IsEnabled = false;
+        }
+    }
+
+    private IEnumerable<MenuItem> GetRefMenuItems()
+    {
+        yield return CheckoutBranchMenuItem;
+        yield return CheckoutRemoteBranchMenuItem;
+        yield return MergeRefMenuItem;
+        yield return RebaseRefMenuItem;
+        yield return RenameBranchMenuItem;
+        yield return DeleteBranchMenuItem;
+        yield return DeleteRemoteBranchMenuItem;
+        yield return DeleteTagMenuItem;
+        yield return PushBranchMenuItem;
+    }
 
     private void CopyToClipboard(string? text)
     {

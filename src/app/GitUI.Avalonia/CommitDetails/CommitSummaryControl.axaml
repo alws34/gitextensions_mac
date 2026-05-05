@@ -7,9 +7,14 @@
     <Border Background="{DynamicResource SystemChromeMediumLowColor}"
             BorderBrush="{DynamicResource SystemBaseMediumLowColor}"
             BorderThickness="0,0,0,1">
-        <StackPanel Margin="8,6,8,6" Spacing="3">
+        <Grid Margin="8,6,8,6"
+              RowDefinitions="Auto,Auto,Auto,Auto,Auto"
+              ColumnDefinitions="Auto,*">
             <!-- Hash + ref badges on the same row -->
-            <StackPanel Orientation="Horizontal" Spacing="8">
+            <StackPanel Grid.Row="0"
+                        Grid.ColumnSpan="2"
+                        Orientation="Horizontal"
+                        Spacing="8">
                 <TextBlock x:Name="CommitHash"
                            FontFamily="{DynamicResource MonospaceFont}"
                            FontSize="11"
@@ -38,31 +43,45 @@
             </StackPanel>
             <!-- Commit subject -->
             <TextBlock x:Name="CommitMessage"
+                       Grid.Row="1"
+                       Grid.ColumnSpan="2"
                        FontWeight="SemiBold"
                        FontSize="13"
-                       TextWrapping="Wrap" />
+                       Margin="0,3,0,3"
+                       MaxLines="2"
+                       TextWrapping="Wrap"
+                       TextTrimming="CharacterEllipsis" />
             <!-- Author row -->
-            <StackPanel Orientation="Horizontal" Spacing="4">
-                <TextBlock Text="Author:"
-                           FontWeight="SemiBold"
-                           FontSize="11"
-                           Foreground="{DynamicResource SystemBaseMediumColor}" />
-                <TextBlock x:Name="AuthorName"
-                           FontSize="11"
-                           TextTrimming="CharacterEllipsis" />
-            </StackPanel>
+            <TextBlock Grid.Row="2"
+                       Grid.Column="0"
+                       Text="Author:"
+                       FontWeight="SemiBold"
+                       FontSize="11"
+                       Margin="0,0,4,0"
+                       Foreground="{DynamicResource SystemBaseMediumColor}" />
+            <TextBlock x:Name="AuthorName"
+                       Grid.Row="2"
+                       Grid.Column="1"
+                       FontSize="11"
+                       TextTrimming="CharacterEllipsis" />
             <!-- Date row -->
-            <StackPanel Orientation="Horizontal" Spacing="4">
-                <TextBlock Text="Date:"
-                           FontWeight="SemiBold"
-                           FontSize="11"
-                           Foreground="{DynamicResource SystemBaseMediumColor}" />
-                <TextBlock x:Name="AuthorDate"
-                           Foreground="{DynamicResource SystemBaseMediumColor}"
-                           FontSize="11" />
-            </StackPanel>
+            <TextBlock Grid.Row="3"
+                       Grid.Column="0"
+                       Text="Date:"
+                       FontWeight="SemiBold"
+                       FontSize="11"
+                       Margin="0,0,4,0"
+                       Foreground="{DynamicResource SystemBaseMediumColor}" />
+            <TextBlock x:Name="AuthorDate"
+                       Grid.Row="3"
+                       Grid.Column="1"
+                       Foreground="{DynamicResource SystemBaseMediumColor}"
+                       FontSize="11"
+                       TextTrimming="CharacterEllipsis" />
             <!-- Commit body (only shown when present) -->
             <ScrollViewer x:Name="BodyScroll"
+                          Grid.Row="4"
+                          Grid.ColumnSpan="2"
                           MaxHeight="52"
                           IsVisible="False"
                           HorizontalScrollBarVisibility="Disabled">
@@ -71,6 +90,6 @@
                            TextWrapping="Wrap"
                            Foreground="{DynamicResource SystemBaseMediumColor}" />
             </ScrollViewer>
-        </StackPanel>
+        </Grid>
     </Border>
 </local:GitModuleControl>

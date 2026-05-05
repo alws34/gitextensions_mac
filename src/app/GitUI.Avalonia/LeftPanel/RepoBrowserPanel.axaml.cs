@@ -21,6 +21,7 @@ public partial class RepoBrowserPanel : UserControl
     public event Action<string>? OpenRepositoryRequested;
     public event Action<string>? StatusRequested;
     public event Action<string>? ErrorOccurred;
+    public event Action? RepositoryChanged;
 
     public RepoBrowserPanel() => InitializeComponent();
 
@@ -238,18 +239,27 @@ public partial class RepoBrowserPanel : UserControl
 
     private void LocalBranch_Merge(object? sender, RoutedEventArgs e)
     {
-        if (LocalBranchesList.SelectedItem is BranchItem item)
+        if (LocalBranchesList.SelectedItem is BranchItem item && _module is not null)
         {
             StatusRequested?.Invoke($"Merging {item.Name}…");
-            _ = RunGitAndRefreshAsync($"merge {item.Name}");
+            _ = ShowDialogAndRefreshAsync(new Dialogs.MergeBranchDialog(_module, item.Name));
+        }
+    }
+
+    private void LocalBranch_Rebase(object? sender, RoutedEventArgs e)
+    {
+        if (LocalBranchesList.SelectedItem is BranchItem item && _module is not null)
+        {
+            StatusRequested?.Invoke($"Rebasing onto {item.Name}…");
+            _ = ShowDialogAndRefreshAsync(new Dialogs.RebaseDialog(_module, item.Name));
         }
     }
 
     private void LocalBranch_Delete(object? sender, RoutedEventArgs e)
     {
-        if (LocalBranchesList.SelectedItem is BranchItem item)
+        if (LocalBranchesList.SelectedItem is BranchItem item && _module is not null)
         {
-            _ = RunGitAndRefreshAsync($"branch -d {item.Name}");
+            _ = ShowDialogAndRefreshAsync(new Dialogs.DeleteBranchDialog(_module, item.Name));
         }
     }
 
@@ -265,9 +275,9 @@ public partial class RepoBrowserPanel : UserControl
 
     private void LocalBranch_Push(object? sender, RoutedEventArgs e)
     {
-        if (LocalBranchesList.SelectedItem is BranchItem item)
+        if (LocalBranchesList.SelectedItem is BranchItem item && _module is not null)
         {
-            _ = RunGitAndRefreshAsync($"push origin {item.Name}");
+            _ = ShowDialogAndRefreshAsync(new Dialogs.PushDialog(_module, item.Name));
         }
     }
 
@@ -336,12 +346,30 @@ public partial class RepoBrowserPanel : UserControl
 
     private void Remote_Delete(object? sender, RoutedEventArgs e)
     {
-        if (_module is null)
+        if (_module is null || RemotesList.SelectedItem is not string remote)
         {
             return;
         }
 
-        _ = ShowDialogAndRefreshAsync(new Dialogs.DeleteRemoteBranchDialog(_module));
+        _ = ShowDialogAndRefreshAsync(new Dialogs.DeleteRemoteBranchDialog(_module, remote));
+    }
+
+    private void Remote_Merge(object? sender, RoutedEventArgs e)
+    {
+        if (_module is not null && RemotesList.SelectedItem is string remote)
+        {
+            StatusRequested?.Invoke($"Merging {remote}…");
+            _ = ShowDialogAndRefreshAsync(new Dialogs.MergeBranchDialog(_module, remote));
+        }
+    }
+
+    private void Remote_Rebase(object? sender, RoutedEventArgs e)
+    {
+        if (_module is not null && RemotesList.SelectedItem is string remote)
+        {
+            StatusRequested?.Invoke($"Rebasing onto {remote}…");
+            _ = ShowDialogAndRefreshAsync(new Dialogs.RebaseDialog(_module, remote));
+        }
     }
 
     // ── Tag context menu handlers ────────────────────────────────────────────
@@ -358,9 +386,18 @@ public partial class RepoBrowserPanel : UserControl
 
     private void Tag_Delete(object? sender, RoutedEventArgs e)
     {
-        if (TagsList.SelectedItem is string tag)
+        if (TagsList.SelectedItem is string tag && _module is not null)
         {
-            _ = RunGitAndRefreshAsync($"tag -d {tag}");
+            _ = ShowDialogAndRefreshAsync(new Dialogs.DeleteTagDialog(_module, tag));
+        }
+    }
+
+    private void Tag_Merge(object? sender, RoutedEventArgs e)
+    {
+        if (TagsList.SelectedItem is string tag && _module is not null)
+        {
+            StatusRequested?.Invoke($"Merging {tag}…");
+            _ = ShowDialogAndRefreshAsync(new Dialogs.MergeBranchDialog(_module, tag));
         }
     }
 
@@ -384,7 +421,7 @@ public partial class RepoBrowserPanel : UserControl
 
     private async System.Threading.Tasks.Task RenameBranchAsync(string oldName)
     {
-        var dialog = new Dialogs.RenameBranchDialog(_module!);
+        var dialog = new Dialogs.RenameBranchDialog(_module!, oldName);
         var mainWindow = (global::Avalonia.Application.Current?.ApplicationLifetime
             as global::Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime)
             ?.MainWindow;
@@ -658,6 +695,7 @@ public partial class RepoBrowserPanel : UserControl
         {
             await _module.GitExecutable.GetOutputAsync(args);
             await RefreshAsync();
+            RepositoryChanged?.Invoke();
         }
         catch (Exception ex)
         {
@@ -677,6 +715,7 @@ public partial class RepoBrowserPanel : UserControl
 
         await dialog.ShowDialog<object?>(mainWindow);
         await RefreshAsync();
+        RepositoryChanged?.Invoke();
     }
 
     private async System.Threading.Tasks.Task CopyToClipboardAsync(string text, string description)

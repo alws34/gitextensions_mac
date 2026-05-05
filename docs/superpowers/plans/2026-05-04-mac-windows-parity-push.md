@@ -180,3 +180,22 @@
 - [ ] Settings: move shared GitExtensions settings off Avalonia-only JSON where Windows already has AppSettings/git-config-backed settings, then add Confirmations, Hotkeys, Scripts, Revision Links, Build Server, and Plugins pages.
 - [ ] Native menu and toolbar: keep aligning the menu taxonomy and toolbar split buttons with Windows, including repository hosts/plugins/scripts/help actions where matching Avalonia dialogs exist.
 - [ ] State/action bars: split merge/cherry-pick/revert/bisect state banners into Windows-equivalent controls with the richer per-state actions.
+
+## Parity Audit And Polish Slice 2026-05-05
+
+- [x] Launched focused audit agents for revision-grid ref actions, menu/toolbar discoverability, and test coverage.
+- [x] Confirmed merge/squash already exists in `MergeBranchDialog`, but is not discoverable enough and left-panel branch merge bypasses the dialog.
+- [x] Confirmed revision-grid ref badges still miss Windows actions: local branch merge/rebase/rename/delete/push, remote branch merge/rebase/delete, tag merge/delete.
+- [x] Confirmed top toolbar polish gaps: repo selector clipped by fixed `ToolBtn` width, split buttons lack matching style, command order differs from Windows, and fetch/pull/push are missing from the Commands menu.
+- [x] Confirmed commit summary layout risk: long commit subjects can consume the fixed summary area and visually run into author/date information.
+- [x] Add dialog-backed merge/rebase from sidebar and revision-grid branch/tag refs so squash/no-ff options are reachable from branch context menus.
+- [x] Add seeded merge/rebase/push/rename/delete dialogs for branch/ref actions.
+- [x] Add revision-grid context menu actions for branch/ref merge, rebase, rename, delete, push, and tag delete.
+- [x] Add Commands menu Pull/Fetch and Push entries and relabel Repository fetch commands to match the actual `fetch --all` behavior.
+- [x] Reorder and restyle the toolbar into a Windows-like command flow with non-clipping repository selector and styled split buttons.
+- [x] Fix commit summary layout so long subjects wrap within the summary area without overrunning author/date.
+- [x] Add focused tests for revision-grid ref context menus and commit summary wrapping.
+- [x] Run Avalonia tests and full solution build.
+  - `~/.dotnet/dotnet test tests/app/GitUI.Avalonia.Tests/GitUI.Avalonia.Tests.csproj --nologo --verbosity minimal`: PASS, 61 passed, 0 failed.
+  - `~/.dotnet/dotnet build GitExtensions.Mac.slnx`: PASS, 0 warnings, 0 errors.
+- [x] Commit the verified slice without pushing.

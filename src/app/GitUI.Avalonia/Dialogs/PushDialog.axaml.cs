@@ -2,6 +2,7 @@ using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Threading;
 using GitCommands;
+using GitExtUtils;
 using GitUI.Avalonia.Base;
 
 namespace GitUI.Avalonia.Dialogs;
@@ -9,10 +10,12 @@ namespace GitUI.Avalonia.Dialogs;
 public partial class PushDialog : GitExtensionsDialog
 {
     private readonly GitModule _module;
+    private readonly string? _defaultBranch;
 
-    public PushDialog(GitModule module)
+    public PushDialog(GitModule module, string? defaultBranch = null)
     {
         _module = module;
+        _defaultBranch = defaultBranch;
         InitializeComponent();
         _ = LoadDataAsync();
     }
@@ -29,7 +32,9 @@ public partial class PushDialog : GitExtensionsDialog
                 RemoteComboBox.SelectedIndex = 0;
             }
 
-            BranchTextBox.Text = currentBranch;
+            BranchTextBox.Text = string.IsNullOrWhiteSpace(_defaultBranch)
+                ? currentBranch
+                : _defaultBranch;
         });
     }
 
@@ -44,7 +49,7 @@ public partial class PushDialog : GitExtensionsDialog
         string branch = BranchTextBox.Text?.Trim() ?? string.Empty;
         string forceFlag = ForceCheckBox.IsChecked == true ? "--force-with-lease " : string.Empty;
 
-        string args = $"push {forceFlag}{remote} {branch}".Trim();
+        string args = $"push {forceFlag}{remote.Quote()} {branch.Quote()}".Trim();
 
         await Dispatcher.UIThread.InvokeAsync(() => StatusLabel.Text = "Pushing...");
         string result = await Task.Run(() => _module.GitExecutable.GetOutput(args));

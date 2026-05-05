@@ -81,6 +81,30 @@
                     <MenuItem x:Name="CheckoutRemoteBranchMenuItem"
                               Header="Checkout remote branch as local"
                               Click="CtxCheckoutRemoteBranch_Click" />
+                    <Separator />
+                    <MenuItem x:Name="MergeRefMenuItem"
+                              Header="Merge into current branch"
+                              Click="CtxMergeRef_Click" />
+                    <MenuItem x:Name="RebaseRefMenuItem"
+                              Header="Rebase current branch onto this"
+                              Click="CtxRebaseRef_Click" />
+                    <Separator />
+                    <MenuItem x:Name="RenameBranchMenuItem"
+                              Header="Rename branch"
+                              Click="CtxRenameBranch_Click" />
+                    <MenuItem x:Name="DeleteBranchMenuItem"
+                              Header="Delete branch"
+                              Click="CtxDeleteBranch_Click" />
+                    <MenuItem x:Name="DeleteRemoteBranchMenuItem"
+                              Header="Delete remote branch"
+                              Click="CtxDeleteRemoteBranch_Click" />
+                    <MenuItem x:Name="DeleteTagMenuItem"
+                              Header="Delete tag"
+                              Click="CtxDeleteTag_Click" />
+                    <MenuItem x:Name="PushBranchMenuItem"
+                              Header="Push branch"
+                              Click="CtxPushBranch_Click" />
+                    <Separator />
                     <MenuItem x:Name="CherryPickCommitMenuItem"
                               Header="Cherry-pick…"
                               Click="CtxCherryPick_Click" />

@@ -2,6 +2,7 @@ using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Threading;
 using GitCommands;
+using GitExtUtils;
 using GitUI.Avalonia.Base;
 
 namespace GitUI.Avalonia.Dialogs;
@@ -9,10 +10,12 @@ namespace GitUI.Avalonia.Dialogs;
 public partial class DeleteTagDialog : GitExtensionsDialog
 {
     private readonly GitModule _module;
+    private readonly string? _defaultTag;
 
-    public DeleteTagDialog(GitModule module)
+    public DeleteTagDialog(GitModule module, string? defaultTag = null)
     {
         _module = module;
+        _defaultTag = defaultTag;
         InitializeComponent();
         _ = LoadTagsAsync();
     }
@@ -24,6 +27,13 @@ public partial class DeleteTagDialog : GitExtensionsDialog
         await Dispatcher.UIThread.InvokeAsync(() =>
         {
             TagsList.ItemsSource = tags;
+            string? selectedTag = string.IsNullOrWhiteSpace(_defaultTag)
+                ? null
+                : tags.FirstOrDefault(tag => string.Equals(tag, _defaultTag, StringComparison.OrdinalIgnoreCase));
+            if (selectedTag is not null)
+            {
+                TagsList.SelectedItems?.Add(selectedTag);
+            }
         });
     }
 
@@ -44,7 +54,7 @@ public partial class DeleteTagDialog : GitExtensionsDialog
         {
             foreach (string tag in selected)
             {
-                _module.GitExecutable.GetOutput($"tag -d {tag}");
+                _module.GitExecutable.GetOutput($"tag -d {tag.Quote()}");
             }
         });
 

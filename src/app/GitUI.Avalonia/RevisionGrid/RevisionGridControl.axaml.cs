@@ -19,6 +19,13 @@ public partial class RevisionGridControl : GitModuleControl
     public event Action<string>? CheckoutHashRequested;
     public event Action<string>? CheckoutBranchRequested;
     public event Action<string>? CheckoutRemoteBranchRequested;
+    public event Action<string>? MergeRefRequested;
+    public event Action<string>? RebaseRefRequested;
+    public event Action<string>? RenameBranchRequested;
+    public event Action<string>? DeleteBranchRequested;
+    public event Action<string>? DeleteRemoteBranchRequested;
+    public event Action<string>? DeleteTagRequested;
+    public event Action<string>? PushBranchRequested;
     public event Action<string>? CherryPickHashRequested;
     public event Action<string>? RevertHashRequested;
     public event Action<string>? CreateBranchAtHashRequested;
@@ -36,6 +43,13 @@ public partial class RevisionGridControl : GitModuleControl
         DataGrid.CheckoutHashRequested += hash => CheckoutHashRequested?.Invoke(hash);
         DataGrid.CheckoutBranchRequested += branch => CheckoutBranchRequested?.Invoke(branch);
         DataGrid.CheckoutRemoteBranchRequested += remoteBranch => CheckoutRemoteBranchRequested?.Invoke(remoteBranch);
+        DataGrid.MergeRefRequested += refName => MergeRefRequested?.Invoke(refName);
+        DataGrid.RebaseRefRequested += refName => RebaseRefRequested?.Invoke(refName);
+        DataGrid.RenameBranchRequested += branch => RenameBranchRequested?.Invoke(branch);
+        DataGrid.DeleteBranchRequested += branch => DeleteBranchRequested?.Invoke(branch);
+        DataGrid.DeleteRemoteBranchRequested += branch => DeleteRemoteBranchRequested?.Invoke(branch);
+        DataGrid.DeleteTagRequested += tag => DeleteTagRequested?.Invoke(tag);
+        DataGrid.PushBranchRequested += branch => PushBranchRequested?.Invoke(branch);
         DataGrid.CherryPickHashRequested += hash => CherryPickHashRequested?.Invoke(hash);
         DataGrid.RevertHashRequested += hash => RevertHashRequested?.Invoke(hash);
         DataGrid.CreateBranchAtHashRequested += hash => CreateBranchAtHashRequested?.Invoke(hash);
@@ -123,6 +137,8 @@ public partial class RevisionGridControl : GitModuleControl
                 statusOutput = await Module.GitExecutable.GetOutputAsync("status --porcelain");
                 headHash = (await Module.GitExecutable.GetOutputAsync("rev-parse HEAD")).Trim();
                 currentBranch = Module.GetCurrentBranchName();
+                DataGrid.CurrentHeadHash = headHash;
+                DataGrid.CurrentBranchName = currentBranch;
             }
             catch
             {
@@ -220,6 +236,7 @@ public partial class RevisionGridControl : GitModuleControl
             _allRows = rows;
             await Dispatcher.UIThread.InvokeAsync(() =>
             {
+                DataGrid.CurrentHeadHash = headHash;
                 DataGrid.CurrentBranchName = currentBranch;
                 DataGrid.LoadRevisions(rows);
             });
