@@ -26,15 +26,32 @@ public partial class PushDialog : GitExtensionsDialog
         string currentBranch = await Task.Run(() => _module.GitExecutable.GetOutput("branch --show-current").Trim());
         await Dispatcher.UIThread.InvokeAsync(() =>
         {
-            RemoteComboBox.ItemsSource = remotes.Select(r => r.Name).ToList();
-            if (RemoteComboBox.Items.Count > 0)
-            {
-                RemoteComboBox.SelectedIndex = 0;
-            }
-
-            BranchTextBox.Text = string.IsNullOrWhiteSpace(_defaultBranch)
+            var remoteNames = remotes.Select(r => r.Name).ToList();
+            string branch = string.IsNullOrWhiteSpace(_defaultBranch)
                 ? currentBranch
                 : _defaultBranch;
+            string? defaultRemote = null;
+            foreach (string remoteName in remoteNames)
+            {
+                string prefix = remoteName + "/";
+                if (branch.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+                {
+                    defaultRemote = remoteName;
+                    branch = branch[prefix.Length..];
+                    break;
+                }
+            }
+
+            RemoteComboBox.ItemsSource = remoteNames;
+            if (remoteNames.Count > 0)
+            {
+                int remoteIndex = defaultRemote is null
+                    ? -1
+                    : remoteNames.FindIndex(remote => string.Equals(remote, defaultRemote, StringComparison.OrdinalIgnoreCase));
+                RemoteComboBox.SelectedIndex = remoteIndex >= 0 ? remoteIndex : 0;
+            }
+
+            BranchTextBox.Text = branch;
         });
     }
 

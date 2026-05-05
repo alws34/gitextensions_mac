@@ -77,7 +77,25 @@ public class FileStatusListContextMenuTests
             Assert.That(selectedFile, Is.SameAs(file));
             Assert.That(
                 GetCommandMenuItems(list).Select(item => item.IsEnabled),
-                Is.EqualTo(new[] { true, false, false, false, true, false, true, true, true }));
+                Is.EqualTo(new[]
+                {
+                    true,
+                    false,
+                    false,
+                    false,
+                    false,
+                    false,
+                    false,
+                    false,
+                    true,
+                    false,
+                    true,
+                    true,
+                    true,
+                    false,
+                    false,
+                    false,
+                }));
             Assert.That(historyPath, Is.EqualTo(file.Name));
             Assert.That(blamePath, Is.EqualTo(file.Name));
         });
@@ -96,18 +114,7 @@ public class FileStatusListContextMenuTests
         ContextMenu menu = GetFileTree(list).ContextMenu
             ?? throw new InvalidOperationException("FileStatusList context menu was not loaded.");
 
-        return
-        [
-            (MenuItem)menu.Items[0]!,
-            (MenuItem)menu.Items[2]!,
-            (MenuItem)menu.Items[3]!,
-            (MenuItem)menu.Items[4]!,
-            (MenuItem)menu.Items[6]!,
-            (MenuItem)menu.Items[7]!,
-            (MenuItem)menu.Items[8]!,
-            (MenuItem)menu.Items[10]!,
-            (MenuItem)menu.Items[11]!,
-        ];
+        return [.. menu.Items.OfType<MenuItem>()];
     }
 
     private static CancelEventArgs InvokeContextMenuOpening(FileStatusList list)

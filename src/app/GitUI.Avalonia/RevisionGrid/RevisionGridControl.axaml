@@ -4,6 +4,56 @@
                          xmlns:grid="using:GitUI.Avalonia.RevisionGrid"
                          x:Class="GitUI.Avalonia.RevisionGrid.RevisionGridControl">
     <DockPanel>
+        <Border DockPanel.Dock="Top"
+                Background="{DynamicResource SystemChromeLowColor}"
+                BorderBrush="{DynamicResource SystemBaseMediumLowColor}"
+                BorderThickness="0,0,0,1"
+                Padding="6,3">
+            <ScrollViewer HorizontalScrollBarVisibility="Auto"
+                          VerticalScrollBarVisibility="Disabled">
+                <StackPanel Orientation="Horizontal"
+                            Spacing="8"
+                            VerticalAlignment="Center">
+                    <TextBlock Text="Branch:"
+                               VerticalAlignment="Center"
+                               FontSize="11" />
+                    <ComboBox x:Name="BranchScopeComboBox"
+                              Width="130"
+                              SelectedIndex="0"
+                              SelectionChanged="RevisionViewOption_Changed">
+                        <ComboBoxItem Content="Current branch" />
+                        <ComboBoxItem Content="All branches" />
+                    </ComboBox>
+                    <TextBlock Text="Order:"
+                               VerticalAlignment="Center"
+                               FontSize="11" />
+                    <ComboBox x:Name="RevisionOrderComboBox"
+                              Width="120"
+                              SelectedIndex="0"
+                              SelectionChanged="RevisionViewOption_Changed">
+                        <ComboBoxItem Content="Default" />
+                        <ComboBoxItem Content="Topological" />
+                        <ComboBoxItem Content="Author date" />
+                    </ComboBox>
+                    <CheckBox x:Name="FirstParentCheckBox"
+                              Content="First parent"
+                              Checked="RevisionViewOption_Changed"
+                              Unchecked="RevisionViewOption_Changed" />
+                    <CheckBox x:Name="ShowTagsCheckBox"
+                              Content="Tags"
+                              Checked="RevisionViewOption_Changed"
+                              Unchecked="RevisionViewOption_Changed" />
+                    <CheckBox x:Name="ShowArtificialCheckBox"
+                              Content="Worktree/Index"
+                              Checked="RevisionViewOption_Changed"
+                              Unchecked="RevisionViewOption_Changed" />
+                    <CheckBox x:Name="ShowStashesCheckBox"
+                              Content="Stashes"
+                              Checked="RevisionViewOption_Changed"
+                              Unchecked="RevisionViewOption_Changed" />
+                </StackPanel>
+            </ScrollViewer>
+        </Border>
         <grid:RevisionDataGrid x:Name="DataGrid" />
     </DockPanel>
 </local:GitModuleControl>

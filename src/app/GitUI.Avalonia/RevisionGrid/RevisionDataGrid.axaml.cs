@@ -25,6 +25,7 @@ public partial class RevisionDataGrid : UserControl
     public event Action<string>? CherryPickHashRequested;
     public event Action<string>? RevertHashRequested;
     public event Action<string>? CreateBranchAtHashRequested;
+    public event Action<string>? CreateBranchAtRefRequested;
     public event Action<string>? CreateTagAtHashRequested;
     public event Action<string>? ResetHardToHashRequested;
     public event Action<string>? InteractiveRebaseRequested;
@@ -209,10 +210,24 @@ public partial class RevisionDataGrid : UserControl
 
             BuildRefMenu(
                 PushBranchMenuItem,
-                localBranches,
+                [.. localBranches, .. remoteBranches],
                 "Push branch",
                 gitRef => gitRef.Name,
                 CtxPushBranch_Click);
+
+            BuildRefMenu(
+                CreateBranchAtRefMenuItem,
+                [.. localBranches, .. remoteBranches, .. tags],
+                "Create branch at ref",
+                gitRef => gitRef.Name,
+                CtxCreateBranchAtRef_Click);
+
+            BuildRefMenu(
+                CopyRefNameMenuItem,
+                refs.OrderBy(gitRef => gitRef.Name, StringComparer.OrdinalIgnoreCase).ToList(),
+                "Copy ref name",
+                gitRef => gitRef.Name,
+                CtxCopyRefName_Click);
         }
         else
         {
@@ -373,6 +388,14 @@ public partial class RevisionDataGrid : UserControl
         }
     }
 
+    private void CtxCreateBranchAtRef_Click(object? sender, global::Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        if (GetMenuStringTag(sender) is { } refName)
+        {
+            CreateBranchAtRefRequested?.Invoke(refName);
+        }
+    }
+
     private void CtxCreateTag_Click(object? sender, global::Avalonia.Interactivity.RoutedEventArgs e)
     {
         string? hash = GetSelectedCommitHash();
@@ -416,6 +439,14 @@ public partial class RevisionDataGrid : UserControl
             CopyToClipboard(string.IsNullOrWhiteSpace(row.Subject)
                 ? row.ShortHash
                 : $"{row.ShortHash} {row.Subject}");
+        }
+    }
+
+    private void CtxCopyRefName_Click(object? sender, global::Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        if (GetMenuStringTag(sender) is { } refName)
+        {
+            CopyToClipboard(refName);
         }
     }
 
@@ -469,6 +500,8 @@ public partial class RevisionDataGrid : UserControl
         yield return DeleteRemoteBranchMenuItem;
         yield return DeleteTagMenuItem;
         yield return PushBranchMenuItem;
+        yield return CreateBranchAtRefMenuItem;
+        yield return CopyRefNameMenuItem;
     }
 
     private void CopyToClipboard(string? text)

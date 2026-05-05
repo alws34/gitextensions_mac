@@ -1,3 +1,5 @@
+using Avalonia.Controls;
+using Avalonia.Interactivity;
 using Avalonia.Threading;
 using GitCommands;
 using GitExtensions.Extensibility;
@@ -13,6 +15,9 @@ public partial class RevisionGridControl : GitModuleControl
     // Format: hash, parents (space-sep), author, email, date, subject — blank line between commits
     private const string LogFormat = "%H%n%P%n%an%n%ae%n%ai%n%s";
     private const int MaxRevisions = 2000;
+    private const string BranchScopeSetting = "revisionGridBranchScope";
+    private const string RevisionOrderSetting = "revisionGridOrder";
+    private const string ShowArtificialSetting = "revisionGraphShowArtificialCommits";
 
     public event Action<GitRevision?>? SelectedRevisionChanged;
     public event Action<RevisionRow?>? SelectedRowChanged;
@@ -29,15 +34,18 @@ public partial class RevisionGridControl : GitModuleControl
     public event Action<string>? CherryPickHashRequested;
     public event Action<string>? RevertHashRequested;
     public event Action<string>? CreateBranchAtHashRequested;
+    public event Action<string>? CreateBranchAtRefRequested;
     public event Action<string>? CreateTagAtHashRequested;
     public event Action<string>? ResetHardToHashRequested;
     public event Action<string>? InteractiveRebaseRequested;
 
     private List<RevisionRow> _allRows = [];
+    private bool _suppressViewOptionChanged = true;
 
     public RevisionGridControl()
     {
         InitializeComponent();
+        InitializeRevisionViewOptions();
         DataGrid.SelectedRevisionChanged += rev => SelectedRevisionChanged?.Invoke(rev);
         DataGrid.SelectedRowChanged += row => SelectedRowChanged?.Invoke(row);
         DataGrid.CheckoutHashRequested += hash => CheckoutHashRequested?.Invoke(hash);
@@ -53,9 +61,27 @@ public partial class RevisionGridControl : GitModuleControl
         DataGrid.CherryPickHashRequested += hash => CherryPickHashRequested?.Invoke(hash);
         DataGrid.RevertHashRequested += hash => RevertHashRequested?.Invoke(hash);
         DataGrid.CreateBranchAtHashRequested += hash => CreateBranchAtHashRequested?.Invoke(hash);
+        DataGrid.CreateBranchAtRefRequested += refName => CreateBranchAtRefRequested?.Invoke(refName);
         DataGrid.CreateTagAtHashRequested += hash => CreateTagAtHashRequested?.Invoke(hash);
         DataGrid.ResetHardToHashRequested += hash => ResetHardToHashRequested?.Invoke(hash);
         DataGrid.InteractiveRebaseRequested += hash => InteractiveRebaseRequested?.Invoke(hash);
+    }
+
+    private void InitializeRevisionViewOptions()
+    {
+        _suppressViewOptionChanged = true;
+        BranchScopeComboBox.SelectedIndex = App.Settings.GetString(BranchScopeSetting, "current") == "all" ? 1 : 0;
+        RevisionOrderComboBox.SelectedIndex = App.Settings.GetString(RevisionOrderSetting, "default") switch
+        {
+            "topo" => 1,
+            "author-date" => 2,
+            _ => 0,
+        };
+        FirstParentCheckBox.IsChecked = App.Settings.GetBool("showFirstParentOnly", false);
+        ShowTagsCheckBox.IsChecked = App.Settings.GetBool("showTags", true);
+        ShowArtificialCheckBox.IsChecked = App.Settings.GetBool(ShowArtificialSetting, true);
+        ShowStashesCheckBox.IsChecked = App.Settings.GetBool("showStashesInGraph", false);
+        _suppressViewOptionChanged = false;
     }
 
     protected override void OnModuleSet()
@@ -106,11 +132,11 @@ public partial class RevisionGridControl : GitModuleControl
 
         if (type == Controls.FilterType.Author)
         {
-            await LoadRevisionsAsync($"--author=\"{text}\"");
+            await LoadRevisionsAsync($"--author={text.Quote()}");
         }
         else if (type == Controls.FilterType.Message)
         {
-            await LoadRevisionsAsync($"--grep=\"{text}\"");
+            await LoadRevisionsAsync($"--grep={text.Quote()}");
         }
         else
         {
@@ -161,9 +187,12 @@ public partial class RevisionGridControl : GitModuleControl
 
             // --- Regular git log rows ---
             int maxRevisions = Math.Clamp(App.Settings.GetInt("revisionGridMaxRevisions", MaxRevisions), 100, 50000);
-            string firstParentArg = App.Settings.GetBool("showFirstParentOnly", false) ? " --first-parent" : string.Empty;
+            bool showFirstParentOnly = App.Settings.GetBool("showFirstParentOnly", false);
+            bool showStashes = App.Settings.GetBool("showStashesInGraph", false);
+            bool showAllBranches = App.Settings.GetString(BranchScopeSetting, "current") == "all";
+            string logArguments = await BuildLogArgumentsAsync(maxRevisions, showFirstParentOnly, showAllBranches, showStashes, extraArgs);
             string output = await Module.GitExecutable.GetOutputAsync(
-                $"log --format={LogFormat}%n --max-count={maxRevisions}{firstParentArg}{(string.IsNullOrEmpty(extraArgs) ? string.Empty : " " + extraArgs)}");
+                logArguments);
 
             var gitRevisions = ParseGitLog(output);
 
@@ -195,7 +224,27 @@ public partial class RevisionGridControl : GitModuleControl
                 System.Diagnostics.Debug.WriteLine($"LoadRefs failed: {ex.Message}");
             }
 
-            var graph = new RevisionGraph();
+            var relativeHashes = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            if (showAllBranches && !string.IsNullOrWhiteSpace(currentBranch))
+            {
+                try
+                {
+                    string branchOutput = await Module.GitExecutable.GetOutputAsync($"rev-list {currentBranch.Quote()}");
+                    foreach (string hash in branchOutput.Split('\n', StringSplitOptions.RemoveEmptyEntries))
+                    {
+                        relativeHashes.Add(hash.Trim());
+                    }
+                }
+                catch
+                {
+                    // Non-relative styling is a visual aid; do not fail revision loading if it cannot be computed.
+                }
+            }
+
+            var graph = new RevisionGraph
+            {
+                OnlyFirstParent = showFirstParentOnly,
+            };
             foreach (GitRevision rev in gitRevisions)
             {
                 graph.Add(rev);
@@ -211,9 +260,11 @@ public partial class RevisionGridControl : GitModuleControl
 
             var rows = new List<RevisionRow>(count + 2);
 
-            // Artificial rows first
-            rows.Add(workTreeRow);
-            rows.Add(indexRow);
+            if (App.Settings.GetBool(ShowArtificialSetting, true))
+            {
+                rows.Add(workTreeRow);
+                rows.Add(indexRow);
+            }
 
             for (int i = 0; i < count; i++)
             {
@@ -222,13 +273,17 @@ public partial class RevisionGridControl : GitModuleControl
                 {
                     bool isCurrent = !string.IsNullOrEmpty(headHash)
                         && node.GitRevision.Guid == headHash;
+                    bool isRelativeToCurrentBranch = !showAllBranches
+                        || relativeHashes.Count == 0
+                        || relativeHashes.Contains(node.GitRevision.Guid);
                     rows.Add(new RevisionRow(
                         node.GitRevision,
                         graph.GetSegmentsForRow(i),
                         i > 0 ? graph.GetSegmentsForRow(i - 1) : null,
                         i < count - 1 ? graph.GetSegmentsForRow(i + 1) : null)
                     {
-                        IsCurrent = isCurrent
+                        IsCurrent = isCurrent,
+                        IsRelativeToCurrentBranch = isRelativeToCurrentBranch,
                     });
                 }
             }
@@ -247,6 +302,91 @@ public partial class RevisionGridControl : GitModuleControl
             System.Diagnostics.Debug.WriteLine($"LoadRevisionsAsync failed: {ex}");
             await Console.Error.WriteLineAsync($"LoadRevisionsAsync failed: {ex}");
         }
+    }
+
+    private async System.Threading.Tasks.Task<string> BuildLogArgumentsAsync(
+        int maxRevisions,
+        bool showFirstParentOnly,
+        bool showAllBranches,
+        bool showStashes,
+        string extraArgs)
+    {
+        var args = new List<string>
+        {
+            "log",
+            $"--format={LogFormat}%n",
+            $"--max-count={maxRevisions}",
+        };
+
+        if (showFirstParentOnly)
+        {
+            args.Add("--first-parent");
+        }
+
+        args.Add(App.Settings.GetString(RevisionOrderSetting, "default") switch
+        {
+            "topo" => "--topo-order",
+            "author-date" => "--author-date-order",
+            _ => "--date-order",
+        });
+
+        if (showAllBranches)
+        {
+            args.Add("--all");
+        }
+        else if (showStashes)
+        {
+            args.Add("HEAD");
+        }
+
+        if (showStashes && Module is not null)
+        {
+            try
+            {
+                string stashRef = (await Module.GitExecutable.GetOutputAsync("rev-parse --verify --quiet refs/stash")).Trim();
+                if (!string.IsNullOrWhiteSpace(stashRef))
+                {
+                    args.Add("refs/stash");
+                }
+            }
+            catch
+            {
+                // No stash ref, or an older Git without --quiet output support.
+            }
+        }
+
+        if (!string.IsNullOrWhiteSpace(extraArgs))
+        {
+            args.Add(extraArgs);
+        }
+
+        return string.Join(' ', args);
+    }
+
+    private void RevisionViewOption_Changed(object? sender, SelectionChangedEventArgs e) => ApplyRevisionViewOptions();
+
+    private void RevisionViewOption_Changed(object? sender, RoutedEventArgs e) => ApplyRevisionViewOptions();
+
+    private void ApplyRevisionViewOptions()
+    {
+        if (_suppressViewOptionChanged)
+        {
+            return;
+        }
+
+        App.Settings.SetString(BranchScopeSetting, BranchScopeComboBox.SelectedIndex == 1 ? "all" : "current");
+        App.Settings.SetString(RevisionOrderSetting, RevisionOrderComboBox.SelectedIndex switch
+        {
+            1 => "topo",
+            2 => "author-date",
+            _ => "default",
+        });
+        App.Settings.SetBool("showFirstParentOnly", FirstParentCheckBox.IsChecked == true);
+        App.Settings.SetBool("showTags", ShowTagsCheckBox.IsChecked == true);
+        App.Settings.SetBool(ShowArtificialSetting, ShowArtificialCheckBox.IsChecked == true);
+        App.Settings.SetBool("showStashesInGraph", ShowStashesCheckBox.IsChecked == true);
+        App.Settings.Save();
+        _ = LoadRevisionsAsync();
     }
 
     private static IReadOnlyList<GitRevision> ParseGitLog(string output)

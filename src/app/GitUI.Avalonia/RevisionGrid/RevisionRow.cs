@@ -47,6 +47,9 @@ public sealed class RevisionRow
     // HEAD indicator
     public bool IsCurrent { get; init; }
 
+    // Windows-style all-branches view dims rows outside the selected/current branch ancestry.
+    public bool IsRelativeToCurrentBranch { get; init; } = true;
+
     // Tooltip body (populated lazily)
     public string CommitBody { get; set; } = string.Empty;
 
@@ -54,6 +57,9 @@ public sealed class RevisionRow
     public string Author => IsArtificial ? string.Empty : (Revision?.Author ?? string.Empty);
     public DateTimeOffset AuthorDate => IsArtificial ? DateTimeOffset.Now : DateTimeOffset.FromUnixTimeSeconds(Revision!.AuthorUnixTime);
     public string ShortHash => IsArtificial ? "--------" : (Revision?.ObjectId?.ToShortString() ?? string.Empty);
+    public string RowBackground => IsCurrent ? "#220078D4" : "Transparent";
+    public string TextColor => IsRelativeToCurrentBranch ? "#FF202020" : "#FF8A8A8A";
+    public string HashColor => IsRelativeToCurrentBranch ? "#FF777777" : "#FFB0B0B0";
 
     public IReadOnlyList<IGitRef> Refs => (IsArtificial ? null : Revision?.Refs) ?? [];
 

@@ -1,0 +1,28 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="GitUI.Avalonia.Settings.Pages.ConfirmationsPage">
+    <ScrollViewer>
+        <StackPanel Margin="16" Spacing="12">
+            <TextBlock Text="Confirmations" FontSize="14" FontWeight="SemiBold" Margin="0,0,0,4" />
+
+            <TextBlock Text="Commits" FontWeight="SemiBold" />
+            <CheckBox x:Name="ConfirmAmendCheckBox" Content="Confirm amend commit" />
+            <CheckBox x:Name="ConfirmUndoLastCommitCheckBox" Content="Confirm undo last commit" />
+            <CheckBox x:Name="ConfirmCommitIfNoBranchCheckBox" Content="Confirm commit while no branch is checked out" />
+            <CheckBox x:Name="ConfirmRebaseCheckBox" Content="Confirm rebase operations" />
+
+            <TextBlock Text="Branches" FontWeight="SemiBold" Margin="0,8,0,0" />
+            <CheckBox x:Name="ConfirmFetchAndPruneAllCheckBox" Content="Confirm fetch and prune all remotes" />
+            <CheckBox x:Name="ConfirmPushNewBranchCheckBox" Content="Confirm pushing a new branch" />
+            <CheckBox x:Name="ConfirmAddTrackingRefCheckBox" Content="Confirm adding a tracking reference" />
+            <CheckBox x:Name="ConfirmDeleteUnmergedBranchCheckBox" Content="Confirm deleting an unmerged branch" />
+            <CheckBox x:Name="ConfirmBranchCheckoutCheckBox" Content="Confirm branch checkout" />
+
+            <TextBlock Text="Conflict Resolution" FontWeight="SemiBold" Margin="0,8,0,0" />
+            <CheckBox x:Name="ConfirmResolveConflictsCheckBox" Content="Confirm resolving conflicts" />
+            <CheckBox x:Name="ConfirmCommitAfterConflictsCheckBox" Content="Confirm commit after conflicts are resolved" />
+            <CheckBox x:Name="ConfirmSecondAbortCheckBox" Content="Confirm the second abort prompt" />
+            <CheckBox x:Name="ConfirmSwitchWorktreeCheckBox" Content="Confirm switching worktrees" />
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

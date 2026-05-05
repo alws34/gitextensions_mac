@@ -15,7 +15,8 @@ public sealed class FileTreeNode
         "A" => "#FF22AA22",
         "D" => "#FFCC2222",
         "R" => "#FF8822CC",
-        _ => "#FFCC6600",   // M and default = orange
+        "M" => "#FFCC6600",
+        _ => "#FF666666",
     };
 
     private FileTreeNode(string name, bool isDirectory, string? filePath = null, FileStatusItem? item = null)
@@ -37,6 +38,25 @@ public sealed class FileTreeNode
         }
 
         return SortNodes(rootChildren.Values);
+    }
+
+    public static IReadOnlyList<FileTreeNode> BuildFlat(IEnumerable<FileStatusItem> files) =>
+        [.. files
+            .OrderBy(file => file.Name, StringComparer.Ordinal)
+            .Select(file => new FileTreeNode(file.Name, isDirectory: false, file.Name, file))];
+
+    public static IReadOnlyList<FileTreeNode> BuildGrouped(IEnumerable<FileStatusItem> files)
+    {
+        return [.. files
+            .GroupBy(file => file.StatusGroup)
+            .OrderBy(group => GroupSortKey(group.Key))
+            .ThenBy(group => group.Key, StringComparer.Ordinal)
+            .Select(group =>
+            {
+                var node = new FileTreeNode(group.Key, isDirectory: true);
+                node.Children.AddRange(BuildFlat(group));
+                return node;
+            })];
     }
 
     private static void InsertFile(
@@ -70,4 +90,12 @@ public sealed class FileTreeNode
 
     private static IReadOnlyList<FileTreeNode> SortNodes(IEnumerable<FileTreeNode> nodes) =>
         [.. nodes.OrderBy(n => !n.IsDirectory).ThenBy(n => n.Name)];
+
+    private static int GroupSortKey(string group) => group switch
+    {
+        "Staged" => 0,
+        "Staged and unstaged" => 1,
+        "Unstaged" => 2,
+        _ => 3,
+    };
 }

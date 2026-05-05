@@ -17,6 +17,12 @@ public partial class SettingsWindow : GitExtensionsWindow
     private readonly SshPage _sshPage = new();
     private readonly DiffToolsPage _diffToolsPage = new();
     private readonly CredentialsPage _credentialsPage = new();
+    private readonly ConfirmationsPage _confirmationsPage = new();
+    private readonly HotkeysPage _hotkeysPage = new();
+    private readonly ScriptsPage _scriptsPage = new();
+    private readonly RevisionLinksPage _revisionLinksPage = new();
+    private readonly BuildServerPage _buildServerPage = new();
+    private readonly PluginsPage _pluginsPage = new();
 
     public SettingsWindow()
     {
@@ -43,6 +49,12 @@ public partial class SettingsWindow : GitExtensionsWindow
             "ssh" => _sshPage,
             "difftools" => _diffToolsPage,
             "credentials" => _credentialsPage,
+            "confirmations" => _confirmationsPage,
+            "hotkeys" => _hotkeysPage,
+            "scripts" => _scriptsPage,
+            "revisionlinks" => _revisionLinksPage,
+            "buildserver" => _buildServerPage,
+            "plugins" => _pluginsPage,
             _ => _generalPage,
         };
     }
@@ -59,6 +71,12 @@ public partial class SettingsWindow : GitExtensionsWindow
         _sshPage.SaveSettings();
         _diffToolsPage.SaveSettings();
         _credentialsPage.SaveSettings();
+        _confirmationsPage.SaveSettings();
+        _hotkeysPage.SaveSettings();
+        _scriptsPage.SaveSettings();
+        _revisionLinksPage.SaveSettings();
+        _buildServerPage.SaveSettings();
+        _pluginsPage.SaveSettings();
         App.Settings.Save();
         Close();
     }

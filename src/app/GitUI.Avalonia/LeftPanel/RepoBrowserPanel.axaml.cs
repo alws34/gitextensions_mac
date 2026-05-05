@@ -11,11 +11,22 @@ namespace GitUI.Avalonia.LeftPanel;
 
 public partial class RepoBrowserPanel : UserControl
 {
+    private const string RefFilterSettingsKey = "repoBrowser.refFilter";
+    private const string RefSortSettingsKey = "repoBrowser.refSort";
+    private const string RefRootsExpandedSettingsKey = "repoBrowser.refRootsExpanded";
+    private const string WorkingDirExpandedSettingsKey = "repoBrowser.workingDirExpanded";
+    private const string LocalBranchesExpandedSettingsKey = "repoBrowser.localBranchesExpanded";
+    private const string RemotesExpandedSettingsKey = "repoBrowser.remotesExpanded";
+    private const string TagsExpandedSettingsKey = "repoBrowser.tagsExpanded";
+
     private GitModule? _module;
     private List<BranchItem> _allLocalBranchItems = [];
     private List<string> _allRemotes = [];
     private List<string> _allTags = [];
     private string _currentBranch = string.Empty;
+    private RefSortMode _refSortMode = RefSortMode.Ascending;
+    private bool _refRootsExpanded = true;
+    private bool _isLoadingSettings;
 
     public event Action<string>? CheckoutRequested;
     public event Action<string>? OpenRepositoryRequested;
@@ -23,12 +34,38 @@ public partial class RepoBrowserPanel : UserControl
     public event Action<string>? ErrorOccurred;
     public event Action? RepositoryChanged;
 
-    public RepoBrowserPanel() => InitializeComponent();
+    public RepoBrowserPanel()
+    {
+        InitializeComponent();
+        LoadLocalSettings();
+    }
 
     public void SetModule(GitModule module)
     {
         _module = module;
         _ = RefreshAsync();
+    }
+
+    private void LoadLocalSettings()
+    {
+        if (App.Settings is null)
+        {
+            RefSortComboBox.SelectedIndex = 0;
+            return;
+        }
+
+        _isLoadingSettings = true;
+        SearchBox.Text = App.Settings.GetString(RefFilterSettingsKey, string.Empty);
+        _refSortMode = string.Equals(App.Settings.GetString(RefSortSettingsKey, "az"), "za", StringComparison.Ordinal)
+            ? RefSortMode.Descending
+            : RefSortMode.Ascending;
+        RefSortComboBox.SelectedIndex = _refSortMode == RefSortMode.Descending ? 1 : 0;
+        _refRootsExpanded = App.Settings.GetBool(RefRootsExpandedSettingsKey, true);
+        WorkingDirExpander.IsExpanded = App.Settings.GetBool(WorkingDirExpandedSettingsKey, true);
+        LocalBranchesExpander.IsExpanded = App.Settings.GetBool(LocalBranchesExpandedSettingsKey, true);
+        RemotesExpander.IsExpanded = App.Settings.GetBool(RemotesExpandedSettingsKey, false);
+        TagsExpander.IsExpanded = App.Settings.GetBool(TagsExpandedSettingsKey, false);
+        _isLoadingSettings = false;
     }
 
     public async System.Threading.Tasks.Task RefreshAsync()
@@ -45,7 +82,11 @@ public partial class RepoBrowserPanel : UserControl
             var local = await System.Threading.Tasks.Task.Run(
                 () => _module.GetRefs(RefsFilter.Heads).Select(r => r.LocalName).OrderBy(n => n).ToList());
             var remotes = await System.Threading.Tasks.Task.Run(
-                () => _module.GetRefs(RefsFilter.Remotes).Select(r => r.LocalName).OrderBy(n => n).ToList());
+                () => _module.GetRefs(RefsFilter.Remotes)
+                             .Select(r => r.LocalName)
+                             .Where(n => !n.EndsWith("/HEAD", StringComparison.Ordinal))
+                             .OrderBy(n => n)
+                             .ToList());
             var tags = await System.Threading.Tasks.Task.Run(
                 () => _module.GetRefs(RefsFilter.Tags).Select(r => r.LocalName).OrderByDescending(n => n).ToList());
             var stashes = await System.Threading.Tasks.Task.Run(
@@ -114,9 +155,7 @@ public partial class RepoBrowserPanel : UserControl
                 WorkingDirExpander.Header = workingDirFiles.Count > 0
                     ? $"Working Directory ({workingDirFiles.Count})"
                     : "Working Directory";
-                LocalBranchesList.ItemsSource = branchItems;
-                RemotesList.ItemsSource = remotes;
-                TagsList.ItemsSource = tags;
+                ApplyRefFilterAndSort();
                 StashesList.ItemsSource = stashes;
                 SubmodulesList.ItemsSource = submoduleItems;
                 WorktreesList.ItemsSource = worktreePaths;
@@ -130,7 +169,7 @@ public partial class RepoBrowserPanel : UserControl
 
     private void LocalBranch_DoubleTapped(object? sender, TappedEventArgs e)
     {
-        if (LocalBranchesList.SelectedItem is BranchItem item)
+        if (SelectedLocalBranch() is { } item)
         {
             CheckoutRequested?.Invoke(item.Name);
         }
@@ -138,16 +177,34 @@ public partial class RepoBrowserPanel : UserControl
 
     private void SearchBox_TextChanged(object? sender, TextChangedEventArgs e)
     {
+        ApplyRefFilterAndSort();
+        if (!_isLoadingSettings)
+        {
+            PersistString(RefFilterSettingsKey, SearchBox.Text ?? string.Empty);
+        }
+    }
+
+    private void RefSortComboBox_SelectionChanged(object? sender, SelectionChangedEventArgs e)
+    {
+        _refSortMode = RefSortComboBox.SelectedIndex == 1
+            ? RefSortMode.Descending
+            : RefSortMode.Ascending;
+        ApplyRefFilterAndSort();
+        if (!_isLoadingSettings)
+        {
+            PersistString(RefSortSettingsKey, _refSortMode == RefSortMode.Descending ? "za" : "az");
+        }
+    }
+
+    private void ApplyRefFilterAndSort()
+    {
         string filter = SearchBox.Text ?? string.Empty;
-        LocalBranchesList.ItemsSource = string.IsNullOrWhiteSpace(filter)
-            ? _allLocalBranchItems
-            : _allLocalBranchItems.Where(b => b.Name.Contains(filter, StringComparison.OrdinalIgnoreCase)).ToList();
-        RemotesList.ItemsSource = string.IsNullOrWhiteSpace(filter)
-            ? _allRemotes
-            : _allRemotes.Where(r => r.Contains(filter, StringComparison.OrdinalIgnoreCase)).ToList();
-        TagsList.ItemsSource = string.IsNullOrWhiteSpace(filter)
+        LocalBranchesTree.ItemsSource = BuildBranchTree(_allLocalBranchItems, filter, _refSortMode, _refRootsExpanded);
+        RemotesTree.ItemsSource = BuildRemoteTree(_allRemotes, filter, _refSortMode, _refRootsExpanded);
+        IEnumerable<string> tags = string.IsNullOrWhiteSpace(filter)
             ? _allTags
-            : _allTags.Where(t => t.Contains(filter, StringComparison.OrdinalIgnoreCase)).ToList();
+            : _allTags.Where(t => t.Contains(filter, StringComparison.OrdinalIgnoreCase));
+        TagsList.ItemsSource = SortNames(tags, _refSortMode).ToList();
     }
 
     private void CollapseAll_Click(object? sender, RoutedEventArgs e)
@@ -156,6 +213,43 @@ public partial class RepoBrowserPanel : UserControl
         LocalBranchesExpander.IsExpanded = false;
         RemotesExpander.IsExpanded = false;
         TagsExpander.IsExpanded = false;
+        PersistRootExpansionSettings();
+    }
+
+    private void ExpandRefRoots_Click(object? sender, RoutedEventArgs e)
+    {
+        SetRefRootsExpanded(true);
+    }
+
+    private void CollapseRefRoots_Click(object? sender, RoutedEventArgs e)
+    {
+        SetRefRootsExpanded(false);
+    }
+
+    private void SetRefRootsExpanded(bool isExpanded)
+    {
+        _refRootsExpanded = isExpanded;
+        PersistBool(RefRootsExpandedSettingsKey, isExpanded);
+        SetExpanded(LocalBranchesTree.ItemsSource?.OfType<BranchItem>(), isExpanded);
+        SetExpanded(RemotesTree.ItemsSource?.OfType<BranchItem>(), isExpanded);
+    }
+
+    private void SectionExpander_ExpandedOrCollapsed(object? sender, RoutedEventArgs e)
+    {
+        if (_isLoadingSettings)
+        {
+            return;
+        }
+
+        PersistRootExpansionSettings();
+    }
+
+    private void PersistRootExpansionSettings()
+    {
+        PersistBool(WorkingDirExpandedSettingsKey, WorkingDirExpander.IsExpanded);
+        PersistBool(LocalBranchesExpandedSettingsKey, LocalBranchesExpander.IsExpanded);
+        PersistBool(RemotesExpandedSettingsKey, RemotesExpander.IsExpanded);
+        PersistBool(TagsExpandedSettingsKey, TagsExpander.IsExpanded);
     }
 
     private void ContextList_PointerPressed(object? sender, PointerPressedEventArgs e)
@@ -170,6 +264,30 @@ public partial class RepoBrowserPanel : UserControl
             listBox.SelectedItem = item;
         }
     }
+
+    private void ContextTree_PointerPressed(object? sender, PointerPressedEventArgs e)
+    {
+        if (sender is not Control control ||
+            !e.GetCurrentPoint(control).Properties.IsRightButtonPressed)
+        {
+            return;
+        }
+
+        if (FindAncestor<TreeViewItem>(e.Source as Visual) is { } item)
+        {
+            item.IsSelected = true;
+        }
+    }
+
+    private BranchItem? SelectedLocalBranch()
+        => LocalBranchesTree.SelectedItem is BranchItem { Kind: BranchItemKind.LocalBranch } item
+            ? item
+            : null;
+
+    private BranchItem? SelectedRemoteBranch()
+        => RemotesTree.SelectedItem is BranchItem { Kind: BranchItemKind.RemoteBranch } item
+            ? item
+            : null;
 
     private static T? FindAncestor<T>(Visual? source)
         where T : Visual
@@ -189,7 +307,7 @@ public partial class RepoBrowserPanel : UserControl
 
     private void LocalBranchMenu_Opening(object? sender, System.ComponentModel.CancelEventArgs e)
     {
-        if (LocalBranchesList.SelectedItem is not BranchItem)
+        if (SelectedLocalBranch() is null)
         {
             e.Cancel = true;
         }
@@ -205,7 +323,7 @@ public partial class RepoBrowserPanel : UserControl
 
     private void RemoteMenu_Opening(object? sender, System.ComponentModel.CancelEventArgs e)
     {
-        if (RemotesList.SelectedItem is null)
+        if (SelectedRemoteBranch() is null)
         {
             e.Cancel = true;
         }
@@ -231,7 +349,7 @@ public partial class RepoBrowserPanel : UserControl
 
     private void LocalBranch_Checkout(object? sender, RoutedEventArgs e)
     {
-        if (LocalBranchesList.SelectedItem is BranchItem item)
+        if (SelectedLocalBranch() is { } item)
         {
             CheckoutRequested?.Invoke(item.Name);
         }
@@ -239,7 +357,7 @@ public partial class RepoBrowserPanel : UserControl
 
     private void LocalBranch_Merge(object? sender, RoutedEventArgs e)
     {
-        if (LocalBranchesList.SelectedItem is BranchItem item && _module is not null)
+        if (SelectedLocalBranch() is { } item && _module is not null)
         {
             StatusRequested?.Invoke($"Merging {item.Name}…");
             _ = ShowDialogAndRefreshAsync(new Dialogs.MergeBranchDialog(_module, item.Name));
@@ -248,7 +366,7 @@ public partial class RepoBrowserPanel : UserControl
 
     private void LocalBranch_Rebase(object? sender, RoutedEventArgs e)
     {
-        if (LocalBranchesList.SelectedItem is BranchItem item && _module is not null)
+        if (SelectedLocalBranch() is { } item && _module is not null)
         {
             StatusRequested?.Invoke($"Rebasing onto {item.Name}…");
             _ = ShowDialogAndRefreshAsync(new Dialogs.RebaseDialog(_module, item.Name));
@@ -257,7 +375,7 @@ public partial class RepoBrowserPanel : UserControl
 
     private void LocalBranch_Delete(object? sender, RoutedEventArgs e)
     {
-        if (LocalBranchesList.SelectedItem is BranchItem item && _module is not null)
+        if (SelectedLocalBranch() is { } item && _module is not null)
         {
             _ = ShowDialogAndRefreshAsync(new Dialogs.DeleteBranchDialog(_module, item.Name));
         }
@@ -275,7 +393,7 @@ public partial class RepoBrowserPanel : UserControl
 
     private void LocalBranch_Push(object? sender, RoutedEventArgs e)
     {
-        if (LocalBranchesList.SelectedItem is BranchItem item && _module is not null)
+        if (SelectedLocalBranch() is { } item && _module is not null)
         {
             _ = ShowDialogAndRefreshAsync(new Dialogs.PushDialog(_module, item.Name));
         }
@@ -283,7 +401,7 @@ public partial class RepoBrowserPanel : UserControl
 
     private void LocalBranch_ResetToRemote(object? sender, RoutedEventArgs e)
     {
-        if (LocalBranchesList.SelectedItem is BranchItem item)
+        if (SelectedLocalBranch() is { } item)
         {
             _ = RunGitAndRefreshAsync($"reset --hard origin/{item.Name}");
         }
@@ -291,7 +409,7 @@ public partial class RepoBrowserPanel : UserControl
 
     private void LocalBranch_CopyName(object? sender, RoutedEventArgs e)
     {
-        if (LocalBranchesList.SelectedItem is BranchItem item)
+        if (SelectedLocalBranch() is { } item)
         {
             _ = CopyToClipboardAsync(item.Name, "Branch name");
         }
@@ -301,9 +419,9 @@ public partial class RepoBrowserPanel : UserControl
 
     private void Remote_Fetch(object? sender, RoutedEventArgs e)
     {
-        if (RemotesList.SelectedItem is string remote)
+        if (SelectedRemoteBranch() is { } remote)
         {
-            string remoteName = GetRemoteName(remote);
+            string remoteName = GetRemoteName(remote.Name);
             StatusRequested?.Invoke($"Fetching {remoteName}…");
             _ = RunGitAndRefreshAsync($"fetch {remoteName.Quote()}");
         }
@@ -311,9 +429,9 @@ public partial class RepoBrowserPanel : UserControl
 
     private void Remote_FetchPrune(object? sender, RoutedEventArgs e)
     {
-        if (RemotesList.SelectedItem is string remote)
+        if (SelectedRemoteBranch() is { } remote)
         {
-            string remoteName = GetRemoteName(remote);
+            string remoteName = GetRemoteName(remote.Name);
             StatusRequested?.Invoke($"Fetching and pruning {remoteName}…");
             _ = RunGitAndRefreshAsync($"fetch --prune {remoteName.Quote()}");
         }
@@ -321,54 +439,54 @@ public partial class RepoBrowserPanel : UserControl
 
     private void Remote_CheckoutLocal(object? sender, RoutedEventArgs e)
     {
-        if (RemotesList.SelectedItem is string remote)
+        if (SelectedRemoteBranch() is { } remote)
         {
-            string branchName = GetRemoteBranchName(remote);
-            _ = RunGitAndRefreshAsync($"checkout -b {branchName.Quote()} {remote.Quote()}");
+            string branchName = GetRemoteBranchName(remote.Name);
+            _ = RunGitAndRefreshAsync($"checkout -b {branchName.Quote()} {remote.Name.Quote()}");
         }
     }
 
     private void Remote_CopyBranchName(object? sender, RoutedEventArgs e)
     {
-        if (RemotesList.SelectedItem is string remote)
+        if (SelectedRemoteBranch() is { } remote)
         {
-            _ = CopyToClipboardAsync(remote, "Remote branch name");
+            _ = CopyToClipboardAsync(remote.Name, "Remote branch name");
         }
     }
 
     private void Remote_CopyName(object? sender, RoutedEventArgs e)
     {
-        if (RemotesList.SelectedItem is string remote)
+        if (SelectedRemoteBranch() is { } remote)
         {
-            _ = CopyToClipboardAsync(GetRemoteName(remote), "Remote name");
+            _ = CopyToClipboardAsync(GetRemoteName(remote.Name), "Remote name");
         }
     }
 
     private void Remote_Delete(object? sender, RoutedEventArgs e)
     {
-        if (_module is null || RemotesList.SelectedItem is not string remote)
+        if (_module is null || SelectedRemoteBranch() is not { } remote)
         {
             return;
         }
 
-        _ = ShowDialogAndRefreshAsync(new Dialogs.DeleteRemoteBranchDialog(_module, remote));
+        _ = ShowDialogAndRefreshAsync(new Dialogs.DeleteRemoteBranchDialog(_module, remote.Name));
     }
 
     private void Remote_Merge(object? sender, RoutedEventArgs e)
     {
-        if (_module is not null && RemotesList.SelectedItem is string remote)
+        if (_module is not null && SelectedRemoteBranch() is { } remote)
         {
-            StatusRequested?.Invoke($"Merging {remote}…");
-            _ = ShowDialogAndRefreshAsync(new Dialogs.MergeBranchDialog(_module, remote));
+            StatusRequested?.Invoke($"Merging {remote.Name}…");
+            _ = ShowDialogAndRefreshAsync(new Dialogs.MergeBranchDialog(_module, remote.Name));
         }
     }
 
     private void Remote_Rebase(object? sender, RoutedEventArgs e)
     {
-        if (_module is not null && RemotesList.SelectedItem is string remote)
+        if (_module is not null && SelectedRemoteBranch() is { } remote)
         {
-            StatusRequested?.Invoke($"Rebasing onto {remote}…");
-            _ = ShowDialogAndRefreshAsync(new Dialogs.RebaseDialog(_module, remote));
+            StatusRequested?.Invoke($"Rebasing onto {remote.Name}…");
+            _ = ShowDialogAndRefreshAsync(new Dialogs.RebaseDialog(_module, remote.Name));
         }
     }
 
@@ -413,7 +531,7 @@ public partial class RepoBrowserPanel : UserControl
 
     private void LocalBranch_Rename(object? sender, RoutedEventArgs e)
     {
-        if (LocalBranchesList.SelectedItem is BranchItem item && _module is not null)
+        if (SelectedLocalBranch() is { } item && _module is not null)
         {
             _ = RenameBranchAsync(item.Name);
         }
@@ -682,6 +800,171 @@ public partial class RepoBrowserPanel : UserControl
         }
     }
 
+    public static IReadOnlyList<BranchItem> BuildBranchTree(
+        IEnumerable<BranchItem> branches,
+        string filter,
+        RefSortMode sortMode,
+        bool rootFoldersExpanded)
+        => BuildRefTree(
+            branches.Select(b => new BranchItem(b.Name, b.IsCurrent, BranchItemKind.LocalBranch)),
+            filter,
+            sortMode,
+            rootFoldersExpanded);
+
+    public static IReadOnlyList<BranchItem> BuildRemoteTree(
+        IEnumerable<string> remoteBranches,
+        string filter,
+        RefSortMode sortMode,
+        bool rootFoldersExpanded)
+        => BuildRefTree(
+            remoteBranches.Select(r => new BranchItem(r, IsCurrent: false, BranchItemKind.RemoteBranch)),
+            filter,
+            sortMode,
+            rootFoldersExpanded);
+
+    private static IReadOnlyList<BranchItem> BuildRefTree(
+        IEnumerable<BranchItem> refs,
+        string filter,
+        RefSortMode sortMode,
+        bool rootFoldersExpanded)
+    {
+        var roots = new List<BranchItem>();
+
+        foreach (BranchItem item in refs.Where(r => !string.IsNullOrWhiteSpace(r.Name)))
+        {
+            string[] parts = item.Name.Split('/', StringSplitOptions.RemoveEmptyEntries);
+            if (parts.Length == 0)
+            {
+                continue;
+            }
+
+            List<BranchItem> siblings = roots;
+            string path = string.Empty;
+            for (int i = 0; i < parts.Length; i++)
+            {
+                bool isLeaf = i == parts.Length - 1;
+                path = path.Length == 0 ? parts[i] : $"{path}/{parts[i]}";
+                BranchItem node;
+                if (isLeaf)
+                {
+                    node = item with { DisplayNameOverride = parts[i] };
+                    siblings.Add(node);
+                    continue;
+                }
+
+                node = siblings.FirstOrDefault(n =>
+                    n.Kind == BranchItemKind.Folder &&
+                    string.Equals(n.Name, path, StringComparison.Ordinal)) ?? CreateFolder(path, parts[i], rootFoldersExpanded);
+                if (!siblings.Contains(node))
+                {
+                    siblings.Add(node);
+                }
+
+                siblings = node.MutableChildren;
+            }
+        }
+
+        return PruneAndSort(roots, filter, sortMode);
+    }
+
+    private static BranchItem CreateFolder(string name, string displayName, bool isExpanded)
+        => new(name, IsCurrent: false, BranchItemKind.Folder)
+        {
+            DisplayNameOverride = displayName,
+            IsExpanded = isExpanded,
+        };
+
+    private static IReadOnlyList<BranchItem> PruneAndSort(
+        IEnumerable<BranchItem> nodes,
+        string filter,
+        RefSortMode sortMode)
+    {
+        string trimmedFilter = filter.Trim();
+        var filtered = new List<BranchItem>();
+
+        foreach (BranchItem node in nodes)
+        {
+            IReadOnlyList<BranchItem> children = PruneAndSort(node.Children, trimmedFilter, sortMode);
+            bool nodeMatches = string.IsNullOrEmpty(trimmedFilter) ||
+                node.Name.Contains(trimmedFilter, StringComparison.OrdinalIgnoreCase) ||
+                node.DisplayName.Contains(trimmedFilter, StringComparison.OrdinalIgnoreCase);
+
+            if (node.Kind != BranchItemKind.Folder)
+            {
+                if (nodeMatches)
+                {
+                    filtered.Add(node);
+                }
+
+                continue;
+            }
+
+            if (nodeMatches)
+            {
+                filtered.Add(node with { MutableChildren = SortBranchItems(node.Children, sortMode).ToList() });
+            }
+            else if (children.Count > 0)
+            {
+                filtered.Add(node with { MutableChildren = children.ToList() });
+            }
+        }
+
+        return SortBranchItems(filtered, sortMode).ToList();
+    }
+
+    private static IEnumerable<BranchItem> SortBranchItems(IEnumerable<BranchItem> items, RefSortMode sortMode)
+    {
+        IOrderedEnumerable<BranchItem> ordered = sortMode == RefSortMode.Descending
+            ? items.OrderBy(i => i.Kind != BranchItemKind.Folder).ThenByDescending(i => i.DisplayName, StringComparer.OrdinalIgnoreCase)
+            : items.OrderBy(i => i.Kind != BranchItemKind.Folder).ThenBy(i => i.DisplayName, StringComparer.OrdinalIgnoreCase);
+        return ordered;
+    }
+
+    private static IEnumerable<string> SortNames(IEnumerable<string> names, RefSortMode sortMode)
+        => sortMode == RefSortMode.Descending
+            ? names.OrderByDescending(n => n, StringComparer.OrdinalIgnoreCase)
+            : names.OrderBy(n => n, StringComparer.OrdinalIgnoreCase);
+
+    private static void SetExpanded(IEnumerable<BranchItem>? items, bool isExpanded)
+    {
+        if (items is null)
+        {
+            return;
+        }
+
+        foreach (BranchItem item in items)
+        {
+            if (item.Kind == BranchItemKind.Folder)
+            {
+                item.IsExpanded = isExpanded;
+            }
+
+            SetExpanded(item.Children, isExpanded);
+        }
+    }
+
+    private static void PersistString(string key, string value)
+    {
+        if (App.Settings is null)
+        {
+            return;
+        }
+
+        App.Settings.SetString(key, value);
+        App.Settings.Save();
+    }
+
+    private static void PersistBool(string key, bool value)
+    {
+        if (App.Settings is null)
+        {
+            return;
+        }
+
+        App.Settings.SetBool(key, value);
+        App.Settings.Save();
+    }
+
     // ── Shared helpers ───────────────────────────────────────────────────────
 
     private async System.Threading.Tasks.Task RunGitAndRefreshAsync(string args)
@@ -856,18 +1139,47 @@ public partial class RepoBrowserPanel : UserControl
     }
 }
 
-/// <summary>View model for a local branch item in the left panel.</summary>
-public sealed record BranchItem(string Name, bool IsCurrent)
+public enum RefSortMode
 {
+    Ascending,
+    Descending,
+}
+
+public enum BranchItemKind
+{
+    Folder,
+    LocalBranch,
+    RemoteBranch,
+}
+
+/// <summary>View model for a branch or branch-folder item in the left panel.</summary>
+public sealed record BranchItem(string Name, bool IsCurrent, BranchItemKind Kind = BranchItemKind.LocalBranch)
+{
+    public string? DisplayNameOverride { get; init; }
+
+    public List<BranchItem> MutableChildren { get; init; } = [];
+
+    public IReadOnlyList<BranchItem> Children => MutableChildren;
+
+    public bool IsExpanded { get; set; }
+
     public int Depth => Math.Max(0, Name.Count(c => c == '/'));
 
-    public string DisplayName => Name.Contains('/', StringComparison.Ordinal)
+    public string DisplayName => DisplayNameOverride ?? (Name.Contains('/', StringComparison.Ordinal)
         ? Name[(Name.LastIndexOf('/') + 1)..]
-        : Name;
+        : Name);
 
-    public string Icon => IsCurrent ? "●" : "○";
+    public string Icon => Kind switch
+    {
+        BranchItemKind.Folder => "▸",
+        _ => IsCurrent ? "●" : "○",
+    };
 
-    public string IconColor => IsCurrent ? "#FF2E7D32" : "#FF888888";
+    public string IconColor => Kind switch
+    {
+        BranchItemKind.Folder => "#FF666666",
+        _ => IsCurrent ? "#FF2E7D32" : "#FF888888",
+    };
 
     public string AheadBehind => string.Empty;
 

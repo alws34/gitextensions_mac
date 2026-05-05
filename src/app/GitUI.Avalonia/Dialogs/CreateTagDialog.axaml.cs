@@ -2,6 +2,7 @@ using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Threading;
 using GitCommands;
+using GitExtUtils;
 using GitUI.Avalonia.Base;
 
 namespace GitUI.Avalonia.Dialogs;
@@ -9,11 +10,14 @@ namespace GitUI.Avalonia.Dialogs;
 public partial class CreateTagDialog : GitExtensionsDialog
 {
     private readonly GitModule _module;
+    private readonly string? _defaultCommit;
 
-    public CreateTagDialog(GitModule module)
+    public CreateTagDialog(GitModule module, string? defaultCommit = null)
     {
         _module = module;
+        _defaultCommit = defaultCommit;
         InitializeComponent();
+        CommitTextBox.Text = _defaultCommit ?? string.Empty;
     }
 
     private void OK_Click(object? sender, RoutedEventArgs e)
@@ -36,7 +40,7 @@ public partial class CreateTagDialog : GitExtensionsDialog
         string result;
         if (LightweightRadio.IsChecked == true)
         {
-            result = await Task.Run(() => _module.GitExecutable.GetOutput($"tag {name} {commitArg}"));
+            result = await Task.Run(() => _module.GitExecutable.GetOutput($"tag {name.Quote()} {commitArg.Quote()}"));
         }
         else
         {
@@ -45,7 +49,7 @@ public partial class CreateTagDialog : GitExtensionsDialog
             try
             {
                 System.IO.File.WriteAllText(tmpFile, message);
-                result = await Task.Run(() => _module.GitExecutable.GetOutput($"tag -a {name} {commitArg} -F \"{tmpFile}\""));
+                result = await Task.Run(() => _module.GitExecutable.GetOutput($"tag -a {name.Quote()} {commitArg.Quote()} -F {tmpFile.Quote()}"));
             }
             finally
             {

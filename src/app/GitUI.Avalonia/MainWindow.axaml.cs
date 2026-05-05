@@ -15,6 +15,7 @@ using GitExtUtils;
 using GitUI.Avalonia.Base;
 using GitUI.Avalonia.Dashboard;
 using GitUI.Avalonia.Dialogs;
+using GitUI.Avalonia.RevisionGrid;
 using GitUI.Avalonia.Settings;
 using GitUIPluginInterfaces;
 using ReactiveUI;
@@ -33,6 +34,7 @@ public partial class MainWindow : GitExtensionsWindow
     private Action<string>? _leftPanelStatusHandler;
     private Action<string>? _leftPanelErrorHandler;
     private Action? _leftPanelRepositoryChangedHandler;
+    private Action? _detailsRepositoryChangedHandler;
     private bool _revisionGridHandlersAttached;
 
     public static readonly StyledProperty<bool> HasRepositoryProperty =
@@ -134,6 +136,13 @@ public partial class MainWindow : GitExtensionsWindow
         _ = RefreshStatusBarCountsAsync();
         AttachRevisionGridHandlers();
         DetailsPanel.SetModule(_module);
+        if (_detailsRepositoryChangedHandler is not null)
+        {
+            DetailsPanel.RepositoryChanged -= _detailsRepositoryChangedHandler;
+        }
+
+        _detailsRepositoryChangedHandler = () => _ = RefreshAfterBranchDialogAsync(refreshLeftPanel: true);
+        DetailsPanel.RepositoryChanged += _detailsRepositoryChangedHandler;
         LeftPanel.SetModule(_module);
 
         // Unsubscribe previous handlers (guards against opening a second repo)
@@ -183,7 +192,7 @@ public partial class MainWindow : GitExtensionsWindow
         }
 
         _revisionGridHandlersAttached = true;
-        RevisionGrid.SelectedRevisionChanged += OnRevisionSelected;
+        RevisionGrid.SelectedRowChanged += OnRevisionRowSelected;
         RevisionGrid.CherryPickHashRequested += hash =>
             _ = ShowModuleDialogAsync(m => new CherryPickDialog(m, hash));
         RevisionGrid.RevertHashRequested += hash =>
@@ -198,10 +207,12 @@ public partial class MainWindow : GitExtensionsWindow
         RevisionGrid.DeleteRemoteBranchRequested += branch => _ = ShowDeleteRemoteBranchDialogAsync(branch);
         RevisionGrid.DeleteTagRequested += tag => _ = ShowDeleteTagDialogAsync(tag);
         RevisionGrid.PushBranchRequested += branch => _ = ShowPushDialogAsync(branch);
-        RevisionGrid.CreateBranchAtHashRequested += ignored =>
-            _ = ShowModuleDialogAsync(m => new CreateBranchDialog(m));
-        RevisionGrid.CreateTagAtHashRequested += ignored =>
-            _ = ShowModuleDialogAsync(m => new CreateTagDialog(m));
+        RevisionGrid.CreateBranchAtHashRequested += hash =>
+            _ = ShowModuleDialogAsync(m => new CreateBranchDialog(m, hash));
+        RevisionGrid.CreateBranchAtRefRequested += refName =>
+            _ = ShowModuleDialogAsync(m => new CreateBranchDialog(m, refName));
+        RevisionGrid.CreateTagAtHashRequested += hash =>
+            _ = ShowModuleDialogAsync(m => new CreateTagDialog(m, hash));
         RevisionGrid.ResetHardToHashRequested += hash => _ = ResetHardAsync(hash);
         RevisionGrid.InteractiveRebaseRequested += hash =>
             _ = ShowModuleDialogAsync(m => new InteractiveRebaseDialog(m, hash));
@@ -1093,6 +1104,12 @@ public partial class MainWindow : GitExtensionsWindow
     {
         StatusLabel.Text = revision?.ObjectId.ToShortString() ?? string.Empty;
         _ = DetailsPanel.ShowRevisionAsync(revision);
+    }
+
+    private void OnRevisionRowSelected(RevisionRow? row)
+    {
+        StatusLabel.Text = row?.Revision?.ObjectId.ToShortString() ?? row?.ArtificialType ?? string.Empty;
+        _ = DetailsPanel.ShowRevisionRowAsync(row);
     }
 
     private void BuildToolBar()

@@ -2,11 +2,26 @@ using System.Diagnostics;
 using System.IO;
 using Avalonia.Controls;
 using GitCommands;
+using GitExtUtils;
 using GitUI.Avalonia.Base;
 
 namespace GitUI.Avalonia.CommitDetails;
 
-public record FileStatusItem(string Name, bool IsAdded, bool IsDeleted, bool IsRenamed)
+public enum FileListViewMode
+{
+    Tree,
+    Flat,
+    Grouped,
+}
+
+public record FileStatusItem(
+    string Name,
+    bool IsAdded,
+    bool IsDeleted,
+    bool IsRenamed,
+    bool IsStaged = false,
+    bool IsUnstaged = false,
+    bool IsSubmodule = false)
 {
     public string StatusIcon => (IsAdded, IsDeleted, IsRenamed) switch
     {
@@ -15,6 +30,18 @@ public record FileStatusItem(string Name, bool IsAdded, bool IsDeleted, bool IsR
         (_, _, true) => "R",
         _ => "M",
     };
+
+    public string StatusGroup => (IsStaged, IsUnstaged) switch
+    {
+        (true, true) => "Staged and unstaged",
+        (true, false) => "Staged",
+        (false, true) => "Unstaged",
+        _ => "Changed",
+    };
+
+    public bool CanStage => IsUnstaged || (!IsStaged && !IsDeleted);
+    public bool CanUnstage => IsStaged;
+    public bool CanReset => IsUnstaged || IsDeleted || IsAdded;
 }
 
 public partial class FileStatusList : GitModuleControl
@@ -24,16 +51,45 @@ public partial class FileStatusList : GitModuleControl
     public event Action<string>? HistoryRequested;
     public event Action<string>? StatusRequested;
     public event Action<string>? ErrorOccurred;
+    public event Action<string>? AddToGitIgnoreRequested;
+    public event Action<string>? UserScriptsRequested;
+    public event Action? RepositoryChanged;
 
     private FileTreeNode? _selectedNode;
+    private List<FileStatusItem> _files = [];
+    private FileListViewMode _viewMode = FileListViewMode.Tree;
+    private bool _suppressViewModeChanged;
 
     public FileStatusItem? SelectedFile => _selectedNode?.FileItem;
 
-    public FileStatusList() => InitializeComponent();
+    public FileStatusList()
+    {
+        InitializeComponent();
+        _suppressViewModeChanged = true;
+        _viewMode = GetInitialViewMode();
+        ViewModeComboBox.SelectedIndex = (int)_viewMode;
+        _suppressViewModeChanged = false;
+    }
+
+    private static FileListViewMode GetInitialViewMode()
+    {
+        if (App.Settings is null)
+        {
+            return FileListViewMode.Tree;
+        }
+
+        return App.Settings.GetString("fileListViewMode", "tree") switch
+        {
+            "flat" => FileListViewMode.Flat,
+            "grouped" => FileListViewMode.Grouped,
+            _ => FileListViewMode.Tree,
+        };
+    }
 
     public void LoadFiles(IEnumerable<FileStatusItem> files)
     {
-        FileTree.ItemsSource = FileTreeNode.BuildTree(files);
+        _files = [.. files];
+        ReloadFiles();
     }
 
     private void FileTree_SelectionChanged(object? sender, SelectionChangedEventArgs e)
@@ -49,21 +105,57 @@ public partial class FileStatusList : GitModuleControl
         string? fullPath = GetWorkingTreePath(file);
         bool fileExists = fullPath is not null && File.Exists(fullPath);
         bool directoryExists = fullPath is not null && Directory.Exists(Path.GetDirectoryName(fullPath));
+        bool hasModule = Module is not null;
 
         OpenDiffMenuItem.IsEnabled = hasFile;
+        StageFileMenuItem.IsEnabled = hasFile && hasModule && file!.CanStage;
+        UnstageFileMenuItem.IsEnabled = hasFile && hasModule && file!.CanUnstage;
+        ResetFileMenuItem.IsEnabled = hasFile && hasModule && file!.CanReset;
         OpenFileMenuItem.IsEnabled = fileExists;
         RevealInFinderMenuItem.IsEnabled = fileExists;
         OpenContainingFolderMenuItem.IsEnabled = directoryExists;
+        OpenWithDifftoolMenuItem.IsEnabled = hasFile && hasModule;
         CopyPathMenuItem.IsEnabled = hasFile;
         CopyFullPathMenuItem.IsEnabled = fullPath is not null;
         CopyFileNameMenuItem.IsEnabled = hasFile;
         HistoryMenuItem.IsEnabled = hasFile;
         BlameMenuItem.IsEnabled = hasFile;
+        UpdateSubmoduleMenuItem.IsEnabled = hasFile && hasModule && file!.IsSubmodule;
+        AddToGitIgnoreMenuItem.IsEnabled = hasFile && hasModule;
+        UserScriptsMenuItem.IsEnabled = hasFile && hasModule;
 
         if (!hasFile)
         {
             e.Cancel = true;
         }
+    }
+
+    private void ViewModeComboBox_SelectionChanged(object? sender, SelectionChangedEventArgs e)
+    {
+        if (_suppressViewModeChanged)
+        {
+            return;
+        }
+
+        _viewMode = ViewModeComboBox.SelectedIndex switch
+        {
+            1 => FileListViewMode.Flat,
+            2 => FileListViewMode.Grouped,
+            _ => FileListViewMode.Tree,
+        };
+        App.Settings.SetString("fileListViewMode", _viewMode.ToString().ToLowerInvariant());
+        App.Settings.Save();
+        ReloadFiles();
+    }
+
+    private void ReloadFiles()
+    {
+        FileTree.ItemsSource = _viewMode switch
+        {
+            FileListViewMode.Flat => FileTreeNode.BuildFlat(_files),
+            FileListViewMode.Grouped => FileTreeNode.BuildGrouped(_files),
+            _ => FileTreeNode.BuildTree(_files),
+        };
     }
 
     private void CtxDiff_Click(object? sender, global::Avalonia.Interactivity.RoutedEventArgs e)
@@ -85,6 +177,26 @@ public partial class FileStatusList : GitModuleControl
         {
             BlameRequested?.Invoke(path);
         }
+    }
+
+    private void CtxStageFile_Click(object? sender, global::Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        _ = RunGitFileActionAsync("Stage file", "add --", reloadAfter: true);
+    }
+
+    private void CtxUnstageFile_Click(object? sender, global::Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        _ = RunGitFileActionAsync("Unstage file", "reset HEAD --", reloadAfter: true);
+    }
+
+    private void CtxResetFile_Click(object? sender, global::Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        _ = RunGitFileActionAsync("Reset file", "checkout --", reloadAfter: true);
+    }
+
+    private void CtxOpenWithDifftool_Click(object? sender, global::Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        _ = RunGitFileActionAsync("Open with difftool", "difftool --", reloadAfter: false);
     }
 
     private void CtxOpenFile_Click(object? sender, global::Avalonia.Interactivity.RoutedEventArgs e)
@@ -153,6 +265,27 @@ public partial class FileStatusList : GitModuleControl
         }
     }
 
+    private void CtxUpdateSubmodule_Click(object? sender, global::Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        _ = RunGitFileActionAsync("Update submodule", "submodule update --init --", reloadAfter: true);
+    }
+
+    private void CtxAddToGitIgnore_Click(object? sender, global::Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        if (SelectedFile?.Name is { } path)
+        {
+            AddToGitIgnoreRequested?.Invoke(path);
+        }
+    }
+
+    private void CtxUserScripts_Click(object? sender, global::Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        if (SelectedFile?.Name is { } path)
+        {
+            UserScriptsRequested?.Invoke(path);
+        }
+    }
+
     private string? GetWorkingTreePath(FileStatusItem? file)
     {
         if (file is null || Module is null)
@@ -184,6 +317,32 @@ public partial class FileStatusList : GitModuleControl
         try
         {
             Process.Start("open", path);
+        }
+        catch (Exception ex)
+        {
+            ErrorOccurred?.Invoke(ex.Message);
+        }
+    }
+
+    private async System.Threading.Tasks.Task RunGitFileActionAsync(string label, string commandPrefix, bool reloadAfter)
+    {
+        if (Module is null || SelectedFile?.Name is not { } path)
+        {
+            return;
+        }
+
+        try
+        {
+            string gitPath = path.ToPosixPath().QuoteNE() ?? path.Quote();
+            string output = await Module.GitExecutable.GetOutputAsync($"{commandPrefix} {gitPath}");
+            string status = string.IsNullOrWhiteSpace(output)
+                ? $"{label}: {path}"
+                : output.Trim();
+            StatusRequested?.Invoke(status);
+            if (reloadAfter)
+            {
+                RepositoryChanged?.Invoke();
+            }
         }
         catch (Exception ex)
         {

@@ -6,15 +6,35 @@
              MinWidth="140">
     <DockPanel>
 
-        <!-- Toolbar row: Collapse All + search -->
         <DockPanel DockPanel.Dock="Top" Margin="4,4,4,2">
             <Button DockPanel.Dock="Left"
                     Content="⊟"
-                    ToolTip.Tip="Collapse All"
+                    ToolTip.Tip="Collapse sidebar sections"
                     Classes="ToolBtn"
                     Click="CollapseAll_Click" />
+            <Button DockPanel.Dock="Left"
+                    Content="▾"
+                    ToolTip.Tip="Expand branch folders"
+                    Classes="ToolBtn"
+                    Margin="4,0,0,0"
+                    Click="ExpandRefRoots_Click" />
+            <Button DockPanel.Dock="Left"
+                    Content="▸"
+                    ToolTip.Tip="Collapse branch folders"
+                    Classes="ToolBtn"
+                    Margin="2,0,0,0"
+                    Click="CollapseRefRoots_Click" />
+            <ComboBox x:Name="RefSortComboBox"
+                      DockPanel.Dock="Right"
+                      Width="72"
+                      Margin="4,0,0,0"
+                      ToolTip.Tip="Sort refs"
+                      SelectionChanged="RefSortComboBox_SelectionChanged">
+                <ComboBoxItem Content="A-Z" Tag="az" />
+                <ComboBoxItem Content="Z-A" Tag="za" />
+            </ComboBox>
             <TextBox x:Name="SearchBox"
-                     Watermark="Search…"
+                     Watermark="Filter refs…"
                      Margin="4,0,0,0"
                      TextChanged="SearchBox_TextChanged" />
         </DockPanel>
@@ -22,7 +42,11 @@
         <ScrollViewer>
             <StackPanel>
 
-                <Expander x:Name="WorkingDirExpander" Header="Working Directory" IsExpanded="True">
+                <Expander x:Name="WorkingDirExpander"
+                          Header="Working Directory"
+                          IsExpanded="True"
+                          Expanded="SectionExpander_ExpandedOrCollapsed"
+                          Collapsed="SectionExpander_ExpandedOrCollapsed">
                     <ListBox x:Name="WorkingDirList" Margin="8,0,0,0">
                         <ListBox.ItemTemplate>
                             <DataTemplate>
@@ -38,15 +62,23 @@
                     </ListBox>
                 </Expander>
 
-                <Expander x:Name="LocalBranchesExpander" Header="Branches" IsExpanded="True">
-                    <ListBox x:Name="LocalBranchesList"
-                             FontSize="12"
-                             PointerPressed="ContextList_PointerPressed"
-                             DoubleTapped="LocalBranch_DoubleTapped">
-                        <ListBox.ItemTemplate>
-                            <DataTemplate x:DataType="local:BranchItem">
-                                <StackPanel Orientation="Horizontal" Spacing="4"
-                                            Margin="{Binding Depth, Converter={StaticResource DepthToMargin}}">
+                <Expander x:Name="LocalBranchesExpander"
+                          Header="Branches"
+                          IsExpanded="True"
+                          Expanded="SectionExpander_ExpandedOrCollapsed"
+                          Collapsed="SectionExpander_ExpandedOrCollapsed">
+                    <TreeView x:Name="LocalBranchesTree"
+                              FontSize="12"
+                              PointerPressed="ContextTree_PointerPressed"
+                              DoubleTapped="LocalBranch_DoubleTapped">
+                        <TreeView.Styles>
+                            <Style Selector="TreeViewItem">
+                                <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}" />
+                            </Style>
+                        </TreeView.Styles>
+                        <TreeView.ItemTemplate>
+                            <TreeDataTemplate x:DataType="local:BranchItem" ItemsSource="{Binding Children}">
+                                <StackPanel Orientation="Horizontal" Spacing="4">
                                     <TextBlock Text="{Binding Icon}"
                                                FontSize="11"
                                                Foreground="{Binding IconColor}"
@@ -55,7 +87,8 @@
                                     <TextBlock Text="{Binding DisplayName}"
                                                FontSize="12"
                                                FontWeight="{Binding IsCurrent, Converter={StaticResource BoolToFontWeight}}"
-                                               VerticalAlignment="Center" />
+                                               VerticalAlignment="Center"
+                                               ToolTip.Tip="{Binding Name}" />
                                     <TextBlock Text="{Binding AheadBehind}"
                                                FontSize="10"
                                                Foreground="#FF888888"
@@ -63,9 +96,9 @@
                                                Margin="4,0,0,0"
                                                VerticalAlignment="Center" />
                                 </StackPanel>
-                            </DataTemplate>
-                        </ListBox.ItemTemplate>
-                        <ListBox.ContextMenu>
+                            </TreeDataTemplate>
+                        </TreeView.ItemTemplate>
+                        <TreeView.ContextMenu>
                             <ContextMenu Opening="LocalBranchMenu_Opening">
                                 <MenuItem Header="Checkout"              Click="LocalBranch_Checkout" />
                                 <MenuItem Header="Merge into current"    Click="LocalBranch_Merge" />
@@ -80,19 +113,39 @@
                                 <Separator />
                                 <MenuItem Header="Copy Branch Name"      Click="LocalBranch_CopyName" />
                             </ContextMenu>
-                        </ListBox.ContextMenu>
-                    </ListBox>
+                        </TreeView.ContextMenu>
+                    </TreeView>
                 </Expander>
 
-                <Expander x:Name="RemotesExpander" Header="Remotes">
-                    <ListBox x:Name="RemotesList" FontSize="12" Margin="8,0,0,0"
-                             PointerPressed="ContextList_PointerPressed">
-                        <ListBox.ItemTemplate>
-                            <DataTemplate>
-                                <TextBlock Text="{Binding}" FontSize="12" />
-                            </DataTemplate>
-                        </ListBox.ItemTemplate>
-                        <ListBox.ContextMenu>
+                <Expander x:Name="RemotesExpander"
+                          Header="Remotes"
+                          Expanded="SectionExpander_ExpandedOrCollapsed"
+                          Collapsed="SectionExpander_ExpandedOrCollapsed">
+                    <TreeView x:Name="RemotesTree"
+                              FontSize="12"
+                              Margin="8,0,0,0"
+                              PointerPressed="ContextTree_PointerPressed">
+                        <TreeView.Styles>
+                            <Style Selector="TreeViewItem">
+                                <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}" />
+                            </Style>
+                        </TreeView.Styles>
+                        <TreeView.ItemTemplate>
+                            <TreeDataTemplate x:DataType="local:BranchItem" ItemsSource="{Binding Children}">
+                                <StackPanel Orientation="Horizontal" Spacing="4">
+                                    <TextBlock Text="{Binding Icon}"
+                                               FontSize="11"
+                                               Foreground="{Binding IconColor}"
+                                               Width="14"
+                                               VerticalAlignment="Center" />
+                                    <TextBlock Text="{Binding DisplayName}"
+                                               FontSize="12"
+                                               ToolTip.Tip="{Binding Name}"
+                                               VerticalAlignment="Center" />
+                                </StackPanel>
+                            </TreeDataTemplate>
+                        </TreeView.ItemTemplate>
+                        <TreeView.ContextMenu>
                             <ContextMenu Opening="RemoteMenu_Opening">
                                 <MenuItem Header="Fetch"                        Click="Remote_Fetch" />
                                 <MenuItem Header="Fetch and Prune"              Click="Remote_FetchPrune" />
@@ -105,11 +158,14 @@
                                 <Separator />
                                 <MenuItem Header="Delete Remote Branch…"        Click="Remote_Delete" />
                             </ContextMenu>
-                        </ListBox.ContextMenu>
-                    </ListBox>
+                        </TreeView.ContextMenu>
+                    </TreeView>
                 </Expander>
 
-                <Expander x:Name="TagsExpander" Header="Tags">
+                <Expander x:Name="TagsExpander"
+                          Header="Tags"
+                          Expanded="SectionExpander_ExpandedOrCollapsed"
+                          Collapsed="SectionExpander_ExpandedOrCollapsed">
                     <ListBox x:Name="TagsList" FontSize="12" Margin="8,0,0,0"
                              PointerPressed="ContextList_PointerPressed">
                         <ListBox.ContextMenu>

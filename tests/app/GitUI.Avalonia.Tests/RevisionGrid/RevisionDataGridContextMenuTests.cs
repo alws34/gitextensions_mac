@@ -185,12 +185,14 @@ public class RevisionDataGridContextMenuTests
         string? deleteRemoteBranch = null;
         string? deleteTag = null;
         string? pushBranch = null;
+        string? createBranchAtRef = null;
         grid.MergeRefRequested += value => mergeRef = value;
         grid.RebaseRefRequested += value => rebaseRef = value;
         grid.DeleteBranchRequested += value => deleteBranch = value;
         grid.DeleteRemoteBranchRequested += value => deleteRemoteBranch = value;
         grid.DeleteTagRequested += value => deleteTag = value;
         grid.PushBranchRequested += value => pushBranch = value;
+        grid.CreateBranchAtRefRequested += value => createBranchAtRef = value;
 
         MenuItem mergeMenuItem = GetMenuItem(grid, "MergeRefMenuItem");
         MenuItem rebaseMenuItem = GetMenuItem(grid, "RebaseRefMenuItem");
@@ -198,6 +200,8 @@ public class RevisionDataGridContextMenuTests
         MenuItem deleteRemoteMenuItem = GetMenuItem(grid, "DeleteRemoteBranchMenuItem");
         MenuItem deleteTagMenuItem = GetMenuItem(grid, "DeleteTagMenuItem");
         MenuItem pushMenuItem = GetMenuItem(grid, "PushBranchMenuItem");
+        MenuItem createBranchAtRefMenuItem = GetMenuItem(grid, "CreateBranchAtRefMenuItem");
+        MenuItem copyRefNameMenuItem = GetMenuItem(grid, "CopyRefNameMenuItem");
 
         InvokePrivate(grid, "CtxMergeRef_Click", GetChildMenuItem(mergeMenuItem, "v1.2.3"), null);
         InvokePrivate(grid, "CtxRebaseRef_Click", GetChildMenuItem(rebaseMenuItem, "origin/feature/menu"), null);
@@ -205,6 +209,7 @@ public class RevisionDataGridContextMenuTests
         InvokePrivate(grid, "CtxDeleteRemoteBranch_Click", deleteRemoteMenuItem, null);
         InvokePrivate(grid, "CtxDeleteTag_Click", deleteTagMenuItem, null);
         InvokePrivate(grid, "CtxPushBranch_Click", GetChildMenuItem(pushMenuItem, "main"), null);
+        InvokePrivate(grid, "CtxCreateBranchAtRef_Click", GetChildMenuItem(createBranchAtRefMenuItem, "v1.2.3"), null);
 
         Assert.Multiple(() =>
         {
@@ -215,13 +220,16 @@ public class RevisionDataGridContextMenuTests
             Assert.That(deleteBranchMenuItem.Header, Is.EqualTo("Delete branch 'feature/menu'"));
             Assert.That(deleteRemoteMenuItem.Header, Is.EqualTo("Delete remote branch 'origin/feature/menu'"));
             Assert.That(deleteTagMenuItem.Header, Is.EqualTo("Delete tag 'v1.2.3'"));
-            Assert.That(pushMenuItem.Items.Count, Is.EqualTo(2));
+            Assert.That(pushMenuItem.Items.Count, Is.EqualTo(3));
+            Assert.That(createBranchAtRefMenuItem.Items.Count, Is.EqualTo(4));
+            Assert.That(copyRefNameMenuItem.Items.Count, Is.EqualTo(4));
             Assert.That(mergeRef, Is.EqualTo("v1.2.3"));
             Assert.That(rebaseRef, Is.EqualTo("origin/feature/menu"));
             Assert.That(deleteBranch, Is.EqualTo("feature/menu"));
             Assert.That(deleteRemoteBranch, Is.EqualTo("origin/feature/menu"));
             Assert.That(deleteTag, Is.EqualTo("v1.2.3"));
             Assert.That(pushBranch, Is.EqualTo("main"));
+            Assert.That(createBranchAtRef, Is.EqualTo("v1.2.3"));
         });
     }
 

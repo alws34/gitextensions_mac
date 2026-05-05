@@ -1,0 +1,38 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="GitUI.Avalonia.Settings.Pages.BuildServerPage">
+    <ScrollViewer>
+        <StackPanel Margin="16" Spacing="12">
+            <TextBlock Text="Build Server" FontSize="14" FontWeight="SemiBold" Margin="0,0,0,4" />
+
+            <CheckBox x:Name="EnableIntegrationCheckBox"
+                      Content="Enable build server integration" />
+            <CheckBox x:Name="ShowBuildResultPageCheckBox"
+                      Content="Show build result page" />
+
+            <StackPanel Spacing="4">
+                <TextBlock Text="Build server type:" />
+                <ComboBox x:Name="BuildServerTypeComboBox" HorizontalAlignment="Stretch">
+                    <ComboBoxItem Content="None" Tag="" />
+                    <ComboBoxItem Content="AppVeyor" Tag="AppVeyor" />
+                    <ComboBoxItem Content="Azure DevOps and Team Foundation Server (since TFS2015)" Tag="Azure DevOps and Team Foundation Server (since TFS2015)" />
+                    <ComboBoxItem Content="GitHub Actions" Tag="GitHub Actions" />
+                    <ComboBoxItem Content="Gitlab" Tag="Gitlab" />
+                    <ComboBoxItem Content="Jenkins" Tag="Jenkins" />
+                    <ComboBoxItem Content="TeamCity" Tag="TeamCity" />
+                    <ComboBoxItem Content="Custom" Tag="custom" />
+                </ComboBox>
+            </StackPanel>
+
+            <StackPanel x:Name="CustomBuildServerTypeRow" Spacing="4" IsVisible="False">
+                <TextBlock Text="Custom build server type:" />
+                <TextBox x:Name="CustomBuildServerTypeTextBox" />
+            </StackPanel>
+
+            <StackPanel Spacing="4">
+                <TextBlock Text="Remote preference:" />
+                <TextBox x:Name="PrioritizedRemotesTextBox" Watermark="upstream|origin|remote" />
+            </StackPanel>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

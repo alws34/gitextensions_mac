@@ -1,0 +1,24 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="GitUI.Avalonia.Settings.Pages.PluginsPage">
+    <StackPanel Margin="16" Spacing="12">
+        <TextBlock Text="Plugins" FontSize="14" FontWeight="SemiBold" Margin="0,0,0,4" />
+
+        <CheckBox x:Name="EnablePluginsCheckBox"
+                  Content="Load plugins on startup" />
+
+        <StackPanel Spacing="4">
+            <TextBlock Text="User plugins folder:" />
+            <Grid ColumnDefinitions="*,4,Auto,4,Auto">
+                <TextBox Grid.Column="0" x:Name="UserPluginsPathTextBox" Watermark="~/Library/Application Support/GitExtensions/UserPlugins" />
+                <Button Grid.Column="2" Content="Browse..." Click="Browse_Click" />
+                <Button Grid.Column="4" Content="Open" Click="Open_Click" />
+            </Grid>
+        </StackPanel>
+
+        <StackPanel Spacing="4">
+            <TextBlock Text="Plugin scan pattern:" />
+            <TextBox x:Name="PluginPatternTextBox" Watermark="GitExtensions.*.dll" />
+        </StackPanel>
+    </StackPanel>
+</UserControl>

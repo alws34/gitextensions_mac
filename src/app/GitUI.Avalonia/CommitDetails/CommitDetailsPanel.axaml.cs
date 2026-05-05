@@ -1,6 +1,7 @@
 using Avalonia.Controls;
 using Avalonia.Threading;
 using GitCommands;
+using GitExtUtils;
 using GitUIPluginInterfaces;
 
 namespace GitUI.Avalonia.CommitDetails;
@@ -10,6 +11,8 @@ public partial class CommitDetailsPanel : UserControl
     private GitModule? _module;
     private GitRevision? _currentRevision;
     private bool _diffLoaded;
+
+    public event Action? RepositoryChanged;
 
     public CommitDetailsPanel() => InitializeComponent();
 
@@ -36,6 +39,39 @@ public partial class CommitDetailsPanel : UserControl
         {
             System.Diagnostics.Debug.WriteLine($"File action failed: {message}");
         };
+        FileList.AddToGitIgnoreRequested += path =>
+        {
+            new Dialogs.AddToGitIgnoreDialog(module, path).Show();
+        };
+        FileList.UserScriptsRequested += _ =>
+        {
+            new Dialogs.ScriptsManagerDialog(module).Show();
+        };
+        FileList.RepositoryChanged += () => RepositoryChanged?.Invoke();
+    }
+
+    public async System.Threading.Tasks.Task ShowRevisionRowAsync(RevisionGrid.RevisionRow? row)
+    {
+        if (row?.Revision is { } revision)
+        {
+            await ShowRevisionAsync(revision);
+            return;
+        }
+
+        _currentRevision = null;
+        _diffLoaded = false;
+        Summary.ShowRevision(null);
+        Summary.ShowBody(row?.Subject ?? string.Empty);
+
+        if (_module is null)
+        {
+            FileList.LoadFiles([]);
+            return;
+        }
+
+        var files = await System.Threading.Tasks.Task.Run(() =>
+            LoadArtificialFiles(row?.ArtificialType ?? string.Empty));
+        FileList.LoadFiles(files);
     }
 
     public async System.Threading.Tasks.Task ShowRevisionAsync(GitRevision? revision)
@@ -58,7 +94,14 @@ public partial class CommitDetailsPanel : UserControl
                     revision.Guid + "^",
                     revision.Guid,
                     GitExtensions.Extensibility.Git.StagedStatus.None)
-                    .Select(f => new FileStatusItem(f.Name, f.IsAdded, f.IsDeleted, f.IsRenamed))
+                    .Select(f => new FileStatusItem(
+                        f.Name,
+                        f.IsAdded,
+                        f.IsDeleted,
+                        f.IsRenamed,
+                        IsStaged: false,
+                        IsUnstaged: true,
+                        IsSubmodule: f.IsSubmodule))
                     .ToList();
             }
             catch
@@ -135,5 +178,66 @@ public partial class CommitDetailsPanel : UserControl
         }
 
         _ = DiffView.ShowDiffAsync(_currentRevision, file.Name);
+    }
+
+    private List<FileStatusItem> LoadArtificialFiles(string artificialType)
+    {
+        if (_module is null)
+        {
+            return [];
+        }
+
+        try
+        {
+            string output = _module.GitExecutable.GetOutput("status --porcelain=v1");
+            return [.. output
+                .Split('\n', StringSplitOptions.RemoveEmptyEntries)
+                .Select(ParseStatusLine)
+                .Where(item => item is not null)
+                .Select(item => item!)
+                .Where(item => artificialType switch
+                {
+                    "Index" => item.IsStaged,
+                    "WorkTree" => item.IsUnstaged,
+                    _ => true,
+                })];
+        }
+        catch
+        {
+            return [];
+        }
+    }
+
+    private static FileStatusItem? ParseStatusLine(string line)
+    {
+        if (line.Length < 4)
+        {
+            return null;
+        }
+
+        char indexStatus = line[0];
+        char workTreeStatus = line[1];
+        string path = line[3..].Trim();
+        int renameSeparator = path.IndexOf(" -> ", StringComparison.Ordinal);
+        if (renameSeparator >= 0)
+        {
+            path = path[(renameSeparator + 4)..];
+        }
+
+        path = path.Trim('"').ToPosixPath();
+        bool isAdded = indexStatus == 'A' || workTreeStatus == 'A' || indexStatus == '?';
+        bool isDeleted = indexStatus == 'D' || workTreeStatus == 'D';
+        bool isRenamed = indexStatus == 'R' || workTreeStatus == 'R';
+        bool isStaged = indexStatus != ' ' && indexStatus != '?';
+        bool isUnstaged = workTreeStatus != ' ' || indexStatus == '?';
+
+        return new FileStatusItem(
+            path,
+            isAdded,
+            isDeleted,
+            isRenamed,
+            isStaged,
+            isUnstaged,
+            IsSubmodule: indexStatus == 'M' && workTreeStatus == 'M');
     }
 }

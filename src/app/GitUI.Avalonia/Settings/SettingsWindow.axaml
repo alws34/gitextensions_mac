@@ -11,6 +11,12 @@
                 <ListBoxItem Content="Revision Grid" Tag="revisiongrid" />
                 <ListBoxItem Content="Diff Viewer" Tag="diffviewer" />
                 <ListBoxItem Content="Diff &amp; Merge Tools" Tag="difftools" />
+                <ListBoxItem Content="Confirmations" Tag="confirmations" />
+                <ListBoxItem Content="Hotkeys" Tag="hotkeys" />
+                <ListBoxItem Content="Scripts" Tag="scripts" />
+                <ListBoxItem Content="Revision Links" Tag="revisionlinks" />
+                <ListBoxItem Content="Build Server" Tag="buildserver" />
+                <ListBoxItem Content="Plugins" Tag="plugins" />
                 <ListBoxItem Content="Appearance" Tag="appearance" />
                 <ListBoxItem Content="Commit" Tag="commit" />
                 <ListBoxItem Content="SSH" Tag="ssh" />

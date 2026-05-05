@@ -181,6 +181,25 @@
 - [ ] Native menu and toolbar: keep aligning the menu taxonomy and toolbar split buttons with Windows, including repository hosts/plugins/scripts/help actions where matching Avalonia dialogs exist.
 - [ ] State/action bars: split merge/cherry-pick/revert/bisect state banners into Windows-equivalent controls with the richer per-state actions.
 
+## Parity Queue Implementation Batch 2026-05-05
+
+- [x] Refresh `origin/master` and keep this batch compared against the latest fetched Windows implementation.
+  - `origin/master` remains `a924520cc9b4649b5e459030bff119edddb3ab12`.
+- [x] Add revision-grid tag/ref parity gaps left after the previous batch: create branch at tag/ref, copy ref name, seed create-branch/create-tag dialogs from the clicked commit/ref, and keep destructive branch/tag actions dialog-backed.
+- [x] Add revision-grid view controls for branch scope, graph ordering, first-parent, tags, artificial rows, stashes, and row styling for current/non-relative revisions.
+- [x] Add file-list flat/group/tree modes plus Windows-like actions for stage, unstage, reset, open with difftool, open containing folder, submodule update, add to gitignore, and user scripts.
+- [x] Add the first branch-tree parity slice: nested local branch folders, remote hierarchy, filter/sort controls, expandable roots, and persisted sidebar view settings.
+- [x] Add missing Settings page shells for Confirmations, Hotkeys, Scripts, Revision Links, Build Server, and Plugins, backed by the same settings keys the Avalonia app already consumes where possible.
+- [x] Add focused unit coverage for each changed surface and run the Avalonia test suite plus full Mac solution build.
+  - `~/.dotnet/dotnet test tests/app/GitUI.Avalonia.Tests/GitUI.Avalonia.Tests.csproj --nologo --verbosity minimal`: PASS, 69 passed, 0 failed.
+  - `~/.dotnet/dotnet build GitExtensions.Mac.slnx --nologo`: PASS, 0 warnings, 0 errors.
+  - `env HOME=/tmp/gitextensions-run-check ~/.dotnet/dotnet run --project src/app/GitUI.Avalonia/GitUI.Avalonia.csproj --no-build`: launched past startup; stopped manually after the GUI stayed open.
+
+**Still open after this batch:**
+- Revision-grid notes visibility is not implemented yet; stashes, tags, artificial rows, branch scope, first-parent, topological, and author-date controls are now wired.
+- Settings still needs deeper shared-backend migration away from Avalonia-only JSON for Windows-owned settings; this batch added editable parity pages and keys.
+- State/action bars remain the largest untouched parity item in this queue.
+
 ## Parity Audit And Polish Slice 2026-05-05
 
 - [x] Launched focused audit agents for revision-grid ref actions, menu/toolbar discoverability, and test coverage.
