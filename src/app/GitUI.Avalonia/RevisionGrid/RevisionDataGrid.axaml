@@ -149,7 +149,8 @@
             </ListBox.ContextMenu>
             <ListBox.ItemTemplate>
                 <DataTemplate x:DataType="local:RevisionRow">
-                    <Grid Height="18">
+                    <Grid Height="18"
+                          ClipToBounds="True">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="{Binding $parent[local:RevisionDataGrid].GraphColWidth}" />
                             <ColumnDefinition Width="*" />
@@ -168,12 +169,14 @@
                                          Height="18" />
 
                         <!-- Subject: colored ref badges + message text -->
-                        <StackPanel Grid.Column="1"
-                                    Orientation="Horizontal"
-                                    VerticalAlignment="Center"
-                                    Spacing="4"
-                                    Margin="4,0">
-                            <ItemsControl ItemsSource="{Binding Refs}">
+                        <Grid Grid.Column="1"
+                              ColumnDefinitions="Auto,*"
+                              ClipToBounds="True"
+                              Margin="4,0"
+                              VerticalAlignment="Center">
+                            <ItemsControl Grid.Column="0"
+                                          ItemsSource="{Binding Refs}"
+                                          Margin="0,0,4,0">
                                 <ItemsControl.ItemsPanel>
                                     <ItemsPanelTemplate>
                                         <StackPanel Orientation="Horizontal" Spacing="2" />
@@ -193,13 +196,20 @@
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>
-                            <TextBlock Text="{Binding Subject}"
+                            <TextBlock Grid.Column="1"
+                                       Text="{Binding Subject}"
                                        FontSize="12"
                                        VerticalAlignment="Center"
-                                       Foreground="{Binding TextColor}"
                                        FontWeight="{Binding IsCurrent, Converter={StaticResource BoolToFontWeight}}"
-                                       TextTrimming="CharacterEllipsis" />
-                        </StackPanel>
+                                       TextTrimming="CharacterEllipsis">
+                                <TextBlock.Foreground>
+                                    <MultiBinding Converter="{StaticResource RevisionRowTextBrush}">
+                                        <Binding Path="IsRelativeToCurrentBranch" />
+                                        <Binding Path="$parent[ListBoxItem].IsSelected" />
+                                    </MultiBinding>
+                                </TextBlock.Foreground>
+                            </TextBlock>
+                        </Grid>
 
                         <!-- Author column -->
                         <TextBlock Grid.Column="2"
@@ -207,16 +217,28 @@
                                    VerticalAlignment="Center"
                                    Margin="4,0"
                                    FontSize="12"
-                                   Foreground="{Binding TextColor}"
-                                   TextTrimming="CharacterEllipsis" />
+                                   TextTrimming="CharacterEllipsis">
+                            <TextBlock.Foreground>
+                                <MultiBinding Converter="{StaticResource RevisionRowTextBrush}">
+                                    <Binding Path="IsRelativeToCurrentBranch" />
+                                    <Binding Path="$parent[ListBoxItem].IsSelected" />
+                                </MultiBinding>
+                            </TextBlock.Foreground>
+                        </TextBlock>
 
                         <!-- Date column: relative age -->
                         <TextBlock Grid.Column="3"
                                    Text="{Binding RelativeDate}"
                                    VerticalAlignment="Center"
                                    Margin="4,0"
-                                   Foreground="{Binding TextColor}"
-                                   FontSize="11" />
+                                   FontSize="11">
+                            <TextBlock.Foreground>
+                                <MultiBinding Converter="{StaticResource RevisionRowTextBrush}">
+                                    <Binding Path="IsRelativeToCurrentBranch" />
+                                    <Binding Path="$parent[ListBoxItem].IsSelected" />
+                                </MultiBinding>
+                            </TextBlock.Foreground>
+                        </TextBlock>
 
                         <!-- Hash column: 7-char monospace, adaptive gray -->
                         <TextBlock Grid.Column="4"
@@ -224,8 +246,15 @@
                                    VerticalAlignment="Center"
                                    Margin="4,0"
                                    FontSize="11"
-                                   Foreground="{Binding HashColor}"
-                                   FontFamily="{DynamicResource MonospaceFont}" />
+                                   FontFamily="{DynamicResource MonospaceFont}">
+                            <TextBlock.Foreground>
+                                <MultiBinding Converter="{StaticResource RevisionRowTextBrush}"
+                                              ConverterParameter="hash">
+                                    <Binding Path="IsRelativeToCurrentBranch" />
+                                    <Binding Path="$parent[ListBoxItem].IsSelected" />
+                                </MultiBinding>
+                            </TextBlock.Foreground>
+                        </TextBlock>
                     </Grid>
                 </DataTemplate>
             </ListBox.ItemTemplate>

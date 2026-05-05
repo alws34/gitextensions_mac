@@ -92,4 +92,26 @@ public class BasicConvertersTests
 
         Assert.That(result, Is.EqualTo(new Thickness(48, 0, 0, 0)));
     }
+
+    [Test]
+    public void RevisionRowTextBrush_Convert_SelectedWinsOverDimmedState()
+    {
+        object? selected = RevisionRowTextBrushConverter.Instance.Convert(
+            [false, true],
+            typeof(IBrush),
+            parameter: null,
+            CultureInfo.InvariantCulture);
+
+        object? nonRelative = RevisionRowTextBrushConverter.Instance.Convert(
+            [false, false],
+            typeof(IBrush),
+            parameter: null,
+            CultureInfo.InvariantCulture);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(selected, Is.EqualTo(Brushes.White));
+            Assert.That(nonRelative, Is.Not.EqualTo(Brushes.White));
+        });
+    }
 }

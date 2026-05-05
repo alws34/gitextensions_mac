@@ -57,6 +57,7 @@
     <local:NullToVisibilityConverter x:Key="NullToVisibility" />
     <local:InverseBoolConverter x:Key="InverseBool" />
     <local:RefTypeBrushConverter x:Key="RefTypeBrush" />
+    <local:RevisionRowTextBrushConverter x:Key="RevisionRowTextBrush" />
     <local:BoolToFontWeightConverter x:Key="BoolToFontWeight" />
     <local:DepthToMarginConverter x:Key="DepthToMargin" />
 
